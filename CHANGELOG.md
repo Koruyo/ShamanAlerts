@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.41.1
+- Releases are now uploaded to CurseForge as well; no change to the addon itself
+
 ## 2.41.0
 - Localized for every client language: English, Deutsch, Français, Español, Italiano,
   Português (BR), Русский, 한국어, 简体中文, 繁體中文. English is the base language; all texts,
