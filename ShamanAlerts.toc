@@ -1,14 +1,37 @@
 ## Interface: 16001
-## Title: ShamanAlerts
-## Notes: Alarme rund um den Charakter für Schamanen: Waffe des Mahlstroms, Flammenschock, Frostschock, Erdschock, Feuernova, Unterbrechen, Sturmschlag, Schild, Waffenverzauberung, Freizaubern, Schlaghagel, Kochendes Blut und Berserker. Dazu eine Totem-Leiste, eigene Alarme und Profile. Optionen: /sha
-## Version: 2.40.0
+## Title: |cff4db8ffShaman|rAlerts
+## Notes: Alerts around your character for Enhancement Shamans: Maelstrom Weapon, shocks, Stormstrike, shields, weapon enchants, a totem bar, custom alerts and profiles. Options: /sha
+## Notes-deDE: Alarme rund um den Charakter für Verstärker-Schamanen: Waffe des Mahlstroms, Schocks, Sturmschlag, Schild, Waffenverzauberung, eine Totem-Leiste, eigene Alarme und Profile. Optionen: /sha
+## Notes-frFR: Alertes autour de votre personnage pour les chamans Amélioration : Arme du Maelstrom, horions, Frappe-tempête, boucliers, enchantements d'arme, barre de totems, alertes personnalisées et profils. Options : /sha
+## Notes-esES: Alertas alrededor de tu personaje para chamanes de Mejora: Arma Vorágine, choques, Golpe de tormenta, escudos, encantamientos de arma, una barra de tótems, alertas propias y perfiles. Opciones: /sha
+## Notes-esMX: Alertas alrededor de tu personaje para chamanes de Mejora: Arma Vorágine, choques, Golpe de tormenta, escudos, encantamientos de arma, una barra de tótems, alertas propias y perfiles. Opciones: /sha
+## Notes-itIT: Avvisi intorno al tuo personaggio per gli sciamani Potenziamento: Arma del Maelstrom, scosse, Percossa della Tempesta, scudi, incantamenti delle armi, una barra dei totem, avvisi personalizzati e profili. Opzioni: /sha
+## Notes-ptBR: Alertas ao redor do seu personagem para Xamãs Aprimoramento: Arma Maelstrom, choques, Golpe de Tempestade, escudos, encantamentos de arma, uma barra de totens, alertas próprios e perfis. Opções: /sha
+## Notes-ruRU: Оповещения вокруг вашего персонажа для шаманов-совершенствования: Оружие Водоворота, шоки, Удар бури, щиты, зачарования оружия, панель тотемов, собственные оповещения и профили. Настройки: /sha
+## Notes-koKR: 주술사 전용 캐릭터 주위 알림: 소용돌이 무기, 충격, 폭풍 일격, 방패, 무기 마법부여, 토템 바, 사용자 알림, 프로필. 설정: /sha
+## Notes-zhCN: 为强化萨满祭司在角色周围显示提示：漩涡武器、震击、风暴打击、护盾、武器附魔、图腾栏、自定义提示和配置方案。选项：/sha
+## Notes-zhTW: 為強化薩滿在角色周圍顯示提醒：漩渦武器、震擊、風暴打擊、護盾、武器附魔、圖騰列、自訂提醒與設定檔。選項：/sha
 ## Author: Koruyo
+## Version: 2.41.0
 ## X-License: MIT
 ## X-Website: https://github.com/Koruyo/ShamanAlerts
+## IconTexture: Interface\AddOns\ShamanAlerts\Media\icon
+## Category: Combat
+## Category-deDE: Kampf
 ## SavedVariables: ShamanAlertsDB
 ## OptionalDeps: EllesmereUI
-## IconTexture: Interface\AddOns\ShamanAlerts\Media\icon
 ## AddonCompartmentFunc: ShamanAlerts_OnAddonCompartmentClick
+
+Locales\Locales.lua
+Locales\deDE.lua
+Locales\frFR.lua
+Locales\esES.lua
+Locales\itIT.lua
+Locales\ptBR.lua
+Locales\ruRU.lua
+Locales\koKR.lua
+Locales\zhCN.lua
+Locales\zhTW.lua
 
 ShamanAlerts.lua
 Totems.lua

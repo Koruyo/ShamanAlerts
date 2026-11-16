@@ -10,6 +10,7 @@
 -- ausgeführt: Der Text wird Zeichen für Zeichen gelesen, und übernommen wird
 -- nur, was das Addon kennt.
 local _, ns = ...
+local L = ns.L
 
 local P = {}
 ns.Profiles = P
@@ -91,7 +92,7 @@ local function parseString(text, position)
 	local index = position + 1
 	while true do
 		local char = text:sub(index, index)
-		if char == "" then return nil, "Text endet mitten in einem Wert" end
+		if char == "" then return nil, L["text ends in the middle of a value"] end
 		if char == '"' then return table.concat(parts), index + 1 end
 		if char == "\\" then
 			local digits = text:match("^%d%d%d", index + 1)
@@ -111,7 +112,7 @@ local function parseString(text, position)
 end
 
 local function parseTable(text, position, depth)
-	if depth > 6 then return nil, "zu tief verschachtelt" end
+	if depth > 6 then return nil, L["nested too deeply"] end
 	local result = {}
 	local index = position + 1
 	while true do
@@ -121,18 +122,18 @@ local function parseTable(text, position, depth)
 		if char == "[" then
 			local value, after = parseValue(text, index + 1, depth)
 			if value == nil then return nil, after end
-			if text:sub(after, after + 1) ~= "]=" then return nil, "Schlüssel nicht abgeschlossen" end
+			if text:sub(after, after + 1) ~= "]=" then return nil, L["key not closed"] end
 			key, index = value, after + 2
 		else
 			local name = text:match("^[%a_][%w_]*", index)
-			if not name or text:sub(index + #name, index + #name) ~= "=" then return nil, "unerwartetes Zeichen an Stelle " .. index end
+			if not name or text:sub(index + #name, index + #name) ~= "=" then return nil, L["unexpected character at position "] .. index end
 			key, index = name, index + #name + 1
 		end
-		if type(key) ~= "string" and type(key) ~= "number" then return nil, "ungültiger Schlüssel" end
+		if type(key) ~= "string" and type(key) ~= "number" then return nil, L["invalid key"] end
 		local value, after = parseValue(text, index, depth)
 		if value == nil then return nil, after end
 		result[key] = value
-		if text:sub(after, after) ~= ";" then return nil, "Trennzeichen fehlt an Stelle " .. after end
+		if text:sub(after, after) ~= ";" then return nil, L["separator missing at position "] .. after end
 		index = after + 1
 	end
 end
@@ -145,7 +146,7 @@ function parseValue(text, position, depth)
 	if text:sub(position, position + 4) == "false" then return false, position + 5 end
 	local number = text:match("^-?%d+%.?%d*[eE]?[-+]?%d*", position)
 	if number and tonumber(number) then return tonumber(number), position + #number end
-	return nil, "unerwartetes Zeichen an Stelle " .. position
+	return nil, L["unexpected character at position "] .. position
 end
 
 local B64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
@@ -219,17 +220,17 @@ end
 
 -- Liest einen Export und gibt den Stand zurück, ohne ihn zu übernehmen.
 function P.Read(text)
-	if type(text) ~= "string" then return nil, "Kein Text." end
+	if type(text) ~= "string" then return nil, L["No text."] end
 	text = text:gsub("%s+", "")
-	if text == "" then return nil, "Das Feld ist leer. Füg zuerst einen Export mit Strg+V ein." end
-	if #text > MAX_TEXT then return nil, "Der Text ist zu lang für einen Export von ShamanAlerts." end
-	if text:sub(1, #PREFIX) ~= PREFIX then return nil, "Das ist kein Export von ShamanAlerts. Ein Export beginnt mit " .. PREFIX end
+	if text == "" then return nil, L["The field is empty. Paste an export with Ctrl+V first."] end
+	if #text > MAX_TEXT then return nil, L["The text is too long for a ShamanAlerts export."] end
+	if text:sub(1, #PREFIX) ~= PREFIX then return nil, L["This is not a ShamanAlerts export. An export starts with "] .. PREFIX end
 	local raw = decode64(text:sub(#PREFIX + 1))
-	if not raw then return nil, "Der Text ist beschädigt oder unvollständig kopiert." end
+	if not raw then return nil, L["The text is damaged or was not copied completely."] end
 	local value, after = parseValue(raw, 1, 0)
-	if type(value) ~= "table" then return nil, "Der Text ist beschädigt (" .. tostring(after) .. ")." end
-	if after ~= #raw + 1 then return nil, "Der Text ist beschädigt oder unvollständig kopiert." end
-	if type(value.alerts) ~= "table" then return nil, "Darin stehen keine Einstellungen von ShamanAlerts." end
+	if type(value) ~= "table" then return nil, L["The text is damaged ("] .. tostring(after) .. ")." end
+	if after ~= #raw + 1 then return nil, L["The text is damaged or was not copied completely."] end
+	if type(value.alerts) ~= "table" then return nil, L["There are no ShamanAlerts settings in it."] end
 	return value
 end
 
@@ -270,32 +271,32 @@ function P.Current() return ns.db and ns.db.profileName or nil end
 
 function P.Save(name)
 	name = cleanName(name)
-	if name == "" then return false, "Bitte einen Namen für das Profil angeben." end
+	if name == "" then return false, L["Please enter a name for the profile."] end
 	local profiles = store()
-	if not profiles[name] and #P.List() >= MAX_PROFILES then return false, ("Mehr als %d Profile gehen nicht. Bitte erst eines löschen."):format(MAX_PROFILES) end
+	if not profiles[name] and #P.List() >= MAX_PROFILES then return false, (L["More than %d profiles are not possible. Please delete one first."]):format(MAX_PROFILES) end
 	local existed = profiles[name] ~= nil
 	profiles[name] = ns.takeSnapshot()
 	ns.db.profileName = name
-	return true, existed and ("Profil \"%s\" überschrieben."):format(name) or ("Profil \"%s\" gespeichert."):format(name)
+	return true, existed and (L["Profile \"%s\" overwritten."]):format(name) or (L["Profile \"%s\" saved."]):format(name)
 end
 
 function P.Load(name)
 	name = cleanName(name)
 	local saved = store()[name]
-	if type(saved) ~= "table" then return false, ("Ein Profil \"%s\" gibt es nicht."):format(name) end
+	if type(saved) ~= "table" then return false, (L["There is no profile \"%s\"."]):format(name) end
 	local ok, reason = ns.applySnapshot(saved)
 	if not ok then return false, reason end
 	ns.db.profileName = name
-	return true, ("Profil \"%s\" geladen."):format(name)
+	return true, (L["Profile \"%s\" loaded."]):format(name)
 end
 
 function P.Delete(name)
 	name = cleanName(name)
 	local profiles = store()
-	if profiles[name] == nil then return false, ("Ein Profil \"%s\" gibt es nicht."):format(name) end
+	if profiles[name] == nil then return false, (L["There is no profile \"%s\"."]):format(name) end
 	profiles[name] = nil
 	if ns.db.profileName == name then ns.db.profileName = nil end
-	return true, ("Profil \"%s\" gelöscht."):format(name)
+	return true, (L["Profile \"%s\" deleted."]):format(name)
 end
 
 -- /sha profile [save|load|delete <Name>] oder /sha profile list
@@ -311,7 +312,7 @@ ns.commands.profile = function(rest)
 		if ns.RefreshOptions then ns.RefreshOptions(true) end
 	elseif action == "list" or action == "liste" then
 		local names = P.List()
-		ns.msg(#names == 0 and "Noch kein Profil gespeichert." or ("Profile: " .. table.concat(names, ", ") .. "."))
+		ns.msg(#names == 0 and L["No profile saved yet."] or (L["Profiles: "] .. table.concat(names, ", ") .. "."))
 	elseif ns.ShowOptionsPage then
 		ns.ShowOptionsPage("profiles")
 	end

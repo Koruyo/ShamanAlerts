@@ -7,6 +7,7 @@
 -- Bibliotheken zeichnet das Addon einen eigenen Knopf, der sich um die Minimap
 -- ziehen lässt.
 local ADDON, ns = ...
+local L = ns.L
 
 local M = {}
 ns.Minimap = M
@@ -32,9 +33,9 @@ local function fillTooltip(tooltip)
 	if not tooltip or not tooltip.AddLine then return end
 	local number = version()
 	tooltip:AddLine(NAME .. (number and (" |cff999999" .. number .. "|r") or ""), 1, 0.82, 0)
-	tooltip:AddLine("Linksklick: Optionen öffnen", 1, 1, 1)
-	tooltip:AddLine("Rechtsklick: Totem-Leiste und Schrift", 1, 1, 1)
-	if not library then tooltip:AddLine("Ziehen: Knopf verschieben", 0.7, 0.7, 0.7) end
+	tooltip:AddLine(L["Left click: open the options"], 1, 1, 1)
+	tooltip:AddLine(L["Right click: totem bar and font"], 1, 1, 1)
+	if not library then tooltip:AddLine(L["Drag: move the button"], 0.7, 0.7, 0.7) end
 end
 
 local function onClick(_, mouseButton)
@@ -144,7 +145,7 @@ function M.SetShown(show)
 	if library then
 		pcall(show and library.Show or library.Hide, library, NAME)
 	else
-		if show and not button then createButton() end
+		if show and not button and Minimap then createButton() end
 		if button then button:SetShown(show) end
 	end
 end

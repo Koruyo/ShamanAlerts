@@ -6,6 +6,7 @@
 -- außen lesen. Geheime Werte werden nur als "<geheim>" vermerkt, nie benutzt.
 
 local ADDON_NAME, ns = ...
+local L = ns.L
 
 local DURATION, INTERVAL = 30, 0.5
 local recording
@@ -139,13 +140,13 @@ local function stop()
 	if recording.ticker and recording.ticker.Cancel then recording.ticker:Cancel() end
 	local count = #recording.log.samples
 	recording = nil
-	ns.msg("Diagnose fertig: %d Aufnahmen gespeichert. Tippe jetzt /reload, dann lassen sie sich auslesen.", count)
+	ns.msg(L["Diagnostics done: %d samples stored. Type /reload now, then they can be read."], count)
 end
 
 ns.commands.debug = function(rest)
 	if (rest or ""):lower() == "clear" then
 		ns.db.debug = nil
-		return ns.msg("Diagnose-Aufzeichnung gelöscht.")
+		return ns.msg(L["Diagnostics recording deleted."])
 	end
 	if recording then return stop() end
 	local version = C_AddOns and C_AddOns.GetAddOnMetadata and C_AddOns.GetAddOnMetadata(ADDON_NAME, "Version")
@@ -167,5 +168,5 @@ ns.commands.debug = function(rest)
 	if C_Timer and C_Timer.NewTicker then
 		recording.ticker = C_Timer.NewTicker(INTERVAL, sample)
 	end
-	ns.msg("Diagnose läuft %d Sekunden. Kämpfe jetzt wie gewohnt (Flammenschock setzen, warten bis Erdschock bereit ist). Danach /reload.", DURATION)
+	ns.msg(L["Diagnostics run for %d seconds. Fight as usual now (apply Flame Shock, wait until Earth Shock is ready). Then /reload."], DURATION)
 end

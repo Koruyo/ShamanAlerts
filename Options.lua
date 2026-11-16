@@ -9,6 +9,7 @@
 -- Vorschau, die echte Anzeige wird kurz danach neu aufgebaut.
 
 local ADDON_NAME, ns = ...
+local L = ns.L
 
 local FRAME_NAME = "ShamanAlertsOptionsFrame"
 local WIDTH, HEIGHT = 1000, 700
@@ -23,19 +24,19 @@ local COLUMNS, ROWS = 9, 8
 local PER_PAGE = COLUMNS * ROWS
 
 local SOUND_MODE_TEXT = {
-	off = "Aus",
-	threshold = "An der Schwelle",
-	stack = "Bei jedem Stapel",
-	removed = "Beim Auslaufen",
-	added = "Beim Erscheinen",
+	off = L["Off"],
+	threshold = L["At the threshold"],
+	stack = L["On every stack"],
+	removed = L["When it ends"],
+	added = L["When it appears"],
 }
-local SOUND_MODE_TEXT_READY = { off = "Aus", added = "Wenn bereit" }
+local SOUND_MODE_TEXT_READY = { off = L["Off"], added = L["When ready"] }
 local SOUND_HINT = {
-	stacks = "\"An der Schwelle\" klappt nur, wenn das Spiel den Buff im Kampf lesbar lässt. Bleibt es im Kampf stumm, nimm \"Bei jedem Stapel\": Das spielt das Spiel selbst ab.",
-	missing = "\"Beim Auslaufen\" spielt das Spiel selbst ab, sobald der Zauber endet. Das funktioniert auch im Kampf.",
-	weapon = "\"Beim Auslaufen\" spielt einen Sound, sobald eine geprüfte Waffe ihre Verzauberung verliert.",
-	active = "Beide Sounds spielt das Spiel selbst ab: sobald die Aura erscheint oder sobald sie endet. Das funktioniert auch im Kampf.",
-	ready = "\"Wenn bereit\" spielt den Sound in dem Moment, in dem der Zauber wirklich bereit ist und alle Bedingungen passen. Die Vorlaufzeit zieht den Sound nicht vor.",
+	stacks = L["\"At the threshold\" only works if the game keeps the buff readable in combat. If it stays silent in combat, take \"On every stack\": the game plays that itself."],
+	missing = L["\"When it ends\" is played by the game itself as soon as the spell ends. This also works in combat."],
+	weapon = L["\"When it ends\" plays a sound as soon as a checked weapon loses its enchant."],
+	active = L["Both sounds are played by the game itself: as soon as the aura appears or as soon as it ends. This also works in combat."],
+	ready = L["\"When ready\" plays the sound at the moment the spell is really ready and all conditions are met. The lead time does not bring the sound forward."],
 }
 
 local frame
@@ -299,11 +300,11 @@ local function addTextureBrowser(parent, x, y)
 		for index, button in ipairs(categoryButtons) do
 			button:SetEnabled(index ~= browser.category) -- die aktive Kategorie ist ausgegraut
 		end
-		pageText:SetText(("Seite %d/%d"):format(browser.page, pages))
+		pageText:SetText((L["Page %d/%d"]):format(browser.page, pages))
 		previous:SetEnabled(browser.page > 1)
 		following:SetEnabled(browser.page < pages)
 		local preset = ns.TEXTURES[settings.texture]
-		selection:SetText("Gewählt: " .. (preset and preset.name or "eigener Pfad"))
+		selection:SetText(L["Selected: "] .. (preset and preset.name or L["custom path"]))
 	end
 	widgets[#widgets + 1] = view
 	return view
@@ -311,7 +312,7 @@ end
 
 local function openColorPicker(field)
 	if not (ColorPickerFrame and ColorPickerFrame.SetupColorPickerAndShow) then
-		return ns.msg("Dieser Client hat keinen Farbwähler. Nutze /sha set %s color 115 204 255.", selected.key)
+		return ns.msg(L["This client has no color picker. Use /sha set %s color 115 204 255."], selected.key)
 	end
 	local alert = selected
 	local color = alert.s[field]
@@ -421,39 +422,39 @@ end
 -------------------------------------------------------------------------------
 
 local TABS = {
-	{ key = "look", name = "Grafik" },
-	{ key = "layout", name = "Anordnung" },
-	{ key = "rules", name = "Bedingungen" },
-	{ key = "sound", name = "Sound" },
-	{ key = "aura", name = "Zauber & Aura" },
+	{ key = "look", name = L["Graphics"] },
+	{ key = "layout", name = L["Layout"] },
+	{ key = "rules", name = L["Conditions"] },
+	{ key = "sound", name = L["Sound"] },
+	{ key = "aura", name = L["Spell & aura"] },
 }
 local PAGES = {
-	{ key = "totems", name = "Totem-Leiste & Schrift" },
-	{ key = "profiles", name = "Profile & Austausch" },
-	{ key = "help", name = "Hilfe & Diagnose" },
+	{ key = "totems", name = L["Totem bar & font"] },
+	{ key = "profiles", name = L["Profiles & sharing"] },
+	{ key = "help", name = L["Help & diagnostics"] },
 }
 
 -- Ein Satz je eingebautem Alarm, er steht im Kopf der Seite.
 local DESCRIPTIONS = {
-	maelstrom = "Zeigt Blitze um den Charakter, sobald Waffe des Mahlstroms die eingestellte Zahl von Stapeln erreicht.",
-	flameshock = "Erinnert daran, Flammenschock auf das Ziel zu setzen, solange er dort fehlt. Gegen Spieler bleibt er aus.",
-	shield = "Warnt, solange dein Schild fehlt.",
-	weapon = "Warnt, solange einer Waffe die Verzauberung fehlt.",
-	stormstrike = "Erscheint, sobald Sturmschlag bereit ist.",
-	earthshock = "Der allgemeine Schock: erscheint, sobald die Schocks bereit sind und kein bestimmter Schock Vorrang hat (Unterbrechen, Frostschock gegen Spieler, Flammenschock).",
-	interrupt = "Erscheint, sobald dein Ziel etwas Unterbrechbares zaubert und der Erdschock bereit ist.",
-	firenova = "Erscheint, sobald Feuernova bereit ist, auf Wunsch nur mit Feuertotem und bei mehreren Gegnern in der Nähe.",
-	clearcast = "Erscheint, solange Freizaubern aktiv ist: Der nächste Zauber kostet kein Mana.",
-	flurry = "Erscheint, solange Schlaghagel aktiv ist.",
-	frostshock = "Erinnert im Kampf gegen Spieler daran, Frostschock auf das Ziel zu setzen, solange die Verlangsamung dort fehlt.",
-	bloodfury = "Erscheint, sobald Kochendes Blut (Orc) bereit ist.",
-	berserking = "Erscheint, sobald Berserker (Troll) bereit ist.",
+	maelstrom = L["Shows lightning around your character as soon as Maelstrom Weapon reaches the set number of stacks."],
+	flameshock = L["Reminds you to put Flame Shock on your target while it is missing there. Against players it stays off."],
+	shield = L["Warns while your shield is missing."],
+	weapon = L["Warns while a weapon is missing its enchant."],
+	stormstrike = L["Appears as soon as Stormstrike is ready."],
+	earthshock = L["The general shock: appears as soon as the shocks are ready and no particular shock has priority (Interrupt, Frost Shock against players, Flame Shock)."],
+	interrupt = L["Appears as soon as your target casts something that can be interrupted and Earth Shock is ready."],
+	firenova = L["Appears as soon as Fire Nova is ready, optionally only with a fire totem and with several enemies nearby."],
+	clearcast = L["Appears while Clearcasting is active: your next spell costs no mana."],
+	flurry = L["Appears while Flurry is active."],
+	frostshock = L["In combat against players, reminds you to put Frost Shock on your target while the slow is missing there."],
+	bloodfury = L["Appears as soon as Blood Fury (orc) is ready."],
+	berserking = L["Appears as soon as Berserking (troll) is ready."],
 }
 local KIND_DESCRIPTIONS = {
-	active = "Eigener Alarm: erscheint, solange die Aura aktiv ist.",
-	missing = "Eigener Alarm: erscheint, solange die Aura fehlt.",
-	stacks = "Eigener Alarm: erscheint ab der eingestellten Zahl von Stapeln.",
-	ready = "Eigener Alarm: erscheint, sobald der Zauber bereit ist.",
+	active = L["Custom alert: appears while the aura is active."],
+	missing = L["Custom alert: appears while the aura is missing."],
+	stacks = L["Custom alert: appears from the set number of stacks."],
+	ready = L["Custom alert: appears as soon as the spell is ready."],
 }
 
 -- Zustand eines Alarms für den Punkt in der Liste
@@ -464,10 +465,10 @@ local STATE_COLORS = {
 	class = { 0.4, 0.4, 0.4 },
 }
 local STATE_TEXT = {
-	on = "Eingeschaltet.",
-	unknown = "Eingeschaltet, aber der Zauber steht nicht in deinem Zauberbuch. Der Alarm bleibt deshalb unsichtbar.",
-	off = "Ausgeschaltet.",
-	class = "Nur für Schamanen. Auf diesem Charakter bleibt der Alarm unsichtbar.",
+	on = L["Switched on."],
+	unknown = L["Switched on, but the spell is not in your spellbook. The alert therefore stays invisible."],
+	off = L["Switched off."],
+	class = L["For shamans only. On this character the alert stays invisible."],
 }
 
 local function alertState(alert)
@@ -482,8 +483,8 @@ local function confirm(text, action)
 	if not (StaticPopupDialogs and StaticPopup_Show) then return action() end
 	StaticPopupDialogs.SHAMANALERTS_CONFIRM = StaticPopupDialogs.SHAMANALERTS_CONFIRM or {
 		text = "%s",
-		button1 = YES or "Ja",
-		button2 = NO or "Nein",
+		button1 = YES or L["Yes"],
+		button2 = NO or L["No"],
 		timeout = 0,
 		whileDead = true,
 		hideOnEscape = true,
@@ -642,7 +643,7 @@ local function createFrame()
 	divider:SetSize(1, HEIGHT - 38)
 	divider:SetPoint("TOPLEFT", window, "TOPLEFT", SIDE_X + SIDE_W + 7, -28)
 
-	addHeader(window, "Alarme", SIDE_X, -36, SIDE_W)
+	addHeader(window, L["Alerts"], SIDE_X, -36, SIDE_W)
 	view.rows = {}
 	for index = 1, MAX_ROWS do
 		local row = addRow(window, -58 - (index - 1) * ROW_H, function(self)
@@ -665,11 +666,11 @@ local function createFrame()
 		view.rows[index] = row
 	end
 	local listEnd = -58 - MAX_ROWS * ROW_H
-	view.scrollHint = addText(window, "Mausrad: weitere Alarme", "GameFontDisableSmall", SIDE_X + 6, listEnd - 2)
-	tip(addButton(window, "+ Neuer Alarm", SIDE_W, SIDE_X, listEnd - 18, function() ns.commands.new("") end),
-		"Legt einen eigenen Alarm für einen beliebigen Buff, Debuff oder Zauber an. Art, Name und Aussehen stellst du danach rechts ein.")
+	view.scrollHint = addText(window, L["Mouse wheel: more alerts"], "GameFontDisableSmall", SIDE_X + 6, listEnd - 2)
+	tip(addButton(window, L["+ New alert"], SIDE_W, SIDE_X, listEnd - 18, function() ns.commands.new("") end),
+		L["Creates your own alert for any buff, debuff or spell. Kind, name and looks are set on the right afterwards."])
 
-	addHeader(window, "Weitere Seiten", SIDE_X, listEnd - 56, SIDE_W)
+	addHeader(window, L["More pages"], SIDE_X, listEnd - 56, SIDE_W)
 	view.pageRows = {}
 	for index, page in ipairs(PAGES) do
 		local row = addRow(window, listEnd - 78 - (index - 1) * ROW_H, function(self) showPage(self.page) end)
@@ -679,7 +680,7 @@ local function createFrame()
 		view.pageRows[index] = row
 	end
 	local version = C_AddOns and C_AddOns.GetAddOnMetadata and C_AddOns.GetAddOnMetadata(ADDON_NAME, "Version")
-	addText(window, "Version " .. tostring(version or "?"), "GameFontDisableSmall", SIDE_X + 6, -HEIGHT + 24)
+	addText(window, L["Version "] .. tostring(version or "?"), "GameFontDisableSmall", SIDE_X + 6, -HEIGHT + 24)
 
 	-- Rechts: Seite des gewählten Alarms ---------------------------------------
 	local page = CreateFrame("Frame", nil, window)
@@ -692,14 +693,14 @@ local function createFrame()
 	view.kind:SetPoint("BOTTOMLEFT", view.title, "BOTTOMRIGHT", 10, 1)
 	view.desc = addText(page, "", "GameFontHighlightSmall", 0, -32, CONTENT_W - 120)
 	view.desc:SetJustifyV("TOP")
-	tip(addCheck(page, "Aktiv", CONTENT_W - 70, -4,
+	tip(addCheck(page, L["Enabled"], CONTENT_W - 70, -4,
 		function() return cur().enabled end,
 		function(value)
 			cur().enabled = value
 			ns.updateEngineSounds()
 			changed()
 			ns.RefreshOptions()
-		end), "Schaltet diesen Alarm ein oder aus. Die übrigen Einstellungen bleiben erhalten.")
+		end), L["Switches this alert on or off. The other settings are kept."])
 
 	-- Reiter
 	local tabFrames = {}
@@ -730,41 +731,41 @@ local function createFrame()
 
 	-- Reiter "Grafik" -----------------------------------------------------------
 	local look = tabFrames.look
-	addHeader(look, "Aussehen", 0, 0, 292)
-	tip(addSlider(look, "Size", "Größe", 4, -44, 32, 600, 4,
+	addHeader(look, L["Appearance"], 0, 0, 292)
+	tip(addSlider(look, "Size", L["Size"], 4, -44, 32, 600, 4,
 		function(value) return ("%d"):format(value) end,
 		function() return cur().size end,
-		function(value) cur().size = value end), "Kantenlänge der Grafik in Bildpunkten.")
-	tip(addSlider(look, "Alpha", "Deckkraft", 4, -90, 10, 100, 5,
+		function(value) cur().size = value end), L["Edge length of the graphic in pixels."])
+	tip(addSlider(look, "Alpha", L["Opacity"], 4, -90, 10, 100, 5,
 		function(value) return ("%d %%"):format(value) end,
 		function() return math.floor(cur().alpha * 100 + 0.5) end,
-		function(value) cur().alpha = value / 100 end), "100 % ist voll sichtbar, kleinere Werte lassen das Spiel durchscheinen.")
-	tip(addCheck(look, "Pulsieren", 0, -112,
+		function(value) cur().alpha = value / 100 end), L["100 % is fully visible, lower values let the game shine through."])
+	tip(addCheck(look, L["Pulse"], 0, -112,
 		function() return cur().pulse end,
 		function(value)
 			cur().pulse = value
 			changed()
-		end), "Die Grafik wird im Takt etwas heller und dunkler, damit sie auffällt.")
-	tip(addCheck(look, "Buff-Icon mit Stapelzahl", 0, -136,
+		end), L["The graphic gets a little brighter and darker in a steady rhythm so that it stands out."])
+	tip(addCheck(look, L["Buff icon with stack count"], 0, -136,
 		function() return cur().icon end,
 		function(value)
 			cur().icon = value
 			changed()
-		end, "stacks"), "Zeigt zusätzlich das Symbol des Buffs mit der Zahl der Stapel.")
-	tip(addCheck(look, "Restzeit unter der Grafik", 0, -136,
+		end, "stacks"), L["Also shows the icon of the buff with the number of stacks."])
+	tip(addCheck(look, L["Time left below the graphic"], 0, -136,
 		function() return cur().timer end,
 		function(value)
 			cur().timer = value
 			changed()
-		end, "active"), "Zeigt unter der Grafik, wie lange die Aura noch läuft.")
+		end, "active"), L["Shows below the graphic how long the aura still lasts."])
 
 	local displayButton = tip(addButton(look, "", 292, 0, -172, function()
 		cur().display = cur().display == "icon" and "texture" or "icon"
 		ns.RefreshOptions(true)
 		changed()
-	end), "Wechselt zwischen einem gemalten Bild und dem Symbol des Zaubers, wie es in den Aktionsleisten steht.")
+	end), L["Switches between a painted picture and the icon of the spell as it appears on the action bars."])
 	displayButton.Refresh = function(self)
-		self:SetText("Darstellung: " .. (cur().display == "icon" and "Zaubersymbol" or "Textur"))
+		self:SetText(L["Display: "] .. (cur().display == "icon" and L["Spell icon"] or L["Texture"]))
 	end
 	widgets[#widgets + 1] = displayButton
 
@@ -775,26 +776,26 @@ local function createFrame()
 		if region.label then textureGroup[#textureGroup + 1] = region.label end
 		return region
 	end
-	addHeader(look, "Bild", 320, 0, BROWSER_W)
+	addHeader(look, L["Picture"], 320, 0, BROWSER_W)
 	local browserView = addTextureBrowser(look, 320, -24)
 	for _, region in ipairs(browserView.regions) do inTextureGroup(region) end
 
-	inTextureGroup(addText(look, "Farbe:", nil, 0, -212))
-	inTextureGroup(tip(addSwatch(look, 44, -207, "color", "color"), "Färbt einfarbige Bilder ein. Bunte Bilder behalten ihre Farben.", "Farbe"))
-	inTextureGroup(addButton(look, "Weiß", 54, 74, -207, function()
+	inTextureGroup(addText(look, L["Color:"], nil, 0, -212))
+	inTextureGroup(tip(addSwatch(look, 44, -207, "color", "color"), L["Tints single-colored pictures. Colorful pictures keep their colors."], L["Color"]))
+	inTextureGroup(addButton(look, L["White"], 54, 74, -207, function()
 		cur().color = { 1, 1, 1 }
 		ns.RefreshOptions()
 		changed()
 	end))
-	inTextureGroup(tip(addCheck(look, "Leuchtend (additiv)", 0, -234,
+	inTextureGroup(tip(addCheck(look, L["Glowing (additive)"], 0, -234,
 		function() return cur().additive end,
 		function(value)
 			cur().additive = value
 			ns.RefreshOptions()
 			changed()
-		end), "Das Bild hellt das Spiel dahinter auf, statt es zu überdecken. Dunkle Bildteile werden dabei durchsichtig."))
+		end), L["The picture brightens the game behind it instead of covering it. Dark parts of the picture become transparent."]))
 
-	inTextureGroup(addText(look, "Eigener Pfad (Eingabetaste übernimmt):", nil, 0, -268))
+	inTextureGroup(addText(look, L["Custom path (Enter applies):"], nil, 0, -268))
 	local pathBox = inTextureGroup(addEditBox(look, 284, 0, -284, function(_, text)
 		if text == "" then return end
 		cur().texture = ns.TEXTURES[text:lower()] and text:lower() or text
@@ -815,7 +816,7 @@ local function createFrame()
 		return region
 	end
 	inIconGroup(addText(look,
-		"Zeigt das Symbol des Zaubers: quadratisch, leicht herangezoomt, mit dünnem Rahmen, wie bei EllesmereUI. Größe, Deckkraft und Anordnung gelten wie bei einer Textur.",
+		L["Shows the icon of the spell: square, slightly zoomed in, with a thin border, as in EllesmereUI. Size, opacity and layout apply as for a texture."],
 		"GameFontDisableSmall", 320, -26, BROWSER_W))
 	local sample = CreateFrame("Frame", nil, look)
 	sample:SetSize(72, 72)
@@ -839,28 +840,28 @@ local function createFrame()
 	widgets[#widgets + 1] = sample
 	inIconGroup(sample)
 
-	inIconGroup(addSlider(look, "IconZoom", "Zoom", 420, -88, 0, 40, 1,
+	inIconGroup(addSlider(look, "IconZoom", L["Zoom"], 420, -88, 0, 40, 1,
 		function(value) return ("%d %%"):format(value) end,
 		function() return cur().iconZoom end,
 		function(value)
 			cur().iconZoom = value
 			sample:Refresh()
 		end))
-	inIconGroup(addSlider(look, "IconBorder", "Rahmenbreite", 420, -134, 0, 8, 1,
+	inIconGroup(addSlider(look, "IconBorder", L["Border width"], 420, -134, 0, 8, 1,
 		function(value) return ("%d"):format(value) end,
 		function() return cur().iconBorder end,
 		function(value)
 			cur().iconBorder = value
 			sample:Refresh()
 		end))
-	inIconGroup(addText(look, "Rahmenfarbe:", nil, 320, -174))
+	inIconGroup(addText(look, L["Border color:"], nil, 320, -174))
 	inIconGroup(addSwatch(look, 404, -169, "iconBorderColor", "fill"))
-	inIconGroup(addButton(look, "Schwarz", 70, 434, -169, function()
+	inIconGroup(addButton(look, L["Black"], 70, 434, -169, function()
 		cur().iconBorderColor = { 0, 0, 0 }
 		ns.RefreshOptions()
 		changed()
 	end))
-	inIconGroup(addText(look, "Anderes Symbol (Zauber-ID, Zaubername oder Texturpfad). Leer lassen für das übliche Symbol:", nil, 320, -208, BROWSER_W))
+	inIconGroup(addText(look, L["Other icon (spell ID, spell name or texture path). Leave empty for the usual icon:"], nil, 320, -208, BROWSER_W))
 	local iconBox = inIconGroup(addEditBox(look, 300, 320, -238, function(_, text)
 		cur().iconSpell = text
 		ns.RefreshOptions()
@@ -884,7 +885,7 @@ local function createFrame()
 
 	-- Reiter "Anordnung" --------------------------------------------------------
 	local place = tabFrames.layout
-	addHeader(place, "Anordnung um den Charakter", 0, 0, CONTENT_W)
+	addHeader(place, L["Layout around the character"], 0, 0, CONTENT_W)
 	local function setLayout(key)
 		cur().layout = key
 		ns.RefreshOptions()
@@ -907,52 +908,52 @@ local function createFrame()
 			end
 		end)
 		if not ok then stepLayout() end
-	end), "Wo die Kopien der Grafik stehen: in der Mitte, als Bogen auf einer Seite, auf zwei Seiten oder rundherum.", "Anordnung")
+	end), L["Where the copies of the graphic stand: in the center, as an arc on one side, on two sides or all around."], L["Layout"])
 	layoutButton.Refresh = function(self)
 		self:SetText((ns.LAYOUTS[cur().layout] or ns.LAYOUTS.center).name)
 	end
 	widgets[#widgets + 1] = layoutButton
-	tip(addCheck(place, "Nach außen drehen", 220, -23,
+	tip(addCheck(place, L["Rotate outwards"], 220, -23,
 		function() return cur().rotate end,
 		function(value)
 			cur().rotate = value
 			changed()
-		end), "Dreht jede Kopie so, dass ihre Oberkante vom Charakter weg zeigt.").visibleIf = function() return cur().display ~= "icon" end
-	tip(addSlider(place, "Count", "Kopien je Bogen", 4, -76, 1, 8, 1,
+		end), L["Rotates each copy so that its top edge points away from the character."]).visibleIf = function() return cur().display ~= "icon" end
+	tip(addSlider(place, "Count", L["Copies per arc"], 4, -76, 1, 8, 1,
 		function(value) return ("%d"):format(value) end,
 		function() return cur().count end,
-		function(value) cur().count = value end), "So viele Kopien der Grafik stehen nebeneinander auf jedem Bogen.")
-	tip(addSlider(place, "Distance", "Abstand zur Mitte", 224, -76, 0, 500, 5,
+		function(value) cur().count = value end), L["This many copies of the graphic stand side by side on each arc."])
+	tip(addSlider(place, "Distance", L["Distance from the center"], 224, -76, 0, 500, 5,
 		function(value) return ("%d"):format(value) end,
 		function() return cur().distance end,
-		function(value) cur().distance = value end), "Entfernung der Grafik vom Charakter in Bildpunkten.")
-	tip(addSlider(place, "Spread", "Winkel zwischen Kopien", 4, -122, 5, 120, 1,
+		function(value) cur().distance = value end), L["Distance of the graphic from the character in pixels."])
+	tip(addSlider(place, "Spread", L["Angle between copies"], 4, -122, 5, 120, 1,
 		function(value) return ("%d°"):format(value) end,
 		function() return cur().spread end,
-		function(value) cur().spread = value end), "Wie weit mehrere Kopien auf dem Bogen auseinander stehen.")
-	tip(addCheck(place, "Je Stapel eine Kopie mehr", 220, -114,
+		function(value) cur().spread = value end), L["How far apart several copies stand on the arc."])
+	tip(addCheck(place, L["One more copy per stack"], 220, -114,
 		function() return cur().perStack end,
 		function(value)
 			cur().perStack = value
 			changed()
-		end, "stacks"), "Mit jedem weiteren Stapel erscheint eine Kopie mehr, bis zur eingestellten Zahl.")
+		end, "stacks"), L["With every further stack one more copy appears, up to the set number."])
 	-- Drehen und Spiegeln wirken nur auf Texturen, nicht auf Zaubersymbole.
 	local function textureMode() return cur().display ~= "icon" end
-	tip(addSlider(place, "Angle", "Drehung der Textur", 4, -168, 0, 345, 15,
+	tip(addSlider(place, "Angle", L["Rotation of the texture"], 4, -168, 0, 345, 15,
 		function(value) return ("%d°"):format(value) end,
 		function() return cur().angle end,
-		function(value) cur().angle = value end), "Dreht das Bild in Schritten von 15 Grad. Gespiegelte Kopien drehen sich in die andere Richtung.").visibleIf = textureMode
-	tip(addCheck(place, "Spiegeln", 220, -160,
+		function(value) cur().angle = value end), L["Rotates the picture in steps of 15 degrees. Mirrored copies rotate the other way."]).visibleIf = textureMode
+	tip(addCheck(place, L["Mirror"], 220, -160,
 		function() return cur().flip end,
 		function(value)
 			cur().flip = value
 			changed()
-		end), "Spiegelt das Bild waagrecht.").visibleIf = textureMode
+		end), L["Mirrors the picture horizontally."]).visibleIf = textureMode
 
-	addHeader(place, "Position", 0, -206, CONTENT_W)
+	addHeader(place, L["Position"], 0, -206, CONTENT_W)
 	local position = addText(place, "", nil, 0, -230, 520)
 	position.Refresh = function(self)
-		self:SetText(("Mitte X %d, Y %d. Zieh die Vorschau mit der Maus."):format(cur().x, cur().y))
+		self:SetText((L["Center X %d, Y %d. Drag the preview with the mouse."]):format(cur().x, cur().y))
 	end
 	widgets[#widgets + 1] = position
 	local function coordinateBox(field, label, x)
@@ -976,7 +977,7 @@ local function createFrame()
 		local leader = type(key) == "string" and key ~= "" and ns.alerts[key] or nil
 		return leader and leader.def.title or nil
 	end
-	local shareCheck = tip(addCheck(place, "", 320, -254,
+	local shareCheck = tip(addCheck(place, "", 384, -254,
 		function() return ns.internals.placeLeader(selected) ~= nil end,
 		function(value)
 			if value then
@@ -987,11 +988,11 @@ local function createFrame()
 			end
 			ns.RefreshOptions()
 			changed()
-		end), "Lage und Größe gelten für alle Alarme mit diesem Häkchen gemeinsam, es wechselt nur das Bild. Wer einen davon verschiebt oder in der Größe ändert, ändert alle. Ohne Häkchen steht dieser Alarm für sich.", "Gemeinsame Lage")
+		end), L["Place and size apply to all alerts with this checkbox together, only the picture changes. Moving or resizing one of them changes all. Without the checkbox this alert stands on its own."], L["Shared place"])
 	shareCheck.visibleIf = function() return shareTitle() ~= nil end
 	local shareRefresh = shareCheck.Refresh
 	shareCheck.Refresh = function(self)
-		self.label:SetText("Gleiche Stelle wie \"" .. (shareTitle() or "") .. "\"")
+		self.label:SetText(L["Same place as \""] .. (shareTitle() or "") .. "\"")
 		shareRefresh(self)
 	end
 	local function mateNames()
@@ -1001,129 +1002,129 @@ local function createFrame()
 		end
 		return names
 	end
-	local shareText = addText(place, "", "GameFontHighlightSmall", 320, -250, 320)
+	local shareText = addText(place, "", "GameFontHighlightSmall", 384, -250, 340)
 	shareText.visibleIf = function() return #mateNames() > 0 end
 	shareText.Refresh = function(self)
-		self:SetText("Lage und Größe gelten auch für: " .. table.concat(mateNames(), ", ") .. ".")
+		self:SetText(L["Place and size also apply to: "] .. table.concat(mateNames(), ", ") .. ".")
 	end
 	widgets[#widgets + 1] = shareText
-	addButton(place, "Zentrieren", 100, 200, -255, function()
+	addButton(place, L["Reset to center"], 170, 200, -255, function()
 		cur().x, cur().y = 0, 0
 		ns.RefreshOptions()
 		changed()
 	end)
-	addText(place, "Solange dieses Fenster offen ist, steht an der Stelle des Alarms eine Vorschau. Zieh sie mit der Maus oder trag die Werte hier ein (Eingabetaste übernimmt). X und Y verschieben den Mittelpunkt, um den die Kopien angeordnet sind.",
+	addText(place, L["While this window is open, a preview stands in the place of the alert. Drag it with the mouse or enter the values here (Enter applies). X and Y move the center around which the copies are arranged."],
 		"GameFontDisableSmall", 0, -290, 620)
 
 	-- Reiter "Bedingungen" ------------------------------------------------------
 	-- Bei Stapel-Alarmen zeichnet das Spiel die Grafik selbst, dort kann das
 	-- Addon sie nicht nach Mana oder Ziel-Leben ausblenden.
 	local rules = tabFrames.rules
-	addHeader(rules, "Wann der Alarm erscheint", 0, 0, 356)
-	tip(addSlider(rules, "Threshold", "Erscheint ab Stapeln", 4, -44, 1, 10, 1,
+	addHeader(rules, L["When the alert appears"], 0, 0, 356)
+	tip(addSlider(rules, "Threshold", L["Appears from stacks"], 4, -44, 1, 10, 1,
 		function(value) return ("%d"):format(value) end,
 		function() return cur().threshold end,
 		function(value)
 			cur().threshold = value
 			selected.lastStacks = nil
-		end, "stacks"), "Ab so vielen Stapeln des Buffs erscheint die Grafik.")
-	local stackNote = addText(rules, "Bei Stapel-Alarmen zeichnet das Spiel die Grafik selbst. Weitere Bedingungen sind dort nicht möglich.", "GameFontDisableSmall", 0, -76, 350)
+		end, "stacks"), L["From this many stacks of the buff the graphic appears."])
+	local stackNote = addText(rules, L["For stack alerts the game draws the graphic itself. Further conditions are not possible there."], "GameFontDisableSmall", 0, -76, 350)
 	stackNote.kind = "stacks"
 	widgets[#widgets + 1] = stackNote
-	tip(addCheck(rules, "Nur im Kampf anzeigen", 0, -24,
+	tip(addCheck(rules, L["Show in combat only"], 0, -24,
 		function() return cur().combatOnly end,
 		function(value)
 			cur().combatOnly = value
 			changed()
-		end), "Außerhalb des Kampfes bleibt der Alarm unsichtbar.").hideFor = "stacks"
-	tip(addCheck(rules, "Nur bei genug Mana anzeigen", 0, -48,
+		end), L["Out of combat the alert stays invisible."]).hideFor = "stacks"
+	tip(addCheck(rules, L["Show only with enough mana"], 0, -48,
 		function() return cur().needUsable end,
 		function(value)
 			cur().needUsable = value
 			changed()
-		end), "Blendet den Alarm aus, solange das Spiel den Zauber als nicht wirkbar meldet, etwa weil das Mana fehlt.").hideFor = "stacks"
-	tip(addCheck(rules, "Im Kampf nur mit Aggro", 0, -72,
+		end), L["Hides the alert while the game reports the spell as not usable, for example because mana is missing."]).hideFor = "stacks"
+	tip(addCheck(rules, L["In combat only with aggro"], 0, -72,
 		function() return cur().needAggro end,
 		function(value)
 			cur().needAggro = value
 			changed()
-		end), "Im Kampf erscheint der Alarm nur, solange dich ein Gegner angreift. Außerhalb des Kampfes gilt die Bedingung nicht.").hideFor = "stacks"
-	tip(addCheck(rules, "Auch Nebenhand prüfen", 0, -96,
+		end), L["In combat the alert only appears while an enemy is attacking you. Out of combat the condition does not apply."]).hideFor = "stacks"
+	tip(addCheck(rules, L["Check the off hand too"], 0, -96,
 		function() return cur().offhand end,
 		function(value)
 			cur().offhand = value
 			changed()
-		end, "weapon"), "Warnt auch, wenn nur der Waffe in der Nebenhand die Verzauberung fehlt.")
-	tip(addCheck(rules, "Nicht während der Abklingzeit des Zaubers", 0, -96,
+		end, "weapon"), L["Also warns if only the off-hand weapon is missing its enchant."])
+	tip(addCheck(rules, L["Not during the cooldown of the spell"], 0, -96,
 		function() return cur().needReady end,
 		function(value)
 			cur().needReady = value
 			changed()
 			ns.RefreshOptions() -- der Regler "Früher anzeigen" kommt und geht damit
-		end, "missing"), "Solange der Zauber abklingt, lässt sich die Aura ohnehin nicht erneuern. Der Alarm wartet dann bis kurz vor dem Ende der Abklingzeit.")
-	tip(addCheck(rules, "Nur gegen Spieler (PvP)", 0, -120,
+		end, "missing"), L["While the spell is on cooldown the aura cannot be renewed anyway. The alert then waits until shortly before the cooldown ends."])
+	tip(addCheck(rules, L["Only against players (PvP)"], 0, -120,
 		function() return cur().needPlayer end,
 		function(value)
 			cur().needPlayer = value
 			if value then cur().noPlayer = false end -- beides zugleich ginge nie auf
 			ns.RefreshOptions()
 			changed()
-		end), "Der Alarm erscheint nur, solange dein Ziel ein Spieler ist. Gegen gewöhnliche Gegner bleibt er unsichtbar.").visibleIf = function()
+		end), L["The alert only appears while your target is a player. Against ordinary enemies it stays invisible."]).visibleIf = function()
 			return selected.def.kind == "missing" and selected.def.unit == "target"
 		end
-	tip(addCheck(rules, "Nicht gegen Spieler (PvP)", 0, -144,
+	tip(addCheck(rules, L["Not against players (PvP)"], 0, -144,
 		function() return cur().noPlayer end,
 		function(value)
 			cur().noPlayer = value
 			if value then cur().needPlayer = false end
 			ns.RefreshOptions()
 			changed()
-		end), "Solange dein Ziel ein Spieler ist, bleibt der Alarm unsichtbar. Gegen gewöhnliche Gegner erscheint er wie sonst.").visibleIf = function()
+		end), L["While your target is a player, the alert stays invisible. Against ordinary enemies it appears as usual."]).visibleIf = function()
 			return selected.def.kind == "missing" and selected.def.unit == "target"
 		end
-	tip(addCheck(rules, "Nur mit angreifbarem Ziel", 0, -96,
+	tip(addCheck(rules, L["Only with an attackable target"], 0, -96,
 		function() return cur().needTarget end,
 		function(value)
 			cur().needTarget = value
 			changed()
-		end, "ready"), "Ohne lebendes, angreifbares Ziel bleibt der Alarm unsichtbar.")
-	tip(addCheck(rules, "Nur in Reichweite", 0, -120,
+		end, "ready"), L["Without a living, attackable target the alert stays invisible."])
+	tip(addCheck(rules, L["Only in range"], 0, -120,
 		function() return cur().needRange end,
 		function(value)
 			cur().needRange = value
 			changed()
-		end, "ready"), "Der Alarm erscheint nur, wenn das Ziel für diesen Zauber nah genug ist.")
-	tip(addCheck(rules, "Nur wenn das Ziel zaubert", 0, -144,
+		end, "ready"), L["The alert only appears if the target is close enough for this spell."])
+	tip(addCheck(rules, L["Only while the target casts"], 0, -144,
 		function() return cur().needCasting end,
 		function(value)
 			cur().needCasting = value
 			changed()
-		end, "ready"), "Der Alarm erscheint nur, solange das Ziel etwas zaubert oder kanalisiert, das sich unterbrechen lässt.")
-	tip(addCheck(rules, "Nur mit Feuertotem", 0, -168,
+		end, "ready"), L["The alert only appears while the target casts or channels something that can be interrupted."])
+	tip(addCheck(rules, L["Only with a fire totem"], 0, -168,
 		function() return cur().needFireTotem end,
 		function(value)
 			cur().needFireTotem = value
 			changed()
-		end, "ready"), "Der Alarm erscheint nur, solange eines deiner Feuertotems steht.")
+		end, "ready"), L["The alert only appears while one of your fire totems stands."])
 	local enemiesCheck = tip(addCheck(rules, "", 0, -192,
 		function() return cur().needEnemies end,
 		function(value)
 			cur().needEnemies = value
 			changed()
-		end, "ready"), "Gezählt werden die Namensplaketten angreifbarer Gegner im Umkreis, im Kampf nur solche, die selbst kämpfen. Dafür müssen gegnerische Namensplaketten eingeschaltet sein.")
+		end, "ready"), L["The nameplates of attackable enemies in range are counted, in combat only those that are fighting themselves. Enemy nameplates must be switched on for this."])
 	enemiesCheck.isEnemiesCheck = true
 	local refreshEnemiesCheck = enemiesCheck.Refresh
 	enemiesCheck.Refresh = function(self)
-		self.label:SetText(("Nur bei %d+ Gegnern näher als %d m"):format(cur().minEnemies or 3, cur().enemyRange or 10))
+		self.label:SetText((L["Only with %d+ enemies within %d yd"]):format(cur().minEnemies or 3, cur().enemyRange or 10))
 		refreshEnemiesCheck(self)
 	end
-	tip(addSlider(rules, "MinEnemies", "Gegner mindestens", 28, -240, 2, 10, 1,
+	tip(addSlider(rules, "MinEnemies", L["Enemies at least"], 28, -240, 2, 10, 1,
 		function(value) return ("%d"):format(value) end,
 		function() return cur().minEnemies or 3 end,
 		function(value)
 			cur().minEnemies = value
 			enemiesCheck:Refresh()
-		end, "ready"), "So viele Gegner müssen im Umkreis stehen, damit der Alarm erscheint.")
+		end, "ready"), L["This many enemies must stand in range for the alert to appear."])
 	local rangeButton = tip(addButton(rules, "", 130, 214, -238, function()
 		local order = { 5, 10, 20 }
 		local index = 2
@@ -1133,42 +1134,42 @@ local function createFrame()
 		ns.FIELDS.enemyrange(selected, tostring(order[index % #order + 1]))
 		ns.RefreshOptions()
 		changed()
-	end), "Radius, in dem Gegner gezählt werden: 5, 10 oder 20 Meter.", "Umkreis der Zählung")
+	end), L["Radius in which enemies are counted: 5, 10 or 20 yards."], L["Counting radius"])
 	rangeButton.kind = "ready"
-	rangeButton.Refresh = function(self) self:SetText(("Umkreis: %d m"):format(cur().enemyRange or 10)) end
+	rangeButton.Refresh = function(self) self:SetText((L["Radius: %d yd"]):format(cur().enemyRange or 10)) end
 	widgets[#widgets + 1] = rangeButton
 
-	local timingHeader = addHeader(rules, "Zeitpunkt und Vorrang", 390, 0, 356)
-	tip(addSlider(rules, "Lead", "Früher anzeigen", 394, -44, 0, 3, 0.1,
-		function(value) return value == 0 and "(aus)" or (("%.1f s"):format(value):gsub("%.", ",")) end,
+	local timingHeader = addHeader(rules, L["Timing and priority"], 390, 0, 356)
+	tip(addSlider(rules, "Lead", L["Show earlier"], 394, -44, 0, 3, 0.1,
+		function(value) return value == 0 and L["(off)"] or (("%.1f s"):format(value):gsub("%.", L["."])) end,
 		function() return math.floor((cur().lead or 0) * 10 + 0.5) / 10 end,
 		function(value) cur().lead = math.floor(value * 10 + 0.5) / 10 end),
-		"Der Alarm erscheint schon so viele Sekunden, bevor die Abklingzeit endet.").visibleIf = function()
+		L["The alert already appears this many seconds before the cooldown ends."]).visibleIf = function()
 			local kind = selected.def.kind
 			return kind == "ready" or (kind == "missing" and cur().needReady == true)
 		end
-	tip(addSlider(rules, "MinHealth", "Ziel hat mindestens", 394, -90, 0, 90, 5,
-		function(value) return value == 0 and "(aus)" or ("%d %% Leben"):format(value) end,
+	tip(addSlider(rules, "MinHealth", L["Target has at least"], 394, -90, 0, 90, 5,
+		function(value) return value == 0 and L["(off)"] or (L["%d %% health"]):format(value) end,
 		function() return cur().minHealth end,
 		function(value) cur().minHealth = value end),
-		"Unter dieser Lebens-Schwelle des Ziels bleibt der Alarm unsichtbar, weil sich der Zauber dann nicht mehr lohnt.").visibleIf = function()
+		L["Below this health threshold of the target the alert stays invisible, because the spell is no longer worth it then."]).visibleIf = function()
 			return selected.def.unit == "target" and selected.def.kind ~= "stacks"
 		end
-	tip(addSlider(rules, "Refresh", "Früh auffrischen", 394, -136, 0, 5, 0.5,
-		function(value) return value == 0 and "(aus)" or (("ab %.1f s Restzeit"):format(value):gsub("%.", ",")) end,
+	tip(addSlider(rules, "Refresh", L["Early refresh"], 394, -136, 0, 5, 0.5,
+		function(value) return value == 0 and L["(off)"] or ((L["from %.1f s remaining"]):format(value):gsub("%.", L["."])) end,
 		function() return cur().refresh or 0 end,
 		function(value)
 			cur().refresh = math.floor(value * 10 + 0.5) / 10
 			ns.RefreshOptions() -- der Regler für die Laufzeit erscheint nur, wenn das hier an ist
 		end),
-		"Der Alarm erscheint schon, wenn die Aura nur noch so viele Sekunden läuft. So lässt sie sich erneuern, bevor sie abläuft. Das Addon stoppt dafür selbst mit, sobald du den Zauber wirkst.").visibleIf = function()
+		L["The alert already appears when the aura only has this many seconds left. That way it can be renewed before it runs out. The addon keeps its own time for this from the moment you cast the spell."]).visibleIf = function()
 			return selected.def.kind == "missing"
 		end
-	tip(addSlider(rules, "AuraDuration", "Laufzeit der Aura", 394, -182, 1, 60, 1,
-		function(value) return value <= 0 and "unbekannt" or (("%.1f s"):format(value):gsub("%.", ",")) end,
+	tip(addSlider(rules, "AuraDuration", L["Aura duration"], 394, -182, 1, 60, 1,
+		function(value) return value <= 0 and L["unknown"] or (("%.1f s"):format(value):gsub("%.", L["."])) end,
 		function() return cur().auraDuration or 0 end,
 		function(value) cur().auraDuration = value end),
-		"So lange läuft die Aura nach dem Zaubern. Daran misst die eigene Uhr des frühen Auffrischens. Außerhalb des Kampfes lernt das Addon den Wert selbst, sobald es die Aura sieht.").visibleIf = function()
+		L["This is how long the aura lasts after casting. The addon's own clock for the early refresh measures against it. Out of combat the addon learns the value itself as soon as it sees the aura."]).visibleIf = function()
 			return selected.def.kind == "missing" and (cur().refresh or 0) > 0
 		end
 	-- Vorrang: hinter welchem Alarm dieser zurücksteht
@@ -1187,10 +1188,10 @@ local function createFrame()
 		end
 		ns.FIELDS.yieldto(selected, list[index % #list + 1])
 		ns.afterChange(selected)
-	end), "Solange der gewählte andere Alarm etwas zeigen will, bleibt dieser unsichtbar. Jeder Klick wählt den nächsten Alarm.", "Vorrang")
+	end), L["While the chosen other alert wants to show something, this one stays invisible. Each click picks the next alert."], L["Priority"])
 	yieldButton.Refresh = function(self)
 		local partner = ns.alerts[cur().yieldTo or ""]
-		self:SetText("Steht zurück hinter: " .. (partner and partner.def.title or "(keinem)"))
+		self:SetText(L["Stands behind: "] .. (partner and partner.def.title or L["(none)"]))
 	end
 	yieldButton.kind = "ready"
 	widgets[#widgets + 1] = yieldButton
@@ -1206,7 +1207,7 @@ local function createFrame()
 	local behindText = addText(rules, "", "GameFontHighlightSmall", 390, -226, 350)
 	behindText.visibleIf = function() return selected.def.kind ~= "stacks" and #behindNames() > 0 end
 	behindText.Refresh = function(self)
-		self:SetText("Rangfolge: Zeigt einer dieser Alarme etwas, bleibt dieser unsichtbar: " .. table.concat(behindNames(), ", ") .. ".")
+		self:SetText(L["Order: if one of these alerts shows something, this one stays invisible: "] .. table.concat(behindNames(), ", ") .. ".")
 	end
 	widgets[#widgets + 1] = behindText
 	-- Die Überschrift steht nur da, wenn darunter etwas zu sehen ist.
@@ -1220,13 +1221,13 @@ local function createFrame()
 
 	-- Reiter "Sound" ------------------------------------------------------------
 	local sound = tabFrames.sound
-	addHeader(sound, "Sound", 0, 0, CONTENT_W)
+	addHeader(sound, L["Sound"], 0, 0, CONTENT_W)
 	for index = 1, 3 do
 		local check = addCheck(sound, "", (index - 1) * 170, -24,
 			function() return cur().sound == ns.soundModes(selected)[index] end,
 			function()
 				ns.setSoundMode(selected, ns.soundModes(selected)[index])
-				if ns.state.pendingSounds then ns.msg("Du bist im Kampf, der Sound-Modus greift nach dem Kampf.") end
+				if ns.state.pendingSounds then ns.msg(L["You are in combat, the sound mode takes effect after combat."]) end
 				ns.RefreshOptions()
 			end)
 		check:SetSize(22, 22)
@@ -1251,7 +1252,7 @@ local function createFrame()
 	end
 	widgets[#widgets + 1] = soundButton
 	addButton(sound, ">", 24, 272, -58, function() stepSound(1) end).soundStep = 1
-	addButton(sound, "Anhören", 90, 304, -58, function() ns.playAlertSound(selected) end)
+	addButton(sound, L["Listen"], 90, 304, -58, function() ns.playAlertSound(selected) end)
 
 	local hint = addText(sound, "", "GameFontDisableSmall", 0, -92, 640)
 	hint:SetJustifyV("TOP")
@@ -1265,14 +1266,14 @@ local function createFrame()
 		auraSection[#auraSection + 1] = region
 		return region
 	end
-	addHeader(aura, "Zauber oder Aura", 0, 0, CONTENT_W)
-	inAuraSection(addText(aura, "Name:", nil, 0, -30))
+	addHeader(aura, L["Spell or aura"], 0, 0, CONTENT_W)
+	inAuraSection(addText(aura, L["Name:"], nil, 0, -30))
 	local nameBox = addEditBox(aura, 200, 42, -26, function(_, text)
 		if text == "" then return end
 		cur().auraName = text
 		ns.state.lastScan = 0
 		ns.onAuraChanged()
-		ns.msg("Aura-Name: %s. Die ID wird gelernt, sobald die Aura außerhalb des Kampfes lesbar ist.", text)
+		ns.msg(L["Aura name: %s. The ID is learned as soon as the aura is readable out of combat."], text)
 	end)
 	nameBox.field = "auraName"
 	nameBox.Refresh = function(self) self:SetText(tostring(cur().auraName or "")) end
@@ -1288,30 +1289,30 @@ local function createFrame()
 	local idBox = addEditBox(aura, 70, 286, -26, function(self) addID(self) end)
 	idBox.field = "id"
 	inAuraSection(addButton(aura, "+", 24, 370, -25, function() addID(idBox) end))
-	inAuraSection(tip(addButton(aura, "Auren auflisten", 130, CONTENT_W - 130, -25, function() ns.commands.scan() end),
-		"Schreibt deine Buffs und deine Debuffs auf dem Ziel mit ihren IDs in den Chat. Das geht nur außerhalb des Kampfes."))
+	inAuraSection(tip(addButton(aura, L["List auras"], 130, CONTENT_W - 130, -25, function() ns.commands.scan() end),
+		L["Writes your buffs and your debuffs on the target with their IDs into the chat. This only works out of combat."]))
 
 	local ids = addText(aura, "", "GameFontDisableSmall", 0, -58, 620)
 	ids.Refresh = function(self)
 		local list = ns.sortedSpellIDs(selected)
 		if selected.def.kind == "ready" then
-			self:SetText(#list == 0 and "Trag oben den Namen des Zaubers ein. Er muss in deinem Zauberbuch stehen."
-				or ("Zauber-IDs: " .. table.concat(list, ", ")))
+			self:SetText(#list == 0 and L["Enter the name of the spell above. It must be in your spellbook."]
+				or (L["Spell IDs: "] .. table.concat(list, ", ")))
 		elseif #list == 0 then
-			self:SetText("Noch keine Aura-ID bekannt. Der Alarm erscheint erst, wenn du die Aura einmal außerhalb des Kampfes hast oder eine ID einträgst.")
+			self:SetText(L["No aura ID known yet. The alert only appears once you have had the aura out of combat or enter an ID."])
 		else
-			self:SetText("Verfolgte IDs: " .. table.concat(list, ", "))
+			self:SetText(L["Tracked IDs: "] .. table.concat(list, ", "))
 		end
 	end
 	widgets[#widgets + 1] = ids
 	inAuraSection(nameBox)
 	inAuraSection(idBox)
 	inAuraSection(ids)
-	local auraNote = addText(aura, "Dieser Alarm prüft die Waffen direkt und braucht keine Aura.", "GameFontDisableSmall", 0, -30, 620)
+	local auraNote = addText(aura, L["This alert checks the weapons directly and needs no aura."], "GameFontDisableSmall", 0, -30, 620)
 
 	-- Nur bei eigenen Alarmen: Titel, Art, Einheit und Aura-Typ
-	local customHeader = addHeader(aura, "Eigener Alarm", 0, -116, CONTENT_W)
-	local titleLabel = addText(aura, "Titel:", nil, 0, -146)
+	local customHeader = addHeader(aura, L["Custom alert"], 0, -116, CONTENT_W)
+	local titleLabel = addText(aura, L["Title:"], nil, 0, -146)
 	local titleBox = addEditBox(aura, 240, 42, -142, function(_, text)
 		if text == "" then return end
 		ns.FIELDS.title(selected, text)
@@ -1338,37 +1339,37 @@ local function createFrame()
 		return button
 	end
 	local AURA_TYPES = { "buff", "debuff", "mine" }
-	local AURA_TYPE_NAMES = { buff = "Buff", debuff = "Debuff", mine = "Eigener Debuff" }
+	local AURA_TYPE_NAMES = { buff = L["Buff"], debuff = L["Debuff"], mine = L["Own debuff"] }
 	local function auraType()
 		local spec = selected.def.spec
 		return not spec.harmful and "buff" or (spec.mine and "mine" or "debuff")
 	end
 
 	-- Fußzeile der Alarm-Seite
-	tip(addButton(page, "Test", 100, 0, -PAGE_H + 30, function() ns.commands.test(selected.key) end),
-		"Zeigt den Alarm für drei Sekunden an seiner Stelle und spielt seinen Sound.")
-	tip(addButton(page, "Status", 100, 108, -PAGE_H + 30, function() ns.commands.status() end),
-		"Schreibt in den Chat, wie das Addon jeden Alarm gerade bewertet.")
-	local deleteButton = addButton(page, "Löschen", 90, CONTENT_W - 120 - 98, -PAGE_H + 30, function()
+	tip(addButton(page, L["Test"], 100, 0, -PAGE_H + 30, function() ns.commands.test(selected.key) end),
+		L["Shows the alert in its place for three seconds and plays its sound."])
+	tip(addButton(page, L["Status"], 100, 108, -PAGE_H + 30, function() ns.commands.status() end),
+		L["Writes into the chat how the addon currently rates each alert."])
+	local deleteButton = addButton(page, L["Delete"], 90, CONTENT_W - 120 - 98, -PAGE_H + 30, function()
 		local alert = selected
-		confirm(("Den eigenen Alarm \"%s\" löschen?"):format(alert.def.title), function() ns.commands.delete(alert.key) end)
+		confirm((L["Delete the custom alert \"%s\"?"]):format(alert.def.title), function() ns.commands.delete(alert.key) end)
 	end)
-	addButton(page, "Zurücksetzen", 120, CONTENT_W - 120, -PAGE_H + 30, function()
+	addButton(page, L["Reset"], 120, CONTENT_W - 120, -PAGE_H + 30, function()
 		local alert = selected
-		confirm(("Alle Einstellungen von \"%s\" auf die Standardwerte zurücksetzen?"):format(alert.def.title), function() ns.commands.reset(alert.key) end)
+		confirm((L["Reset all settings of \"%s\" to the defaults?"]):format(alert.def.title), function() ns.commands.reset(alert.key) end)
 	end)
 
 	local customGroup = {
 		customHeader, customHeader.line, titleLabel, titleBox, deleteButton,
-		tip(customButton(0, 150, function() return "Art: " .. ns.KIND_NAMES[selected.def.kind] end,
+		tip(customButton(0, 150, function() return L["Kind: "] .. ns.KIND_NAMES[selected.def.kind] end,
 			function() ns.FIELDS.kind(selected, nextOf(ns.CUSTOM_KINDS, selected.def.kind)) end),
-			"Wann der Alarm erscheint: solange die Aura aktiv ist, solange sie fehlt, ab einer Zahl von Stapeln oder sobald ein Zauber bereit ist.", "Art des Alarms"),
+			L["When the alert appears: while the aura is active, while it is missing, from a number of stacks or as soon as a spell is ready."], L["Kind of alert"]),
 	}
 	-- Einheit und Aura-Typ gibt es nur bei Aura-Alarmen, nicht bei "Zauber bereit".
 	local auraOnly = {
-		customButton(154, 130, function() return "Einheit: " .. (selected.def.unit == "player" and "Spieler" or "Ziel") end,
+		customButton(154, 130, function() return L["Unit: "] .. (selected.def.unit == "player" and L["Player"] or L["Target"]) end,
 			function() ns.FIELDS.unit(selected, selected.def.unit == "player" and "target" or "player") end),
-		customButton(288, 150, function() return "Typ: " .. AURA_TYPE_NAMES[auraType()] end,
+		customButton(288, 150, function() return L["Type: "] .. AURA_TYPE_NAMES[auraType()] end,
 			function() ns.FIELDS.auratype(selected, nextOf(AURA_TYPES, auraType())) end),
 	}
 	local customToggle = {}
@@ -1392,41 +1393,41 @@ local function createFrame()
 	help:SetSize(CONTENT_W, PAGE_H)
 	help:Hide()
 	pages.help = help
-	addText(help, "Hilfe & Diagnose", "GameFontNormalLarge", 0, -8)
-	addHeader(help, "Befehle", 0, -44, CONTENT_W)
+	addText(help, L["Help & diagnostics"], "GameFontNormalLarge", 0, -8)
+	addHeader(help, L["Commands"], 0, -44, CONTENT_W)
 	addText(help, table.concat({
-		"/sha – dieses Fenster öffnen oder schließen",
-		"/sha test [Alarm] – Vorschau für drei Sekunden, dazu der Sound",
-		"/sha status – Zustand aller Alarme in den Chat schreiben",
-		"/sha set <Alarm> <Feld> <Wert> – eine Einstellung per Befehl ändern",
-		"/sha new [Titel] und /sha delete <Alarm> – eigene Alarme anlegen und löschen",
-		"/sha scan – eigene Buffs und eigene Debuffs auf dem Ziel mit IDs auflisten",
-		"/sha totem – die Seite der Totem-Leiste",
-		"/sha profile – Profile speichern und laden, Einstellungen austauschen",
-		"/sha minimap – Knopf an der Minimap zeigen oder verbergen",
-		"/sha reset [Alarm] – einen Alarm oder alles zurücksetzen",
-		"/sha debug – Diagnose aufzeichnen",
-		"/sha help – alle Befehle und Felder",
+		L["/sha – open or close this window"],
+		L["/sha test [alert] – preview for three seconds, with the sound"],
+		L["/sha status – write the state of all alerts into the chat"],
+		L["/sha set <alert> <field> <value> – change a setting by command"],
+		L["/sha new [title] and /sha delete <alert> – create and delete your own alerts"],
+		L["/sha scan – list your buffs and your debuffs on the target with their IDs"],
+		L["/sha totem – the page of the totem bar"],
+		L["/sha profile – save and load profiles, share settings"],
+		L["/sha minimap – show or hide the minimap button"],
+		L["/sha reset [alert] – reset one alert or everything"],
+		L["/sha debug – record diagnostics"],
+		L["/sha help – all commands and fields"],
 	}, "\n"), nil, 0, -68, CONTENT_W)
 
-	addHeader(help, "Diagnose", 0, -234, CONTENT_W)
-	addText(help, "Wenn ein Alarm nicht so erscheint wie erwartet: Geh in die Lage, in der es schiefgeht, und klick auf \"Diagnose aufzeichnen\". Das Addon schreibt 30 Sekunden lang mit, wie es jeden Alarm bewertet. Sobald im Chat \"Diagnose fertig\" steht, tipp /reload. Erst das /reload legt die Aufzeichnung auf die Festplatte.",
+	addHeader(help, L["Diagnostics"], 0, -234, CONTENT_W)
+	addText(help, L["If an alert does not appear as expected: get into the situation where it goes wrong and click \"Record diagnostics\". For 30 seconds the addon writes down how it rates each alert. As soon as the chat says \"Diagnostics done\", type /reload. Only the /reload puts the recording on disk."],
 		nil, 0, -258, CONTENT_W)
-	addButton(help, "Diagnose aufzeichnen", 170, 0, -316, function() ns.commands.debug("") end)
-	addButton(help, "Status in den Chat", 170, 178, -316, function() ns.commands.status() end)
+	addButton(help, L["Record diagnostics"], 190, 0, -316, function() ns.commands.debug("") end)
+	addButton(help, L["Status to chat"], 190, 198, -316, function() ns.commands.status() end)
 
-	addHeader(help, "Alles zurücksetzen", 0, -362, CONTENT_W)
-	addText(help, "Setzt alle Alarme und die Totem-Leiste auf die Standardwerte. Eigene Alarme bleiben bestehen, verlieren aber ihre Einstellungen. Gespeicherte Profile bleiben.", nil, 0, -386, CONTENT_W)
-	addButton(help, "Alles zurücksetzen", 170, 0, -420, function()
-		confirm("Wirklich alle Einstellungen von ShamanAlerts zurücksetzen?", function() ns.commands.reset("") end)
+	addHeader(help, L["Reset everything"], 0, -362, CONTENT_W)
+	addText(help, L["Resets all alerts and the totem bar to the defaults. Your own alerts stay but lose their settings. Saved profiles stay."], nil, 0, -386, CONTENT_W)
+	addButton(help, L["Reset everything"], 190, 0, -420, function()
+		confirm(L["Really reset all ShamanAlerts settings?"], function() ns.commands.reset("") end)
 	end)
 
-	addHeader(help, "Minimap", 0, -466, CONTENT_W)
-	tip(addCheck(help, "Knopf an der Minimap anzeigen", 0, -488,
+	addHeader(help, L["Minimap"], 0, -466, CONTENT_W)
+	tip(addCheck(help, L["Show minimap button"], 0, -488,
 		function() return ns.Minimap ~= nil and ns.Minimap.IsShown() end,
 		function(value)
 			if ns.Minimap then ns.Minimap.SetShown(value) end
-		end), "Linksklick auf den Knopf öffnet dieses Fenster, Rechtsklick die Seite der Totem-Leiste. Das Addon steht außerdem im Addon-Menü der Minimap und unter Optionen > AddOns.")
+		end), L["A left click on the button opens this window, a right click the page of the totem bar. The addon is also listed in the addon menu of the minimap and under Options > AddOns."])
 
 	-- Seite "Profile & Austausch" -----------------------------------------------
 	local prof = CreateFrame("Frame", nil, window)
@@ -1434,9 +1435,9 @@ local function createFrame()
 	prof:SetSize(CONTENT_W, PAGE_H)
 	prof:Hide()
 	pages.profiles = prof
-	addText(prof, "Profile & Austausch", "GameFontNormalLarge", 0, -8)
-	addHeader(prof, "Profile", 0, -44, CONTENT_W)
-	addText(prof, "Ein Profil ist ein gespeicherter Stand aller Einstellungen: Alarme, eigene Alarme, Totem-Leiste und Schrift. \"Speichern\" legt den jetzigen Stand unter dem Namen ab. \"Laden\" ersetzt die jetzigen Einstellungen durch das Profil. Spätere Änderungen landen erst mit dem nächsten \"Speichern\" im Profil.",
+	addText(prof, L["Profiles & sharing"], "GameFontNormalLarge", 0, -8)
+	addHeader(prof, L["Profiles"], 0, -44, CONTENT_W)
+	addText(prof, L["A profile is a saved state of all settings: alerts, your own alerts, totem bar and font. \"Save\" stores the current state under the name. \"Load\" replaces the current settings with the profile. Later changes only reach the profile with the next \"Save\"."],
 		nil, 0, -68, CONTENT_W)
 	local chosenProfile
 	local profileNote = addText(prof, "", "GameFontNormalSmall", 0, -186, CONTENT_W)
@@ -1446,7 +1447,7 @@ local function createFrame()
 		local known = {}
 		for _, name in ipairs(names) do known[name] = true end
 		if not known[chosenProfile] then chosenProfile = known[ns.Profiles.Current()] and ns.Profiles.Current() or names[1] end
-		pickProfile:SetText(chosenProfile and ("Profil: " .. chosenProfile) or "Noch kein Profil gespeichert")
+		pickProfile:SetText(chosenProfile and (L["Profile: "] .. chosenProfile) or L["No profile saved yet"])
 		pickProfile:SetEnabled(#names > 0)
 		loadProfile:SetEnabled(chosenProfile ~= nil)
 		deleteProfile:SetEnabled(chosenProfile ~= nil)
@@ -1456,7 +1457,7 @@ local function createFrame()
 		note:SetTextColor(ok and 0.4 or 1, ok and 1 or 0.35, 0.35)
 		refreshProfiles()
 	end
-	addText(prof, "Name:", nil, 0, -122)
+	addText(prof, L["Name:"], nil, 0, -122)
 	local nameBox
 	local function saveProfile()
 		local name = (nameBox:GetText() or ""):match("^%s*(.-)%s*$")
@@ -1466,7 +1467,7 @@ local function createFrame()
 	end
 	nameBox = addEditBox(prof, 200, 44, -118, saveProfile)
 	view.profileName = nameBox
-	tip(addButton(prof, "Speichern", 110, 262, -118, saveProfile), "Legt den jetzigen Stand unter diesem Namen ab. Gibt es das Profil schon, wird es überschrieben.")
+	tip(addButton(prof, L["Save"], 110, 262, -118, saveProfile), L["Stores the current state under this name. If the profile already exists, it is overwritten."])
 	local function stepProfile()
 		local names = ns.Profiles.List()
 		local index = 0
@@ -1489,24 +1490,24 @@ local function createFrame()
 			end
 		end)
 		if not ok then stepProfile() end
-	end), "Wählt das Profil, das geladen oder gelöscht werden soll.", "Profil")
-	loadProfile = tip(addButton(prof, "Laden", 110, 262, -150, function()
+	end), L["Picks the profile to be loaded or deleted."], L["Profile"])
+	loadProfile = tip(addButton(prof, L["Load"], 110, 262, -150, function()
 		local name = chosenProfile
-		confirm(("Profil \"%s\" laden? Das ersetzt die jetzigen Einstellungen."):format(tostring(name)), function()
+		confirm((L["Load profile \"%s\"? This replaces the current settings."]):format(tostring(name)), function()
 			report(profileNote, ns.Profiles.Load(name))
 		end)
-	end), "Ersetzt alle jetzigen Einstellungen durch das gewählte Profil. Im Kampf geht das nicht.")
-	deleteProfile = tip(addButton(prof, "Löschen", 110, 378, -150, function()
+	end), L["Replaces all current settings with the chosen profile. This does not work in combat."])
+	deleteProfile = tip(addButton(prof, L["Delete"], 110, 378, -150, function()
 		local name = chosenProfile
-		confirm(("Profil \"%s\" löschen?"):format(tostring(name)), function()
+		confirm((L["Delete profile \"%s\"?"]):format(tostring(name)), function()
 			report(profileNote, ns.Profiles.Delete(name))
 		end)
-	end), "Löscht das gewählte Profil. Die jetzigen Einstellungen bleiben, wie sie sind.")
+	end), L["Deletes the chosen profile. The current settings stay as they are."])
 	view.profileButtons = { pick = pickProfile, load = loadProfile, delete = deleteProfile }
 	view.profileNote = profileNote
 
-	addHeader(prof, "Austausch", 0, -220, CONTENT_W)
-	addText(prof, "\"Exportieren\" schreibt die jetzigen Einstellungen als Text in das Feld. Kopier ihn mit Strg+C und gib ihn weiter. Zum Importieren fügst du einen solchen Text mit Strg+V ein und klickst auf \"Importieren\". Das ersetzt die jetzigen Einstellungen. Gespeicherte Profile bleiben.",
+	addHeader(prof, L["Sharing"], 0, -220, CONTENT_W)
+	addText(prof, L["\"Export\" writes the current settings as text into the field. Copy it with Ctrl+C and pass it on. To import, paste such a text with Ctrl+V and click \"Import\". This replaces the current settings. Saved profiles stay."],
 		nil, 0, -244, CONTENT_W)
 	local scroll = CreateFrame("ScrollFrame", FRAME_NAME .. "ExchangeScroll", prof, "UIPanelScrollFrameTemplate")
 	scroll:SetPoint("TOPLEFT", prof, "TOPLEFT", 6, -296)
@@ -1534,23 +1535,23 @@ local function createFrame()
 		exchange:SetText(text)
 		exchange:SetFocus()
 		if exchange.HighlightText then exchange:HighlightText() end
-		report(exchangeNote, true, ("Export fertig, %d Zeichen. Der Text ist markiert: Strg+C kopiert ihn."):format(#text))
+		report(exchangeNote, true, (L["Export done, %d characters. The text is selected: Ctrl+C copies it."]):format(#text))
 	end
 	view.exportNow = exportNow
-	tip(addButton(prof, "Exportieren", 120, 0, -550, exportNow), "Schreibt die jetzigen Einstellungen als Text in das Feld und markiert ihn.")
-	tip(addButton(prof, "Importieren", 120, 126, -550, function()
+	tip(addButton(prof, L["Export"], 120, 0, -550, exportNow), L["Writes the current settings as text into the field and selects it."])
+	tip(addButton(prof, L["Import"], 120, 126, -550, function()
 		local text = exchange:GetText() or ""
 		local snapshot, problem = ns.Profiles.Read(text)
 		if not snapshot then return report(exchangeNote, false, problem) end
-		confirm("Einstellungen aus dem Text übernehmen? Das ersetzt die jetzigen Einstellungen.", function()
+		confirm(L["Take over the settings from the text? This replaces the current settings."], function()
 			local ok, reason = ns.Profiles.Import(text)
-			report(exchangeNote, ok, ok and "Import fertig. Die Einstellungen aus dem Text gelten jetzt." or reason)
+			report(exchangeNote, ok, ok and L["Import done. The settings from the text apply now."] or reason)
 		end)
-	end), "Liest den Text im Feld und ersetzt damit alle jetzigen Einstellungen. Übernommen wird nur, was das Addon kennt. Im Kampf geht das nicht.")
-	tip(addButton(prof, "Feld leeren", 120, 252, -550, function()
+	end), L["Reads the text in the field and replaces all current settings with it. Only what the addon knows is taken over. This does not work in combat."])
+	tip(addButton(prof, L["Clear field"], 120, 252, -550, function()
 		exchange:SetText("")
 		report(exchangeNote, true, "")
-	end), "Leert das Feld.")
+	end), L["Clears the field."])
 	view.refreshProfiles = refreshProfiles
 
 	window.view = view
@@ -1627,12 +1628,12 @@ function createTotemFrame(parent)
 	window:Hide()
 	window:SetSize(690, 600) -- links Leiste und Schrift, rechts die Abklingzeiten
 	window:SetPoint("TOPLEFT", parent, "TOPLEFT", CONTENT_X - 16, -26)
-	addText(window, "Totem-Leiste und Schrift", "GameFontNormalLarge", 16, -10)
+	addText(window, L["Totem bar and font"], "GameFontNormalLarge", 16, -10)
 
 	local previous = sink
 	sink = { list = totemWidgets, changed = totems.Apply }
 
-	addCheck(window, "Totem-Leiste anzeigen", 16, -32,
+	addCheck(window, L["Show totem bar"], 16, -32,
 		function() return t().enabled end,
 		function(value)
 			t().enabled = value
@@ -1644,7 +1645,7 @@ function createTotemFrame(parent)
 		totems.Apply()
 		ns.RefreshTotemOptions()
 	end)
-	styleButton.Refresh = function(self) self:SetText("Darstellung: " .. totems.STYLE_NAMES[t().style]) end
+	styleButton.Refresh = function(self) self:SetText(L["Display: "] .. totems.STYLE_NAMES[t().style]) end
 	totemWidgets[#totemWidgets + 1] = styleButton
 
 	local growthButton = addButton(window, "", 156, 178, -64, function()
@@ -1656,33 +1657,33 @@ function createTotemFrame(parent)
 		totems.Apply()
 		ns.RefreshTotemOptions()
 	end)
-	growthButton.Refresh = function(self) self:SetText("Richtung: " .. totems.GROWTH_NAMES[t().growth]) end
+	growthButton.Refresh = function(self) self:SetText(L["Direction: "] .. totems.GROWTH_NAMES[t().growth]) end
 	totemWidgets[#totemWidgets + 1] = growthButton
 
-	addSlider(window, "TotemSize", "Symbolgröße", 20, -116, 16, 80, 2,
+	addSlider(window, "TotemSize", L["Icon size"], 20, -116, 16, 80, 2,
 		function(value) return ("%d"):format(value) end,
 		function() return t().iconSize end,
 		function(value) t().iconSize = value end)
-	addSlider(window, "TotemSpacing", "Abstand der Plätze", 20, -162, 0, 40, 1,
+	addSlider(window, "TotemSpacing", L["Spacing of the slots"], 20, -162, 0, 40, 1,
 		function(value) return ("%d"):format(value) end,
 		function() return t().spacing end,
 		function(value) t().spacing = value end)
-	addSlider(window, "TotemBarWidth", "Balkenbreite", 20, -208, 40, 400, 10,
+	addSlider(window, "TotemBarWidth", L["Bar width"], 20, -208, 40, 400, 10,
 		function(value) return ("%d"):format(value) end,
 		function() return t().barWidth end,
 		function(value) t().barWidth = value end)
-	addSlider(window, "TotemAlpha", "Deckkraft", 20, -254, 10, 100, 5,
+	addSlider(window, "TotemAlpha", L["Opacity"], 20, -254, 10, 100, 5,
 		function(value) return ("%d %%"):format(value) end,
 		function() return math.floor(t().alpha * 100 + 0.5) end,
 		function(value) t().alpha = value / 100 end)
 
-	addCheck(window, "Totem-Namen anzeigen", 16, -282,
+	addCheck(window, L["Show totem names"], 16, -282,
 		function() return t().showNames end,
 		function(value)
 			t().showNames = value
 			totems.Apply()
 		end)
-	addCheck(window, "Leere Plätze anzeigen", 16, -306,
+	addCheck(window, L["Show empty slots"], 16, -306,
 		function() return t().showEmpty end,
 		function(value)
 			t().showEmpty = value
@@ -1690,7 +1691,7 @@ function createTotemFrame(parent)
 		end)
 
 	-- Schrift: gilt für die Totem-Leiste und für die Restzeit der Alarme
-	addHeader(window, "Schrift", 16, -340, 318)
+	addHeader(window, L["Font"], 16, -340, 318)
 	local function setFace(key)
 		ns.db.font.face = key
 		ns.refreshTexts()
@@ -1718,7 +1719,7 @@ function createTotemFrame(parent)
 	end)
 	fontButton.Refresh = function(self)
 		local face = ns.db.font.face
-		self:SetText(face == "auto" and "Automatisch (wie die Aktionsleisten)" or face)
+		self:SetText(face == "auto" and L["Automatic (like the action bars)"] or face)
 	end
 	totemWidgets[#totemWidgets + 1] = fontButton
 
@@ -1731,15 +1732,15 @@ function createTotemFrame(parent)
 		ns.db.font.outline = order[index % #order + 1]
 		ns.refreshTexts()
 	end)
-	outlineButton.Refresh = function(self) self:SetText("Umriss: " .. ns.OUTLINE_NAMES[ns.db.font.outline]) end
+	outlineButton.Refresh = function(self) self:SetText(L["Outline: "] .. ns.OUTLINE_NAMES[ns.db.font.outline]) end
 	totemWidgets[#totemWidgets + 1] = outlineButton
 
-	addSlider(window, "TotemFontSize", "Schriftgröße der Totem-Leiste", 20, -442, 6, 32, 1,
+	addSlider(window, "TotemFontSize", L["Font size of the totem bar"], 20, -442, 6, 32, 1,
 		function(value) return ("%d"):format(value) end,
 		function() return t().fontSize end,
 		function(value) t().fontSize = value end)
 	sink.changed = ns.refreshTexts
-	addSlider(window, "TimerFontSize", "Schriftgröße der Restzeit bei Alarmen", 20, -488, 6, 32, 1,
+	addSlider(window, "TimerFontSize", L["Font size of the time left on alerts"], 20, -488, 6, 32, 1,
 		function(value) return ("%d"):format(value) end,
 		function() return ns.db.font.timerSize end,
 		function(value) ns.db.font.timerSize = value end)
@@ -1747,19 +1748,19 @@ function createTotemFrame(parent)
 
 	local position = addText(window, "", nil, 18, -520, 310)
 	position.Refresh = function(self)
-		self:SetText(("Position X %d, Y %d. Solange diese Seite offen ist, zeigt die Leiste Beispiele und lässt sich mit der Maus ziehen."):format(t().x, t().y))
+		self:SetText((L["Position X %d, Y %d. While this page is open the bar shows examples and can be dragged with the mouse."]):format(t().x, t().y))
 	end
 	totemWidgets[#totemWidgets + 1] = position
 
-	addButton(window, "Zurücksetzen", 120, 350 - 16 - 120, -564, function()
+	addButton(window, L["Reset"], 120, 350 - 16 - 120, -564, function()
 		totems.Reset()
 		ns.RefreshTotemOptions()
 	end)
 
 	-- Rechte Spalte: Abklingzeiten wichtiger Totems als Symbole an der Leiste
 	local COLUMN = 356
-	addHeader(window, "Abklingzeiten an der Leiste", COLUMN, -36, 318)
-	addCheck(window, "Abklingzeiten wichtiger Totems zeigen", COLUMN, -58,
+	addHeader(window, L["Cooldowns at the bar"], COLUMN, -36, 318)
+	addCheck(window, L["Show cooldowns of important totems"], COLUMN, -58,
 		function() return t().cooldowns end,
 		function(value)
 			t().cooldowns = value
@@ -1775,23 +1776,23 @@ function createTotemFrame(parent)
 		totems.Apply()
 		ns.RefreshTotemOptions()
 	end)
-	sideButton.Refresh = function(self) self:SetText("Lage: " .. totems.CD_SIDE_NAMES[t().cdSide]) end
+	sideButton.Refresh = function(self) self:SetText(L["Place: "] .. totems.CD_SIDE_NAMES[t().cdSide]) end
 	totemWidgets[#totemWidgets + 1] = sideButton
-	addSlider(window, "TotemCooldownSize", "Größe der Symbole", COLUMN + 4, -140, 12, 60, 2,
+	addSlider(window, "TotemCooldownSize", L["Size of the icons"], COLUMN + 4, -140, 12, 60, 2,
 		function(value) return ("%d"):format(value) end,
 		function() return t().cdSize end,
 		function(value) t().cdSize = value end)
 
-	addText(window, "Zauber, durch Komma getrennt (Eingabetaste übernimmt):", nil, COLUMN + 2, -172, 316)
+	addText(window, L["Spells, separated by commas (Enter applies):"], nil, COLUMN + 2, -172, 316)
 	local spellBox = addEditBox(window, 308, COLUMN + 2, -188, function(_, text)
 		totems.SetField("cdspells", text) -- leer = wieder die Voreinstellung
 	end)
 	spellBox.Refresh = function(self) self:SetText(tostring(t().cdSpells or "")) end
 	totemWidgets[#totemWidgets + 1] = spellBox
 	local known = addText(window, "", nil, COLUMN + 2, -216, 316)
-	known.Refresh = function(self) self:SetText("Im Zauberbuch gefunden: " .. totems.CooldownSummary() .. ".") end
+	known.Refresh = function(self) self:SetText(L["Found in your spellbook: "] .. totems.CooldownSummary() .. ".") end
 	totemWidgets[#totemWidgets + 1] = known
-	addText(window, "Gezeigt werden nur Zauber, die dein Charakter kennt. Ein helles Symbol heißt bereit, ein graues mit Zahl läuft noch ab. Die Reihe hängt an der Totem-Leiste und wandert mit ihr.", nil, COLUMN + 2, -272, 316)
+	addText(window, L["Only spells your character knows are shown. A bright icon means ready, a gray one with a number is still cooling down. The row hangs on the totem bar and moves with it."], nil, COLUMN + 2, -272, 316)
 
 	sink = previous
 	window:SetScript("OnShow", function()
@@ -1852,13 +1853,13 @@ do
 	local versionText = panel:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
 	versionText:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -6)
 	local number = C_AddOns and C_AddOns.GetAddOnMetadata and C_AddOns.GetAddOnMetadata(ADDON_NAME, "Version")
-	versionText:SetText("Version " .. tostring(number or "?") .. "  ·  /sha")
+	versionText:SetText(L["Version "] .. tostring(number or "?") .. "  ·  /sha")
 	local text = panel:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
 	text:SetPoint("TOPLEFT", logo, "BOTTOMLEFT", 0, -14)
 	text:SetJustifyH("LEFT")
 	text:SetWidth(560)
 	if text.SetWordWrap then text:SetWordWrap(true) end
-	text:SetText("Alarme rund um den Charakter für Schamanen: Waffe des Mahlstroms, die Schocks, Sturmschlag, Schild, Waffenverzauberung und mehr, dazu eine Totem-Leiste und eigene Alarme. Alles Weitere stellst du im Fenster des Addons ein.")
+	text:SetText(L["Alerts around your character for shamans: Maelstrom Weapon, the shocks, Stormstrike, shield, weapon enchant and more, plus a totem bar and your own alerts. Everything else is set in the window of the addon."])
 	local panelButtons = {}
 	local function panelButton(label, x, y, onClick)
 		local button = CreateFrame("Button", nil, panel, "UIPanelButtonTemplate")
@@ -1869,16 +1870,16 @@ do
 		panelButtons[#panelButtons + 1] = button
 		return button
 	end
-	local open = panelButton("Alarme einstellen", 0, -16, function() ns.ToggleOptions(true) end)
-	panelButton("Totem-Leiste & Schrift", 208, -16, function() ns.ShowOptionsPage("totems") end)
-	panelButton("Profile & Austausch", 0, -46, function() ns.ShowOptionsPage("profiles") end)
-	panelButton("Hilfe & Diagnose", 208, -46, function() ns.ShowOptionsPage("help") end)
+	local open = panelButton(L["Set up alerts"], 0, -16, function() ns.ToggleOptions(true) end)
+	panelButton(L["Totem bar & font"], 208, -16, function() ns.ShowOptionsPage("totems") end)
+	panelButton(L["Profiles & sharing"], 0, -46, function() ns.ShowOptionsPage("profiles") end)
+	panelButton(L["Help & diagnostics"], 208, -46, function() ns.ShowOptionsPage("help") end)
 	local minimapCheck = CreateFrame("CheckButton", nil, panel, "UICheckButtonTemplate")
 	minimapCheck:SetSize(24, 24)
 	minimapCheck:SetPoint("TOPLEFT", text, "BOTTOMLEFT", -2, -84)
 	local minimapLabel = panel:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
 	minimapLabel:SetPoint("LEFT", minimapCheck, "RIGHT", 2, 0)
-	minimapLabel:SetText("Knopf an der Minimap anzeigen")
+	minimapLabel:SetText(L["Show minimap button"])
 	minimapCheck:SetScript("OnClick", function(self)
 		if ns.Minimap then ns.Minimap.SetShown(self:GetChecked() and true or false) end
 		ns.RefreshOptions()

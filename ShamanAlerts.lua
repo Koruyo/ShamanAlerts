@@ -23,6 +23,7 @@
 --     ist, und schiebt damit den sichtbaren Ausschnitt von der Textur weg.
 
 local ADDON_NAME, ns = ...
+local L = ns.L
 ns = type(ns) == "table" and ns or {}
 local MEDIA = "Interface\\AddOns\\" .. ADDON_NAME .. "\\Media\\"
 local TAG = "|cff4db8ffShamanAlerts|r: "
@@ -41,8 +42,8 @@ local STEP_GAP = 8 -- Sicherheitsabstand, damit unter der Schwelle nichts herein
 -- Ein Eintrag mit "blend" erzwingt diese Überblendung. Wer etwas anderes zeigen
 -- will, trägt im Optionsfenster den Pfad einer eigenen Datei ein.
 local TEXTURES = {}
-local CATEGORY_ART = { name = "Gemalt", keys = {} }
-local CATEGORY_WOW = { name = "WoW-Stil", keys = {} }
+local CATEGORY_ART = { name = L["Painted"], keys = {} }
+local CATEGORY_WOW = { name = L["WoW style"], keys = {} }
 local TEXTURE_CATEGORIES = { CATEGORY_ART, CATEGORY_WOW }
 
 local function registerTextures(category, folder, prefix, entries, colored, blend)
@@ -55,199 +56,199 @@ end
 
 -- Gemalte Grafiken mit eigenen Farben. Sie werden normal deckend gezeigt.
 registerTextures(CATEGORY_ART, "Art", "art_", {
-	{ "orb", "Blitzkugel" },
-	{ "bolt", "Blitz" },
-	{ "storm_ring", "Blitzring" },
-	{ "flame", "Flamme" },
-	{ "fire_ring", "Feuerring" },
-	{ "lightning_shield", "Blitzschlagschild" },
-	{ "water_shield", "Wasserschild" },
-	{ "windfury_weapon", "Windzorn-Waffe" },
-	{ "flametongue_weapon", "Flammenzungen-Waffe" },
-	{ "chain_lightning", "Kettenblitz" },
-	{ "lightning_arc", "Blitzbogen" },
-	{ "lightning_burst", "Blitzstern" },
-	{ "spark", "Funke" },
-	{ "thunder_cloud", "Gewitterwolke" },
-	{ "fireball", "Feuerball" },
-	{ "lava_burst", "Lavaeruption" },
-	{ "flame_crescent", "Flammenbogen" },
-	{ "ember_swirl", "Glutwirbel" },
-	{ "spirit_flame", "Geisterflamme" },
-	{ "frost_shard", "Eiskristalle" },
-	{ "earth_rock", "Erdbrocken" },
-	{ "water_drop", "Wassertropfen" },
-	{ "wind_swirl", "Windwirbel" },
-	{ "spirit_wolf", "Geisterwolf" },
-	{ "totem_fire", "Feuertotem" },
-	{ "totem_earth", "Erdtotem" },
-	{ "totem_water", "Wassertotem" },
-	{ "totem_air", "Lufttotem" },
+	{ "orb", L["Lightning orb"] },
+	{ "bolt", L["Lightning bolt"] },
+	{ "storm_ring", L["Lightning ring"] },
+	{ "flame", L["Flame"] },
+	{ "fire_ring", L["Fire ring"] },
+	{ "lightning_shield", L["Lightning Shield"] },
+	{ "water_shield", L["Water Shield"] },
+	{ "windfury_weapon", L["Windfury Weapon"] },
+	{ "flametongue_weapon", L["Flametongue Weapon"] },
+	{ "chain_lightning", L["Chain Lightning"] },
+	{ "lightning_arc", L["Lightning arc"] },
+	{ "lightning_burst", L["Lightning star"] },
+	{ "spark", L["Spark"] },
+	{ "thunder_cloud", L["Thundercloud"] },
+	{ "fireball", L["Fireball"] },
+	{ "lava_burst", L["Lava Burst"] },
+	{ "flame_crescent", L["Flame arc"] },
+	{ "ember_swirl", L["Ember swirl"] },
+	{ "spirit_flame", L["Spirit flame"] },
+	{ "frost_shard", L["Ice crystals"] },
+	{ "earth_rock", L["Chunk of earth"] },
+	{ "water_drop", L["Water drop"] },
+	{ "wind_swirl", L["Wind swirl"] },
+	{ "spirit_wolf", L["Ghost Wolf"] },
+	{ "totem_fire", L["Fire totem"] },
+	{ "totem_earth", L["Earth totem"] },
+	{ "totem_water", L["Water totem"] },
+	{ "totem_air", L["Air totem"] },
 	-- Schamane
-	{ "stormstrike", "Sturmschlag" },
-	{ "earth_shock", "Erdschock" },
-	{ "earth_shock_crack", "Erdschock: Blitzriss" },
-	{ "earth_shock_burst", "Erdschock: Explosion" },
-	{ "earth_shock_impact", "Erdschock: Schockwelle" },
-	{ "earth_shock_spikes", "Erdschock: Felsstacheln" },
-	{ "earth_shock_fist", "Erdschock: Steinfaust" },
-	{ "flame_shock_burst", "Flammenschock: Explosion" },
-	{ "fire_shock_ball", "Flammenschock: Feuerball" },
-	{ "fire_shock_comet", "Flammenschock: Komet" },
-	{ "fire_shock_blast", "Flammenschock: Einschlag" },
-	{ "fire_shock_core", "Flammenschock: Lavakugel" },
-	{ "fire_shock_spiral", "Flammenschock: Feuerspirale" },
-	{ "fire_shock_skull", "Flammenschock: Feuerfratze" },
-	{ "shock_zap", "Schock: Blitz" },
-	{ "shock_bolt", "Schock: Blitzschlag" },
-	{ "shock_strike", "Schock: Einschlag" },
-	{ "shock_burst", "Schock: Entladung" },
-	{ "shock_orb", "Schock: Stromkugel" },
-	{ "shock_ring", "Schock: Blitzring" },
-	{ "storm_strike_axes", "Sturmschlag: Gekreuzte Äxte" },
-	{ "storm_strike_slash", "Sturmschlag: Blitzhiebe" },
-	{ "storm_strike_blade", "Sturmschlag: Axthieb" },
-	{ "storm_strike_hammer", "Sturmschlag: Streitkolben" },
-	{ "storm_strike_fist", "Sturmschlag: Blitzfaust" },
-	{ "storm_strike_vortex", "Sturmschlag: Sturmwirbel" },
-	{ "clearcast_orb", "Freizaubern: Manakugel" },
-	{ "clearcast_star", "Freizaubern: Stern" },
-	{ "clearcast_crystal", "Freizaubern: Kristall" },
-	{ "clearcast_drop", "Freizaubern: Manatropfen" },
-	{ "clearcast_swirl", "Freizaubern: Manaring" },
-	{ "clearcast_eye", "Freizaubern: Geisterauge" },
-	{ "flurry_slashes", "Schlaghagel: Hiebe" },
-	{ "flurry_claws", "Schlaghagel: Klauen" },
-	{ "flurry_whirl", "Schlaghagel: Klingenwirbel" },
-	{ "flurry_axes", "Schlaghagel: Äxte" },
-	{ "flurry_fists", "Schlaghagel: Fäuste" },
-	{ "flurry_burst", "Schlaghagel: Trefferhagel" },
-	{ "blood_fury_fist", "Kochendes Blut: Faust" },
-	{ "blood_fury_drop", "Kochendes Blut: Blutstropfen" },
-	{ "blood_fury_roar", "Kochendes Blut: Kriegsmaske" },
-	{ "blood_fury_axes", "Kochendes Blut: Kriegsäxte" },
-	{ "blood_fury_aura", "Kochendes Blut: Zornesflamme" },
-	{ "blood_fury_sigil", "Kochendes Blut: Kriegssiegel" },
-	{ "berserking_troll", "Berserker: Trollfratze" },
-	{ "berserking_mask", "Berserker: Voodoo-Maske" },
-	{ "berserking_spears", "Berserker: Speere" },
-	{ "berserking_heart", "Berserker: Rasendes Herz" },
-	{ "berserking_frenzy", "Berserker: Raserei" },
-	{ "berserking_tusks", "Berserker: Hauer" },
-	{ "frost_shock", "Frostschock" },
-	{ "healing_wave", "Welle der Heilung" },
-	{ "chain_heal", "Kettenheilung" },
-	{ "bloodlust", "Kampfrausch" },
-	{ "ankh", "Ankh" },
-	{ "rockbiter_weapon", "Felsbeißer-Waffe" },
-	{ "frostbrand_weapon", "Frostbrand-Waffe" },
-	{ "earth_shield", "Erdschild" },
-	{ "ghost_wolf", "Geisterwolf, laufend" },
-	{ "mana_tide", "Manaflut" },
+	{ "stormstrike", L["Stormstrike"] },
+	{ "earth_shock", L["Earth Shock"] },
+	{ "earth_shock_crack", L["Earth Shock: Lightning crack"] },
+	{ "earth_shock_burst", L["Earth Shock: Explosion"] },
+	{ "earth_shock_impact", L["Earth Shock: Shockwave"] },
+	{ "earth_shock_spikes", L["Earth Shock: Rock spikes"] },
+	{ "earth_shock_fist", L["Earth Shock: Stone fist"] },
+	{ "flame_shock_burst", L["Flame Shock: Explosion"] },
+	{ "fire_shock_ball", L["Flame Shock: Fireball"] },
+	{ "fire_shock_comet", L["Flame Shock: Comet"] },
+	{ "fire_shock_blast", L["Flame Shock: Impact"] },
+	{ "fire_shock_core", L["Flame Shock: Lava orb"] },
+	{ "fire_shock_spiral", L["Flame Shock: Fire spiral"] },
+	{ "fire_shock_skull", L["Flame Shock: Fire face"] },
+	{ "shock_zap", L["Shock: Lightning bolt"] },
+	{ "shock_bolt", L["Shock: Lightning strike"] },
+	{ "shock_strike", L["Shock: Impact"] },
+	{ "shock_burst", L["Shock: Discharge"] },
+	{ "shock_orb", L["Shock: Electric orb"] },
+	{ "shock_ring", L["Shock: Lightning ring"] },
+	{ "storm_strike_axes", L["Stormstrike: Crossed axes"] },
+	{ "storm_strike_slash", L["Stormstrike: Lightning slashes"] },
+	{ "storm_strike_blade", L["Stormstrike: Axe blow"] },
+	{ "storm_strike_hammer", L["Stormstrike: Maces"] },
+	{ "storm_strike_fist", L["Stormstrike: Lightning fist"] },
+	{ "storm_strike_vortex", L["Stormstrike: Storm vortex"] },
+	{ "clearcast_orb", L["Clearcasting: Mana orb"] },
+	{ "clearcast_star", L["Clearcasting: Star"] },
+	{ "clearcast_crystal", L["Clearcasting: Crystal"] },
+	{ "clearcast_drop", L["Clearcasting: Mana drop"] },
+	{ "clearcast_swirl", L["Clearcasting: Mana ring"] },
+	{ "clearcast_eye", L["Clearcasting: Spirit eye"] },
+	{ "flurry_slashes", L["Flurry: Slashes"] },
+	{ "flurry_claws", L["Flurry: Claws"] },
+	{ "flurry_whirl", L["Flurry: Blade whirl"] },
+	{ "flurry_axes", L["Flurry: Axes"] },
+	{ "flurry_fists", L["Flurry: Fists"] },
+	{ "flurry_burst", L["Flurry: Hail of blows"] },
+	{ "blood_fury_fist", L["Blood Fury: Fist"] },
+	{ "blood_fury_drop", L["Blood Fury: Blood drop"] },
+	{ "blood_fury_roar", L["Blood Fury: War mask"] },
+	{ "blood_fury_axes", L["Blood Fury: War axes"] },
+	{ "blood_fury_aura", L["Blood Fury: Flame of wrath"] },
+	{ "blood_fury_sigil", L["Blood Fury: War sigil"] },
+	{ "berserking_troll", L["Berserking: Troll grimace"] },
+	{ "berserking_mask", L["Berserking: Voodoo mask"] },
+	{ "berserking_spears", L["Berserking: Spears"] },
+	{ "berserking_heart", L["Berserking: Racing heart"] },
+	{ "berserking_frenzy", L["Berserking: Frenzy"] },
+	{ "berserking_tusks", L["Berserking: Tusks"] },
+	{ "frost_shock", L["Frost Shock"] },
+	{ "healing_wave", L["Healing Wave"] },
+	{ "chain_heal", L["Chain Heal"] },
+	{ "bloodlust", L["Bloodlust"] },
+	{ "ankh", L["Ankh"] },
+	{ "rockbiter_weapon", L["Rockbiter Weapon"] },
+	{ "frostbrand_weapon", L["Frostbrand Weapon"] },
+	{ "earth_shield", L["Earth Shield"] },
+	{ "ghost_wolf", L["Ghost Wolf, running"] },
+	{ "mana_tide", L["Mana Tide"] },
 	-- Bögen und Ringe zum Einrahmen
-	{ "water_crescent", "Wasserbogen" },
-	{ "wind_crescent", "Windbogen" },
-	{ "earth_crescent", "Erdbogen" },
-	{ "frost_ring", "Frostring" },
-	{ "water_ring", "Wasserring" },
-	{ "wind_ring", "Windring" },
+	{ "water_crescent", L["Water arc"] },
+	{ "wind_crescent", L["Wind arc"] },
+	{ "earth_crescent", L["Earth arc"] },
+	{ "frost_ring", L["Frost ring"] },
+	{ "water_ring", L["Water ring"] },
+	{ "wind_ring", L["Wind ring"] },
 	-- allgemeine Zeichen
-	{ "warning", "Ausrufezeichen" },
-	{ "skull", "Totenkopf" },
-	{ "heart", "Herz" },
-	{ "hourglass", "Sanduhr" },
-	{ "eye", "Auge" },
-	{ "crossed_swords", "Gekreuzte Schwerter" },
+	{ "warning", L["Exclamation mark"] },
+	{ "skull", L["Skull"] },
+	{ "heart", L["Heart"] },
+	{ "hourglass", L["Hourglass"] },
+	{ "eye", L["Eye"] },
+	{ "crossed_swords", L["Crossed swords"] },
 	-- Magieschulen
-	{ "arcane_orb", "Arkankugel" },
-	{ "shadow_orb", "Schattenkugel" },
-	{ "holy_light", "Heiliges Licht" },
-	{ "nature_leaf", "Naturblatt" },
-	{ "poison_drop", "Gifttropfen" },
-	{ "snowflake", "Schneeflocke" },
+	{ "arcane_orb", L["Arcane orb"] },
+	{ "shadow_orb", L["Shadow orb"] },
+	{ "holy_light", L["Holy Light"] },
+	{ "nature_leaf", L["Nature leaf"] },
+	{ "poison_drop", L["Poison drop"] },
+	{ "snowflake", L["Snowflake"] },
 }, true, "BLEND")
 
 -- Dieselben Motive noch einmal im Stil der Fähigkeitssymbole: mindestens drei
 -- pro Alarm, in der Reihenfolge der eingebauten Alarme.
 registerTextures(CATEGORY_WOW, "Wow", "wow_", {
-	{ "maelstrom_vortex", "Mahlstrom: Sturmwirbel" },
-	{ "maelstrom_weapon", "Mahlstrom: Streitkolben" },
-	{ "maelstrom_bolt", "Mahlstrom: Blitz" },
-	{ "flame_shock_blast", "Flammenschock: Explosion" },
-	{ "flame_shock_bolt", "Flammenschock: Feuerball" },
-	{ "flame_shock_brand", "Flammenschock: Flammenmal" },
-	{ "flame_shock_meteor", "Flammenschock: Glutbrocken" },
-	{ "flame_shock_fist", "Flammenschock: Lavafaust" },
-	{ "flame_shock_arrow", "Flammenschock: Feuerspitze" },
-	{ "flame_shock_skull", "Flammenschock: Flammenschädel" },
-	{ "flame_shock_phoenix", "Flammenschock: Feuervogel" },
-	{ "flame_shock_rune", "Flammenschock: Schockrune" },
-	{ "flame_shock_runearrow", "Flammenschock: Runenpfeil" },
-	{ "flame_shock_runeseal", "Flammenschock: Runensiegel" },
-	{ "flame_shock_runestone", "Flammenschock: Runenstein" },
-	{ "flame_shock_runebolt", "Flammenschock: Runenblitz" },
-	{ "shield_lightning", "Schild: Blitzkugeln" },
-	{ "shield_water", "Schild: Wasserkugeln" },
-	{ "shield_ward", "Schild: Runenschild" },
-	{ "weapon_windfury", "Waffe: Windzorn" },
-	{ "weapon_flametongue", "Waffe: Flammenzunge" },
-	{ "weapon_rune", "Waffe: Runenstein" },
-	{ "stormstrike_axe", "Sturmschlag: Axthieb" },
-	{ "stormstrike_maces", "Sturmschlag: Streitkolben" },
-	{ "stormstrike_cloud", "Sturmschlag: Gewitter" },
-	{ "earth_shock_strike", "Erdschock: Einschlag" },
-	{ "earth_shock_burst", "Erdschock: Schockwelle" },
-	{ "earth_shock_fist", "Erdschock: Steinfaust" },
-	{ "earth_shock_runearrow", "Erdschock: Runenpfeil" },
-	{ "earth_shock_runebolt", "Erdschock: Runenblitz" },
-	{ "frost_shock_runearrow", "Frostschock: Runenpfeil" },
-	{ "frost_shock_runebolt", "Frostschock: Runenblitz" },
-	{ "shock_arrow", "Schock (alle drei): Elementpfeil" },
-	{ "shock_burst", "Schock (alle drei): Einschlag" },
-	{ "shock_rune", "Schock (alle drei): Blitz" },
-	{ "firenova_ring", "Feuernova: Feuerring" },
-	{ "firenova_totem", "Feuernova: Totem" },
-	{ "firenova_burst", "Feuernova: Feuerstern" },
-	{ "interrupt_fist", "Unterbrechen: Steinfaust" },
-	{ "interrupt_shatter", "Unterbrechen: Zersprungene Rune" },
-	{ "interrupt_hand", "Unterbrechen: Halt" },
-	{ "clearcast_orb", "Freizaubern: Manakugel" },
-	{ "clearcast_mind", "Freizaubern: Auge" },
-	{ "clearcast_crystal", "Freizaubern: Kristall" },
-	{ "flurry_blades", "Schlaghagel: Hiebe" },
-	{ "flurry_claw", "Schlaghagel: Klaue" },
-	{ "flurry_axes", "Schlaghagel: Axtwirbel" },
-	{ "bloodfury_fist", "Kochendes Blut: Faust" },
-	{ "bloodfury_face", "Kochendes Blut: Orc" },
-	{ "bloodfury_blade", "Kochendes Blut: Kriegsaxt" },
-	{ "berserking_face", "Berserker: Troll" },
-	{ "berserking_mask", "Berserker: Voodoo-Maske" },
-	{ "berserking_tusks", "Berserker: Hauer" },
+	{ "maelstrom_vortex", L["Maelstrom: Storm vortex"] },
+	{ "maelstrom_weapon", L["Maelstrom: Mace"] },
+	{ "maelstrom_bolt", L["Maelstrom: Lightning bolt"] },
+	{ "flame_shock_blast", L["Flame Shock: Explosion"] },
+	{ "flame_shock_bolt", L["Flame Shock: Fireball"] },
+	{ "flame_shock_brand", L["Flame Shock: Flame brand"] },
+	{ "flame_shock_meteor", L["Flame Shock: Ember chunk"] },
+	{ "flame_shock_fist", L["Flame Shock: Lava fist"] },
+	{ "flame_shock_arrow", L["Flame Shock: Fire spearhead"] },
+	{ "flame_shock_skull", L["Flame Shock: Flaming skull"] },
+	{ "flame_shock_phoenix", L["Flame Shock: Firebird"] },
+	{ "flame_shock_rune", L["Flame Shock: Shock rune"] },
+	{ "flame_shock_runearrow", L["Flame Shock: Rune arrow"] },
+	{ "flame_shock_runeseal", L["Flame Shock: Rune seal"] },
+	{ "flame_shock_runestone", L["Flame Shock: Rune stone"] },
+	{ "flame_shock_runebolt", L["Flame Shock: Rune bolt"] },
+	{ "shield_lightning", L["Shield: Lightning orbs"] },
+	{ "shield_water", L["Shield: Water orbs"] },
+	{ "shield_ward", L["Shield: Rune ward"] },
+	{ "weapon_windfury", L["Weapon: Windfury"] },
+	{ "weapon_flametongue", L["Weapon: Flametongue"] },
+	{ "weapon_rune", L["Weapon: Rune stone"] },
+	{ "stormstrike_axe", L["Stormstrike: Axe blow"] },
+	{ "stormstrike_maces", L["Stormstrike: Maces"] },
+	{ "stormstrike_cloud", L["Stormstrike: Thunderstorm"] },
+	{ "earth_shock_strike", L["Earth Shock: Impact"] },
+	{ "earth_shock_burst", L["Earth Shock: Shockwave"] },
+	{ "earth_shock_fist", L["Earth Shock: Stone fist"] },
+	{ "earth_shock_runearrow", L["Earth Shock: Rune arrow"] },
+	{ "earth_shock_runebolt", L["Earth Shock: Rune bolt"] },
+	{ "frost_shock_runearrow", L["Frost Shock: Rune arrow"] },
+	{ "frost_shock_runebolt", L["Frost Shock: Rune bolt"] },
+	{ "shock_arrow", L["Shock (all three): Elemental arrow"] },
+	{ "shock_burst", L["Shock (all three): Impact"] },
+	{ "shock_rune", L["Shock (all three): Lightning bolt"] },
+	{ "firenova_ring", L["Fire Nova: Fire ring"] },
+	{ "firenova_totem", L["Fire Nova: Totem"] },
+	{ "firenova_burst", L["Fire Nova: Fire star"] },
+	{ "interrupt_fist", L["Interrupt: Stone fist"] },
+	{ "interrupt_shatter", L["Interrupt: Shattered rune"] },
+	{ "interrupt_hand", L["Interrupt: Stop"] },
+	{ "clearcast_orb", L["Clearcasting: Mana orb"] },
+	{ "clearcast_mind", L["Clearcasting: Eye"] },
+	{ "clearcast_crystal", L["Clearcasting: Crystal"] },
+	{ "flurry_blades", L["Flurry: Slashes"] },
+	{ "flurry_claw", L["Flurry: Claw"] },
+	{ "flurry_axes", L["Flurry: Axe whirl"] },
+	{ "bloodfury_fist", L["Blood Fury: Fist"] },
+	{ "bloodfury_face", L["Blood Fury: Orc"] },
+	{ "bloodfury_blade", L["Blood Fury: War axe"] },
+	{ "berserking_face", L["Berserking: Troll"] },
+	{ "berserking_mask", L["Berserking: Voodoo mask"] },
+	{ "berserking_tusks", L["Berserking: Tusks"] },
 }, true, "BLEND")
 
 local DEFAULT_SOUND = MEDIA .. "alert.ogg"
 local SOUNDS = {
-	{ name = "Ding", file = DEFAULT_SOUND },
-	{ name = "Dreiklang", file = MEDIA .. "chime.ogg" },
-	{ name = "Glocke", file = MEDIA .. "bell.ogg" },
-	{ name = "Gong", file = MEDIA .. "gong.ogg" },
-	{ name = "Plopp", file = MEDIA .. "pop.ogg" },
-	{ name = "Alarm", file = MEDIA .. "alarm.ogg" },
-	{ name = "Blitzschlag", file = MEDIA .. "zap.ogg" },
-	{ name = "Aufladen", file = MEDIA .. "powerup.ogg" },
+	{ name = L["Ding"], file = DEFAULT_SOUND },
+	{ name = L["Chime"], file = MEDIA .. "chime.ogg" },
+	{ name = L["Bell"], file = MEDIA .. "bell.ogg" },
+	{ name = L["Gong"], file = MEDIA .. "gong.ogg" },
+	{ name = L["Pop"], file = MEDIA .. "pop.ogg" },
+	{ name = L["Alarm"], file = MEDIA .. "alarm.ogg" },
+	{ name = L["Lightning strike"], file = MEDIA .. "zap.ogg" },
+	{ name = L["Power up"], file = MEDIA .. "powerup.ogg" },
 	-- thematische Effekte
-	{ name = "Donnerschlag", file = MEDIA .. "thunder.ogg" },
-	{ name = "Blitzeinschlag", file = MEDIA .. "zap2.ogg" },
-	{ name = "Machtschub", file = MEDIA .. "power_surge.ogg" },
-	{ name = "Feuerstoß", file = MEDIA .. "fire_whoosh.ogg" },
-	{ name = "Entzünden", file = MEDIA .. "flame_ignite.ogg" },
-	{ name = "Windstoß", file = MEDIA .. "wind_gust.ogg" },
-	{ name = "Wasserplatschen", file = MEDIA .. "water_splash.ogg" },
-	{ name = "Totem-Trommel", file = MEDIA .. "totem_drum.ogg" },
-	{ name = "Schild-Klang", file = MEDIA .. "shield_chime.ogg" },
-	{ name = "Kriegshorn", file = MEDIA .. "war_horn.ogg" },
-	{ name = "Erdstoß", file = MEDIA .. "earth_thud.ogg" },
-	{ name = "Eisklirren", file = MEDIA .. "frost_crack.ogg" },
+	{ name = L["Thunderclap"], file = MEDIA .. "thunder.ogg" },
+	{ name = L["Lightning impact"], file = MEDIA .. "zap2.ogg" },
+	{ name = L["Power surge"], file = MEDIA .. "power_surge.ogg" },
+	{ name = L["Fire blast"], file = MEDIA .. "fire_whoosh.ogg" },
+	{ name = L["Ignite"], file = MEDIA .. "flame_ignite.ogg" },
+	{ name = L["Gust of wind"], file = MEDIA .. "wind_gust.ogg" },
+	{ name = L["Water splash"], file = MEDIA .. "water_splash.ogg" },
+	{ name = L["Totem drum"], file = MEDIA .. "totem_drum.ogg" },
+	{ name = L["Shield chime"], file = MEDIA .. "shield_chime.ogg" },
+	{ name = L["War horn"], file = MEDIA .. "war_horn.ogg" },
+	{ name = L["Earth thud"], file = MEDIA .. "earth_thud.ogg" },
+	{ name = L["Ice crack"], file = MEDIA .. "frost_crack.ogg" },
 }
 
 -------------------------------------------------------------------------------
@@ -265,7 +266,7 @@ local ALERT_DEFS = {
 	{
 		key = "maelstrom",
 		class = "SHAMAN",
-		title = "Waffe des Mahlstroms",
+		title = L["Maelstrom Weapon"],
 		kind = "stacks",
 		unit = "player",
 		filter = "HELPFUL",
@@ -290,7 +291,7 @@ local ALERT_DEFS = {
 			needUsable = false, -- mit vollen Stapeln kostet der Blitz kein Mana
 			needAggro = false,
 			minHealth = 0,
-			auraName = "Waffe des Mahlstroms",
+			auraName = L["Maelstrom Weapon"],
 			-- Buff-IDs: Forever/SoD, Wrath, Retail. Weitere lernt das Addon selbst.
 			spellIDs = { [408505] = true, [53817] = true, [344179] = true },
 		},
@@ -298,7 +299,7 @@ local ALERT_DEFS = {
 	{
 		key = "flameshock",
 		class = "SHAMAN",
-		title = "Flammenschock fehlt",
+		title = L["Flame Shock missing"],
 		kind = "missing",
 		unit = "target",
 		filter = "HARMFUL|PLAYER", -- nur der eigene Debuff zählt
@@ -332,7 +333,7 @@ local ALERT_DEFS = {
 			refresh = 2, -- schon warnen, wenn der Debuff nur noch so viele Sekunden läuft
 			auraDuration = 12, -- so lange läuft der Debuff; daran misst die eigene Uhr
 			minHealth = 35, -- nur warnen, wenn das Ziel noch so viel Prozent Leben hat
-			auraName = "Flammenschock",
+			auraName = L["Flame Shock"],
 			-- Alle Ränge auf Forever, dazu die Retail-ID
 			spellIDs = { [8050] = true, [8052] = true, [8053] = true, [10447] = true, [10448] = true, [29228] = true, [188389] = true },
 		},
@@ -340,7 +341,7 @@ local ALERT_DEFS = {
 	{
 		key = "shield",
 		class = "SHAMAN",
-		title = "Schild fehlt",
+		title = L["Shield missing"],
 		kind = "missing",
 		unit = "player",
 		filter = "HELPFUL",
@@ -370,7 +371,7 @@ local ALERT_DEFS = {
 			lead = 1, leadRevision = 1,
 			refresh = 0, auraDuration = 600, -- nicht schon vor dem Ablauf warnen
 			minHealth = 0,
-			auraName = "Blitzschlagschild",
+			auraName = L["Lightning Shield"],
 			-- Blitzschlagschild (alle Ränge) und Wasserschild auf Forever, dazu Retail-IDs und Erdschild
 			spellIDs = {
 				[324] = true, [325] = true, [905] = true, [945] = true, [8134] = true, [10431] = true, [10432] = true,
@@ -381,7 +382,7 @@ local ALERT_DEFS = {
 	{
 		key = "weapon",
 		class = "SHAMAN",
-		title = "Waffenverzauberung fehlt",
+		title = L["Weapon enchant missing"],
 		kind = "weapon",
 		unit = "player",
 		learnNames = {},
@@ -412,7 +413,7 @@ local ALERT_DEFS = {
 	{
 		key = "stormstrike",
 		class = "SHAMAN",
-		title = "Sturmschlag bereit",
+		title = L["Stormstrike ready"],
 		kind = "ready",
 		unit = "player",
 		learnNames = { "Stormstrike", "Sturmschlag" },
@@ -444,14 +445,14 @@ local ALERT_DEFS = {
 			yieldTo = "",
 			lead = 1, leadRevision = 1, -- so viele Sekunden vor "bereit" schon anzeigen
 			minHealth = 0,
-			auraName = "Sturmschlag",
+			auraName = L["Stormstrike"],
 			spellIDs = { [17364] = true },
 		},
 	},
 	{
 		key = "earthshock",
 		class = "SHAMAN",
-		title = "Erdschock bereit",
+		title = L["Earth Shock ready"],
 		kind = "ready",
 		unit = "player",
 		learnNames = { "Earth Shock", "Erdschock" },
@@ -486,14 +487,14 @@ local ALERT_DEFS = {
 			behind = "interrupt,frostshock", -- Unterbrechen und (gegen Spieler) Frostschock gehen vor
 			lead = 1, leadRevision = 1,
 			minHealth = 0,
-			auraName = "Erdschock",
+			auraName = L["Earth Shock"],
 			spellIDs = { [8042] = true, [8044] = true, [8045] = true, [8046] = true, [10412] = true, [10413] = true, [10414] = true },
 		},
 	},
 	{
 		key = "interrupt",
 		class = "SHAMAN",
-		title = "Unterbrechen",
+		title = L["Interrupt"],
 		kind = "ready",
 		unit = "player",
 		learnNames = { "Earth Shock", "Erdschock" },
@@ -528,14 +529,14 @@ local ALERT_DEFS = {
 			yieldTo = "",
 			lead = 1, leadRevision = 1,
 			minHealth = 0,
-			auraName = "Erdschock",
+			auraName = L["Earth Shock"],
 			spellIDs = { [8042] = true, [8044] = true, [8045] = true, [8046] = true, [10412] = true, [10413] = true, [10414] = true },
 		},
 	},
 	{
 		key = "firenova",
 		class = "SHAMAN",
-		title = "Feuernova bereit",
+		title = L["Fire Nova ready"],
 		kind = "ready",
 		unit = "player",
 		learnNames = { "Fire Nova", "Feuernova" },
@@ -569,14 +570,14 @@ local ALERT_DEFS = {
 			yieldTo = "",
 			lead = 1, leadRevision = 1, -- so viele Sekunden vor "bereit" schon anzeigen
 			minHealth = 0,
-			auraName = "Feuernova",
+			auraName = L["Fire Nova"],
 			spellIDs = { [1535] = true, [8498] = true, [8499] = true, [11314] = true, [11315] = true },
 		},
 	},
 	{
 		key = "clearcast",
 		class = "SHAMAN",
-		title = "Freizaubern aktiv",
+		title = L["Clearcasting active"],
 		kind = "active",
 		unit = "player",
 		filter = "HELPFUL",
@@ -602,14 +603,14 @@ local ALERT_DEFS = {
 			needAggro = false,
 			minHealth = 0,
 			timer = false, -- Restzeit unter der Grafik
-			auraName = "Freizaubern",
+			auraName = L["Clearcasting"],
 			spellIDs = { [16246] = true },
 		},
 	},
 	{
 		key = "flurry",
 		class = "SHAMAN",
-		title = "Schlaghagel aktiv",
+		title = L["Flurry active"],
 		kind = "active",
 		unit = "player",
 		filter = "HELPFUL",
@@ -637,14 +638,14 @@ local ALERT_DEFS = {
 			needAggro = false,
 			minHealth = 0,
 			timer = false, -- Restzeit unter der Grafik
-			auraName = "Schlaghagel",
+			auraName = L["Flurry"],
 			spellIDs = { [16257] = true, [16277] = true, [16278] = true, [16279] = true, [16280] = true },
 		},
 	},
 	{
 		key = "bloodfury",
 		class = "SHAMAN",
-		title = "Kochendes Blut bereit",
+		title = L["Blood Fury ready"],
 		kind = "ready",
 		unit = "player",
 		learnNames = { "Blood Fury", "Kochendes Blut" },
@@ -677,7 +678,7 @@ local ALERT_DEFS = {
 			yieldTo = "",
 			lead = 1, leadRevision = 1, -- so viele Sekunden vor "bereit" schon anzeigen
 			minHealth = 0,
-			auraName = "Kochendes Blut",
+			auraName = L["Blood Fury"],
 			-- Classic, dazu die späteren Fassungen für Nahkämpfer und Zauberer
 			spellIDs = { [20572] = true, [33697] = true, [33702] = true },
 		},
@@ -685,7 +686,7 @@ local ALERT_DEFS = {
 	{
 		key = "berserking",
 		class = "SHAMAN",
-		title = "Berserker bereit",
+		title = L["Berserking ready"],
 		kind = "ready",
 		unit = "player",
 		learnNames = { "Berserking", "Berserker" },
@@ -718,7 +719,7 @@ local ALERT_DEFS = {
 			yieldTo = "",
 			lead = 1, leadRevision = 1, -- so viele Sekunden vor "bereit" schon anzeigen
 			minHealth = 0,
-			auraName = "Berserker",
+			auraName = L["Berserking"],
 			-- Classic: je eine Fassung für Mana, Wut und Energie
 			spellIDs = { [20554] = true, [26296] = true, [26297] = true },
 		},
@@ -726,7 +727,7 @@ local ALERT_DEFS = {
 	{
 		key = "frostshock",
 		class = "SHAMAN",
-		title = "Frostschock fehlt",
+		title = L["Frost Shock missing"],
 		kind = "missing",
 		unit = "target",
 		filter = "HARMFUL|PLAYER", -- nur die eigene Verlangsamung zählt
@@ -758,7 +759,7 @@ local ALERT_DEFS = {
 			lead = 1, leadRevision = 1,
 			refresh = 0, auraDuration = 8, -- nicht schon vor dem Ablauf warnen
 			minHealth = 0,
-			auraName = "Frostschock",
+			auraName = L["Frost Shock"],
 			-- Alle Ränge auf Forever, dazu die Retail-ID
 			spellIDs = { [8056] = true, [8058] = true, [10472] = true, [10473] = true, [25464] = true, [196840] = true },
 		},
@@ -803,7 +804,7 @@ local CUSTOM_DEFAULTS = {
 }
 
 local CUSTOM_KINDS = { "active", "missing", "stacks", "ready" }
-local KIND_NAMES = { active = "Ist aktiv", missing = "Fehlt", stacks = "Ab X Stapeln", ready = "Zauber bereit", weapon = "Waffe" }
+local KIND_NAMES = { active = L["Is active"], missing = L["Missing"], stacks = L["From X stacks"], ready = L["Spell ready"], weapon = L["Weapon"] }
 
 -- Alarme, die das Addon mit eigenen Frames zeigt und selbst ein- und ausblendet
 local PLAIN_KINDS = { weapon = true, ready = true }
@@ -933,7 +934,7 @@ local function updateEngineSounds()
 			if supported then
 				wanted = perStack and { triggers.Added, triggers.ApplicationsIncreased } or onArrival and { triggers.Added } or { triggers.Removed }
 			else
-				msg("Dieser Client kann keine Aura-Sounds abspielen, der Sound für \"%s\" bleibt stumm.", alert.def.title)
+				msg(L["This client cannot play aura sounds, the sound for \"%s\" stays silent."], alert.def.title)
 			end
 		end
 		for _, trigger in ipairs(wanted) do
@@ -982,9 +983,33 @@ local function readStacks(alert)
 	return nil
 end
 
+-- Die Namen der eingebauten Zauber in der Sprache des Spiels, gelesen über ihre
+-- IDs. So findet das Addon seine Zauber in jeder Sprache, nicht nur auf Deutsch
+-- und Englisch. Das Ergebnis bleibt am Alarm gespeichert.
+function ns.gameNames(def)
+	if def.gameNames then return def.gameNames end
+	local names, found = {}, false
+	local lookup = C_Spell and C_Spell.GetSpellName
+	local ids = def.defaults and def.defaults.spellIDs
+	if lookup and type(ids) == "table" then
+		for id in pairs(ids) do
+			local ok, name = pcall(lookup, id)
+			if ok and type(name) == "string" and not isSecret(name) and name ~= "" then
+				names[name] = true
+				found = true
+			end
+		end
+	end
+	-- Liefert das Spiel kurz nach dem Start noch nichts, später noch einmal versuchen.
+	def.gameNameTries = (def.gameNameTries or 0) + 1
+	if found or def.gameNameTries >= 10 then def.gameNames = names end
+	return names
+end
+
 local function auraNames(alert)
 	local names = {}
 	for _, name in ipairs(alert.def.learnNames) do names[name] = true end
+	for name in pairs(ns.gameNames(alert.def)) do names[name] = true end
 	local custom = alert.s.auraName
 	if type(custom) == "string" and custom ~= "" then names[custom] = true end
 	if alert.def.talentSpell and C_Spell and C_Spell.GetSpellName then
@@ -1033,7 +1058,7 @@ local function learnSpellIDs()
 					local known = (alert.s.auraDuration or 0) > 0
 					alert.s.auraDuration = math.floor(duration * 10 + 0.5) / 10
 					if (alert.s.refresh or 0) > 0 then
-						msg("%s: Laufzeit der Aura %s s gelernt.", alert.def.title, tostring(alert.s.auraDuration))
+						msg(L["%s: learned an aura duration of %s s."], alert.def.title, tostring(alert.s.auraDuration))
 						if not known then Build(alert) end -- erst jetzt lässt sich die Kopie zum frühen Auffrischen aufbauen
 					end
 					changed = true
@@ -1052,7 +1077,7 @@ local function learnSpellIDs()
 			end
 		end
 		if learned then
-			msg("%s: Aura-ID %d gelernt, die Anzeige wird neu aufgebaut.", alert.def.title, learned)
+			msg(L["%s: learned aura ID %d, rebuilding the display."], alert.def.title, learned)
 			Build(alert)
 			if state.moving == alert and alert.preview then ns.applyPreview(alert) end -- das Symbol kann sich geändert haben
 			changed = true
@@ -1071,14 +1096,14 @@ end
 -- Winkel in Grad: 0 = rechts, 90 = oben, 180 = links, 270 = unten.
 -- "groups" sind die Richtungen, um die sich je "Anzahl" Kopien als Bogen legen.
 local LAYOUTS = {
-	{ key = "center", name = "Mitte" },
-	{ key = "bottom", name = "Bogen unten", groups = { 270 } },
-	{ key = "top", name = "Bogen oben", groups = { 90 } },
-	{ key = "left", name = "Bogen links", groups = { 180 } },
-	{ key = "right", name = "Bogen rechts", groups = { 0 } },
-	{ key = "sides", name = "Links und rechts", groups = { 180, 0 } },
-	{ key = "topbottom", name = "Oben und unten", groups = { 90, 270 } },
-	{ key = "around", name = "Rundherum", ring = true },
+	{ key = "center", name = L["Center"] },
+	{ key = "bottom", name = L["Arc below"], groups = { 270 } },
+	{ key = "top", name = L["Arc above"], groups = { 90 } },
+	{ key = "left", name = L["Arc on the left"], groups = { 180 } },
+	{ key = "right", name = L["Arc on the right"], groups = { 0 } },
+	{ key = "sides", name = L["Left and right"], groups = { 180, 0 } },
+	{ key = "topbottom", name = L["Above and below"], groups = { 90, 270 } },
+	{ key = "around", name = L["All around"], ring = true },
 }
 for _, layout in ipairs(LAYOUTS) do LAYOUTS[layout.key] = layout end
 
@@ -1138,7 +1163,7 @@ end
 
 local OUTLINE_FLAGS = { none = "", outline = "OUTLINE", thick = "THICKOUTLINE" }
 local OUTLINE_ORDER = { "auto", "none", "outline", "thick" }
-local OUTLINE_NAMES = { auto = "wie Aktionsleisten", none = "nur Schatten", outline = "Umriss", thick = "dicker Umriss" }
+local OUTLINE_NAMES = { auto = L["like the action bars"], none = L["shadow only"], outline = L["outline"], thick = L["thick outline"] }
 
 local function sharedMedia()
 	return LibStub and LibStub("LibSharedMedia-3.0", true) or nil
@@ -1199,7 +1224,7 @@ end
 -- Auswahl im Optionsfenster: automatisch, Schrift des Spiels, dann alle bei
 -- LibSharedMedia angemeldeten Schriften
 local function fontChoices()
-	local list = { { key = "auto", name = "Automatisch (wie die Aktionsleisten)" } }
+	local list = { { key = "auto", name = L["Automatic (like the action bars)"] } }
 	local media = sharedMedia()
 	if media then
 		local ok, names = pcall(media.List, media, "font")
@@ -1321,7 +1346,7 @@ local function getPreview(alert)
 	preview.textures = {} -- die Bilder der Grafiken, in derselben Reihenfolge
 	preview.label = preview:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 	preview.label:SetPoint("TOP", preview, "BOTTOM", 0, -4)
-	preview.label:SetText(alert.def.title .. ": zum Verschieben ziehen")
+	preview.label:SetText(alert.def.title .. L[": drag to move"])
 	preview.label:Hide()
 	preview:RegisterForDrag("LeftButton")
 	preview:SetScript("OnDragStart", function(self)
@@ -1492,7 +1517,7 @@ local function buildStacks(alert)
 				if not ok then alert.initError = tostring(err) end
 			end,
 		})
-		if not slot then error("AddAuraSlot hat keinen Button geliefert") end
+		if not slot then error(L["AddAuraSlot did not return a button"]) end
 	end
 
 	if settings.icon then
@@ -1592,7 +1617,7 @@ local function buildPresence(alert)
 	local size = settings.size
 	local active = alert.def.kind == "active"
 	local axis = AnchorUtil and AnchorUtil.FlowLayoutAxis and AnchorUtil.FlowLayoutAxis.Horizontal
-	if axis == nil then error("AnchorUtil.FlowLayoutAxis fehlt in diesem Client") end
+	if axis == nil then error(L["AnchorUtil.FlowLayoutAxis is missing in this client"]) end
 
 	alert.current = { containers = {}, frames = {}, visuals = {}, leads = {} }
 	local hosts = {}
@@ -2069,11 +2094,12 @@ end
 -- gegnerische Namensplaketten ausgeschaltet sind.
 local RANGE_ITEMS = { [5] = 8149, [10] = 17626, [20] = 1191 }
 local RANGE_SPELLS = {
-	near = { "Stormstrike", "Sturmschlag" },
-	far = { "Earth Shock", "Erdschock", "Flame Shock", "Flammenschock", "Frost Shock", "Frostschock" },
+	-- Eine Zahl ist eine Zauber-ID: Über sie kommt der Name in der Sprache des Spiels dazu.
+	near = { "Stormstrike", "Sturmschlag", 17364 },
+	far = { "Earth Shock", "Erdschock", "Flame Shock", "Flammenschock", "Frost Shock", "Frostschock", 8042, 8050, 8056 },
 }
 local MAX_NAMEPLATES = 40
-local ENEMY_METHODS = { item = "Reichweite eines Gegenstands", spell = "Reichweite eines Zaubers", combat = "nur der Kampfstatus" }
+local ENEMY_METHODS = { item = L["range of an item"], spell = L["range of a spell"], combat = L["combat state only"] }
 
 local function rangeSpell(kind)
 	state.rangeSpells = state.rangeSpells or {}
@@ -2082,6 +2108,10 @@ local function rangeSpell(kind)
 		local lookup = C_Spell and C_Spell.GetSpellInfo
 		if lookup then
 			for _, name in ipairs(RANGE_SPELLS[kind]) do
+				if type(name) == "number" and C_Spell.GetSpellName then
+					local found, localName = pcall(C_Spell.GetSpellName, name)
+					name = found and type(localName) == "string" and not isSecret(localName) and localName or name
+				end
 				local ok, info = pcall(lookup, name)
 				if ok and type(info) == "table" and type(info.spellID) == "number" and not isSecret(info.spellID) then
 					state.rangeSpells[kind] = info.spellID
@@ -2531,7 +2561,7 @@ local function updateConditions()
 		local ok, err = pcall(updateAlert, alert)
 		if not ok and alert.runError == nil then
 			alert.runError = tostring(err)
-			msg("Fehler bei \"%s\". Bitte /sha debug aufzeichnen. Grund: %s", alert.def.title, alert.runError:sub(1, 200))
+			msg(L["Error in \"%s\". Please record /sha debug. Reason: %s"], alert.def.title, alert.runError:sub(1, 200))
 		end
 	end
 end
@@ -2646,7 +2676,7 @@ function Build(alert)
 	if not PLAIN_KINDS[kind] then
 		-- Ohne bekannte Aura-ID würde der Filter jede Aura durchlassen.
 		if next(alert.s.spellIDs) == nil then
-			alert.initError = "noch keine Aura-ID bekannt"
+			alert.initError = L["no aura ID known yet"]
 			return false
 		end
 		if not ensureContainerSupport() then return false end
@@ -2905,8 +2935,8 @@ events:SetScript("OnEvent", function(self, event, arg1, _, arg3)
 		self:RegisterEvent("PLAYER_ENTERING_WORLD")
 		for _, alert in ipairs(alerts) do
 			Build(alert)
-			if alert.initError and alert.initError ~= "noch keine Aura-ID bekannt" then
-				msg("\"%s\" konnte nicht aufgebaut werden. Bitte /sha debug aufzeichnen. Grund: %s", alert.def.title, alert.initError:sub(1, 160))
+			if alert.initError and alert.initError ~= L["no aura ID known yet"] then
+				msg(L["\"%s\" could not be built. Please record /sha debug. Reason: %s"], alert.def.title, alert.initError:sub(1, 160))
 			end
 		end
 		updateEngineSounds()
@@ -2998,7 +3028,7 @@ local function numberField(key, minimum, maximum, integer)
 	return function(alert, text)
 		local value = toNumber(text)
 		if not value or value < minimum or value > maximum then
-			return false, ("Bitte eine Zahl von %s bis %s angeben."):format(minimum, maximum)
+			return false, (L["Please enter a number from %s to %s."]):format(minimum, maximum)
 		end
 		alert.s[key] = integer and math.floor(value + 0.5) or value
 		return true
@@ -3045,13 +3075,13 @@ local FIELDS = {
 			return true
 		end
 		local leader = alerts[wanted]
-		if not leader or leader == alert then return false, "Bitte den Schlüssel eines anderen Alarms angeben (zum Beispiel earthshock), oder none." end
+		if not leader or leader == alert then return false, L["Please enter the key of another alert (for example earthshock), or none."] end
 		if (leader.s.placeLike or "") ~= "" then
-			return false, ("\"%s\" teilt seine Lage selbst mit \"%s\". Bitte diesen Schlüssel angeben."):format(leader.def.title, leader.s.placeLike)
+			return false, (L["\"%s\" itself shares its place with \"%s\". Please enter that key."]):format(leader.def.title, leader.s.placeLike)
 		end
 		for _, other in ipairs(alerts) do
 			if other ~= alert and other.s.placeLike == alert.key then
-				return false, ("Das geht nicht, solange \"%s\" seine Lage mit diesem Alarm teilt."):format(other.def.title)
+				return false, (L["That does not work while \"%s\" shares its place with this alert."]):format(other.def.title)
 			end
 		end
 		alert.s.placeLike = leader.key
@@ -3061,37 +3091,37 @@ local FIELDS = {
 	needtarget = booleanField("needTarget"),
 	needrange = booleanField("needRange"),
 	needenemies = function(alert, text)
-		if alert.def.kind ~= "ready" then return false, "Das gibt es nur bei \"Zauber bereit\"-Alarmen." end
+		if alert.def.kind ~= "ready" then return false, L["This exists for \"spell ready\" alerts only."] end
 		alert.s.needEnemies = toBoolean(text, alert.s.needEnemies)
 		return true
 	end,
 	minenemies = numberField("minEnemies", 2, 10, true),
 	needfiretotem = function(alert, text)
-		if alert.def.kind ~= "ready" then return false, "Das gibt es nur bei \"Zauber bereit\"-Alarmen." end
+		if alert.def.kind ~= "ready" then return false, L["This exists for \"spell ready\" alerts only."] end
 		alert.s.needFireTotem = toBoolean(text, alert.s.needFireTotem)
 		return true
 	end,
 	needcasting = function(alert, text)
-		if alert.def.kind ~= "ready" then return false, "Das gibt es nur bei \"Zauber bereit\"-Alarmen." end
+		if alert.def.kind ~= "ready" then return false, L["This exists for \"spell ready\" alerts only."] end
 		alert.s.needCasting = toBoolean(text, alert.s.needCasting)
 		return true
 	end,
 	enemyrange = function(alert, text)
 		local yards = toNumber(text)
-		if not (yards and RANGE_ITEMS[yards]) then return false, "Erlaubt: 5, 10 oder 20 (Meter)." end
+		if not (yards and RANGE_ITEMS[yards]) then return false, L["Allowed: 5, 10 or 20 (yards)."] end
 		alert.s.enemyRange = yards
 		return true
 	end,
 	needready = function(alert, text)
-		if alert.def.kind ~= "missing" then return false, "Das gibt es nur bei \"fehlt\"-Alarmen. \"Zauber bereit\"-Alarme achten immer auf die Abklingzeit." end
+		if alert.def.kind ~= "missing" then return false, L["This exists for \"missing\" alerts only. \"Spell ready\" alerts always watch the cooldown."] end
 		alert.s.needReady = toBoolean(text, alert.s.needReady)
 		return true
 	end,
 	lead = numberField("lead", 0, 5, false),
 	refresh = function(alert, text)
-		if alert.def.kind ~= "missing" then return false, "Früh auffrischen gibt es nur bei \"fehlt\"-Alarmen." end
+		if alert.def.kind ~= "missing" then return false, L["Early refresh exists for \"missing\" alerts only."] end
 		local value = toNumber(text)
-		if not value or value < 0 or value > 10 then return false, "Bitte eine Zahl von 0 bis 10 angeben (Sekunden, 0 schaltet es aus)." end
+		if not value or value < 0 or value > 10 then return false, L["Please enter a number from 0 to 10 (seconds, 0 switches it off)."] end
 		alert.s.refresh = math.floor(value * 10 + 0.5) / 10
 		return true
 	end,
@@ -3104,10 +3134,10 @@ local FIELDS = {
 		local keys = {}
 		for key in wanted:gmatch("[^,]+") do
 			local other = alerts[key]
-			if not other then return false, ("Den Alarm \"%s\" gibt es nicht. Bitte Schlüssel wie interrupt,frostshock angeben, oder none."):format(key) end
-			if other == alert then return false, "Ein Alarm kann nicht hinter sich selbst zurückstehen." end
+			if not other then return false, (L["There is no alert \"%s\". Please enter keys like interrupt,frostshock, or none."]):format(key) end
+			if other == alert then return false, L["An alert cannot stand behind itself."] end
 			if other.def.kind ~= "missing" and not PLAIN_KINDS[other.def.kind] then
-				return false, ("Hinter \"%s\" geht das nicht: Stapel- und Aktiv-Alarme zeichnet das Spiel selbst."):format(other.def.title)
+				return false, (L["That does not work behind \"%s\": stack and active alerts are drawn by the game itself."]):format(other.def.title)
 			end
 			keys[#keys + 1] = key
 		end
@@ -3115,14 +3145,14 @@ local FIELDS = {
 		return true
 	end,
 	duration = function(alert, text)
-		if alert.def.kind ~= "missing" then return false, "Die Laufzeit der Aura braucht nur ein \"fehlt\"-Alarm, für das frühe Auffrischen." end
+		if alert.def.kind ~= "missing" then return false, L["Only a \"missing\" alert needs the aura duration, for the early refresh."] end
 		local value = toNumber(text)
-		if not value or value < 0 or value > 3600 then return false, "Bitte eine Zahl von 0 bis 3600 angeben (Sekunden)." end
+		if not value or value < 0 or value > 3600 then return false, L["Please enter a number from 0 to 3600 (seconds)."] end
 		alert.s.auraDuration = math.floor(value * 10 + 0.5) / 10
 		return true
 	end,
 	yieldto = function(alert, text)
-		if alert.def.kind ~= "ready" then return false, "Vorrang gibt es nur bei \"Zauber bereit\"-Alarmen." end
+		if alert.def.kind ~= "ready" then return false, L["Priority exists for \"spell ready\" alerts only."] end
 		local wanted = text:lower()
 		if wanted == "" or wanted == "none" or wanted == "kein" or wanted == "keiner" then
 			alert.s.yieldTo = ""
@@ -3130,21 +3160,21 @@ local FIELDS = {
 		end
 		local partner = alerts[wanted]
 		if not partner or partner == alert or (partner.def.kind ~= "missing" and not PLAIN_KINDS[partner.def.kind]) then
-			return false, "Bitte den Schlüssel eines Fehlt-, Waffen- oder Zauber-bereit-Alarms angeben, oder none."
+			return false, L["Please enter the key of a missing, weapon or spell-ready alert, or none."]
 		end
 		alert.s.yieldTo = partner.key
 		return true
 	end,
 	minhealth = numberField("minHealth", 0, 95, true),
 	title = function(alert, text)
-		if not alert.def.custom then return false, "Nur eigene Alarme lassen sich umbenennen." end
-		if text == "" then return false, "Bitte einen Titel angeben." end
+		if not alert.def.custom then return false, L["Only your own alerts can be renamed."] end
+		if text == "" then return false, L["Please enter a title."] end
 		alert.def.spec.title, alert.def.title = text, text
-		if alert.preview then alert.preview.label:SetText(text .. ": zum Verschieben ziehen") end
+		if alert.preview then alert.preview.label:SetText(text .. L[": drag to move"]) end
 		return true
 	end,
 	kind = function(alert, text)
-		if not alert.def.custom then return false, "Die Art lässt sich nur bei eigenen Alarmen ändern." end
+		if not alert.def.custom then return false, L["The kind can only be changed for your own alerts."] end
 		local wanted = text:lower()
 		for _, kind in ipairs(CUSTOM_KINDS) do
 			if kind == wanted or KIND_NAMES[kind]:lower() == wanted then
@@ -3160,18 +3190,18 @@ local FIELDS = {
 				return true
 			end
 		end
-		return false, "Erlaubt: active (ist aktiv), missing (fehlt), stacks (ab X Stapeln), ready (Zauber bereit)."
+		return false, L["Allowed: active (is active), missing (is missing), stacks (from X stacks), ready (spell ready)."]
 	end,
 	unit = function(alert, text)
-		if not alert.def.custom then return false, "Die Einheit lässt sich nur bei eigenen Alarmen ändern." end
+		if not alert.def.custom then return false, L["The unit can only be changed for your own alerts."] end
 		local wanted = text:lower()
 		if wanted == "spieler" then wanted = "player" elseif wanted == "ziel" then wanted = "target" end
-		if wanted ~= "player" and wanted ~= "target" then return false, "Erlaubt: player (Spieler) oder target (Ziel)." end
+		if wanted ~= "player" and wanted ~= "target" then return false, L["Allowed: player or target."] end
 		alert.def.spec.unit, alert.def.unit = wanted, wanted
 		return true
 	end,
 	auratype = function(alert, text)
-		if not alert.def.custom then return false, "Der Aura-Typ lässt sich nur bei eigenen Alarmen ändern." end
+		if not alert.def.custom then return false, L["The aura type can only be changed for your own alerts."] end
 		local wanted = text:lower()
 		local spec = alert.def.spec
 		if wanted == "buff" then
@@ -3181,7 +3211,7 @@ local FIELDS = {
 		elseif wanted == "mine" or wanted == "eigener" or wanted == "eigener debuff" then
 			spec.harmful, spec.mine = true, true
 		else
-			return false, "Erlaubt: buff, debuff oder mine (nur eigener Debuff)."
+			return false, L["Allowed: buff, debuff or mine (your own debuff only)."]
 		end
 		alert.def.filter = customFilter(spec)
 		return true
@@ -3191,7 +3221,7 @@ local FIELDS = {
 	display = function(alert, text)
 		local wanted = text:lower()
 		if wanted == "symbol" or wanted == "zaubersymbol" then wanted = "icon" elseif wanted == "textur" then wanted = "texture" end
-		if wanted ~= "icon" and wanted ~= "texture" then return false, "Erlaubt: icon (Zaubersymbol) oder texture (Textur)." end
+		if wanted ~= "icon" and wanted ~= "texture" then return false, L["Allowed: icon (spell icon) or texture (picture)."] end
 		alert.s.display = wanted
 		return true
 	end,
@@ -3202,7 +3232,7 @@ local FIELDS = {
 	bordercolor = function(alert, text)
 		local r, g, b = text:match("^(%S+)%s+(%S+)%s+(%S+)$")
 		r, g, b = toNumber(r), toNumber(g), toNumber(b)
-		if not (r and g and b) then return false, "Beispiel: bordercolor 0 0 0." end
+		if not (r and g and b) then return false, L["Example: bordercolor 0 0 0."] end
 		if r > 1 or g > 1 or b > 1 then r, g, b = r / 255, g / 255, b / 255 end
 		alert.s.iconBorderColor = { math.min(1, math.max(0, r)), math.min(1, math.max(0, g)), math.min(1, math.max(0, b)) }
 		return true
@@ -3224,17 +3254,17 @@ local FIELDS = {
 		end
 		local keys = {}
 		for _, layout in ipairs(LAYOUTS) do keys[#keys + 1] = layout.key end
-		return false, "Erlaubt: " .. table.concat(keys, ", ") .. "."
+		return false, L["Allowed: "] .. table.concat(keys, ", ") .. "."
 	end,
 	texture = function(alert, text)
-		if text == "" then return false, "Bitte einen Texturnamen oder Pfad angeben." end
+		if text == "" then return false, L["Please enter a texture name or a path."] end
 		alert.s.texture = TEXTURES[text:lower()] and text:lower() or text
 		return true
 	end,
 	color = function(alert, text)
 		local r, g, b = text:match("^(%S+)%s+(%S+)%s+(%S+)$")
 		r, g, b = toNumber(r), toNumber(g), toNumber(b)
-		if not (r and g and b) then return false, "Beispiel: color 115 204 255." end
+		if not (r and g and b) then return false, L["Example: color 115 204 255."] end
 		if r > 1 or g > 1 or b > 1 then r, g, b = r / 255, g / 255, b / 255 end
 		alert.s.color = { math.min(1, math.max(0, r)), math.min(1, math.max(0, g)), math.min(1, math.max(0, b)) }
 		return true
@@ -3243,17 +3273,17 @@ local FIELDS = {
 		local mode = SOUND_WORDS[text:lower()]
 		local allowed = false
 		for _, known in ipairs(soundModes(alert)) do allowed = allowed or known == mode end
-		if not allowed then return false, "Erlaubt: " .. table.concat(soundModes(alert), ", ") .. "." end
+		if not allowed then return false, L["Allowed: "] .. table.concat(soundModes(alert), ", ") .. "." end
 		setSoundMode(alert, mode)
 		return true
 	end,
 	soundfile = function(alert, text)
-		if text == "" then return false, "Bitte einen Pfad, eine Datei-ID oder default angeben." end
+		if text == "" then return false, L["Please enter a path, a file ID or default."] end
 		setSoundFile(alert, text:lower() == "default" and alert.def.defaults.soundFile or tonumber(text) or text)
 		return true
 	end,
 	name = function(alert, text)
-		if text == "" then return false, "Bitte einen Aura-Namen angeben." end
+		if text == "" then return false, L["Please enter an aura name."] end
 		alert.s.auraName = text
 		alert.known, alert.readySpell = nil, nil
 		state.lastScan = 0
@@ -3284,7 +3314,7 @@ local function createCustomAlert(title)
 	local number = 1
 	while db.alerts["custom" .. number] or alerts["custom" .. number] do number = number + 1 end
 	local key = "custom" .. number
-	if type(title) ~= "string" or title == "" then title = "Eigener Alarm " .. number end
+	if type(title) ~= "string" or title == "" then title = L["Custom alert "] .. number end
 	table.insert(db.custom, { key = key, title = title, kind = "active", unit = "player", harmful = false, mine = false })
 	rebuildAlertList()
 	local alert = alerts[key]
@@ -3318,7 +3348,7 @@ end
 -- Befehle
 -------------------------------------------------------------------------------
 
-local function yesNo(value) return value and "ja" or "nein" end
+local function yesNo(value) return value and L["yes"] or L["no"] end
 
 local function findAlert(text)
 	text = (text or ""):lower()
@@ -3337,124 +3367,124 @@ end
 
 local function printStatus()
 	local _, _, _, interface = GetBuildInfo()
-	msg("Client-Interface %s, AuraContainer: %s, Auren gerade gesperrt: %s.",
-		tostring(interface), state.containerOK == nil and "ungeprüft" or yesNo(state.containerOK), yesNo(aurasRestricted()))
-	if not state.isShaman then msg("Dieser Charakter ist kein Schamane: Die eingebauten Alarme und die Totem-Leiste bleiben still, eigene Alarme funktionieren.") end
+	msg(L["Client interface %s, AuraContainer: %s, auras restricted right now: %s."],
+		tostring(interface), state.containerOK == nil and L["not checked"] or yesNo(state.containerOK), yesNo(aurasRestricted()))
+	if not state.isShaman then msg(L["This character is not a shaman: the built-in alerts and the totem bar stay silent, your own alerts work."]) end
 	if ns.Totems then ns.Totems.Status() end
 	for _, alert in ipairs(alerts) do
 		local settings = alert.s
-		msg("%s (%s): aktiv %s, Anzeige aufgebaut %s, Größe %d, %s, Sound %s.",
+		msg(L["%s (%s): enabled %s, display built %s, size %d, %s, sound %s."],
 			alert.def.title, alert.key, yesNo(settings.enabled), yesNo(alert.current ~= nil), settings.size,
-			settings.display == "icon" and ("Zaubersymbol " .. tostring(resolveIcon(alert))) or ("Textur " .. tostring(settings.texture)), settings.sound)
-		msg("  Anordnung %s, %d Kopien, Abstand %d, Mitte %d/%d.",
+			settings.display == "icon" and (L["spell icon "] .. tostring(resolveIcon(alert))) or (L["texture "] .. tostring(settings.texture)), settings.sound)
+		msg(L["  Layout %s, %d copies, distance %d, center %d/%d."],
 			(LAYOUTS[settings.layout] or LAYOUTS.center).name, #computeSpots(settings), settings.distance, settings.x, settings.y)
 		local mates = placeMates(alert)
 		if #mates > 0 then
 			local names = {}
 			for _, other in ipairs(mates) do names[#names + 1] = other.def.title end
-			msg("  Lage und Größe gemeinsam mit: %s.", table.concat(names, ", "))
+			msg(L["  Place and size shared with: %s."], table.concat(names, ", "))
 		end
-		if alert.initError then msg("  Fehler beim Aufbau: %s", alert.initError) end
-		if alert.runError then msg("  Fehler im Betrieb: %s", alert.runError) end
+		if alert.initError then msg(L["  Error while building: %s"], alert.initError) end
+		if alert.runError then msg(L["  Error while running: %s"], alert.runError) end
 		local ids = {}
 		for _, id in ipairs(sortedSpellIDs(alert)) do
-			ids[#ids + 1] = ("%d%s"):format(id, spellReadable(id) and "" or " (gesperrt)")
+			ids[#ids + 1] = ("%d%s"):format(id, spellReadable(id) and "" or L[" (restricted)"])
 		end
 		if alert.def.kind == "weapon" then
 			local function describe(invSlot)
-				if not slotHasWeapon(invSlot) then return "keine Waffe" end
+				if not slotHasWeapon(invSlot) then return L["no weapon"] end
 				local imbued = slotImbued(invSlot)
-				return imbued == nil and "nicht lesbar" or (imbued and "verzaubert" or "ohne Verzauberung")
+				return imbued == nil and L["not readable"] or (imbued and L["enchanted"] or L["not enchanted"])
 			end
-			msg("  Waffenhand: %s, Nebenhand: %s (wird geprüft: %s), Bedingung gerade erfüllt: %s.",
+			msg(L["  Main hand: %s, off hand: %s (checked: %s), condition met right now: %s."],
 				describe(16), describe(17), yesNo(settings.offhand), yesNo(conditionMet(alert)))
 		else
-			msg("  Aura-IDs: %s", table.concat(ids, ", "))
+			msg(L["  Aura IDs: %s"], table.concat(ids, ", "))
 		end
 		if alert.def.custom then
-			msg("  Eigener Alarm: Art %s, Einheit %s, Filter %s, Aura-Name \"%s\".",
-				KIND_NAMES[alert.def.kind], alert.def.unit == "player" and "Spieler" or "Ziel", alert.def.filter, tostring(settings.auraName))
+			msg(L["  Custom alert: kind %s, unit %s, filter %s, aura name \"%s\"."],
+				KIND_NAMES[alert.def.kind], alert.def.unit == "player" and L["Player"] or L["Target"], alert.def.filter, tostring(settings.auraName))
 		end
 		if alert.def.kind == "ready" then
 			local id, ready, range = readySpell(alert), spellReady(alert), spellInRange(alert)
-			msg("  Zauber-ID %s, bereit: %s, in Reichweite: %s, Ziel nötig: %s, Reichweite nötig: %s.",
-				tostring(id or "unbekannt"), ready == nil and "unbekannt" or yesNo(ready), range == nil and "unbekannt" or yesNo(range),
+			msg(L["  Spell ID %s, ready: %s, in range: %s, target needed: %s, range needed: %s."],
+				tostring(id or L["unknown"]), ready == nil and L["unknown"] or yesNo(ready), range == nil and L["unknown"] or yesNo(range),
 				yesNo(settings.needTarget), yesNo(settings.needRange))
-			msg("  Vorlaufzeit: %.1f s (%s).", settings.lead or 0,
-				(C_Spell and C_Spell.GetSpellCooldownDuration) and "wird vom Spiel unterstützt" or "in diesem Client nicht möglich")
+			msg(L["  Lead time: %.1f s (%s)."], settings.lead or 0,
+				(C_Spell and C_Spell.GetSpellCooldownDuration) and L["supported by the game"] or L["not possible in this client"])
 			local partner = partnerOf(alert)
 			if partner then
-				msg("  Steht zurück hinter \"%s\" (will gerade zeigen: %s).", partner.def.title, yesNo(partnerWants(partner)))
+				msg(L["  Stands behind \"%s\" (wants to show right now: %s)."], partner.def.title, yesNo(partnerWants(partner)))
 			end
 		end
 		if alert.def.kind == "weapon" then
 			-- schon oben ausgegeben
 		elseif alert.def.kind == "stacks" then
 			local stacks = readStacks(alert)
-			msg("  Schwelle %d, Stapel laut direktem Lesen: %s.", settings.threshold, stacks and tostring(stacks) or "unbekannt")
+			msg(L["  Threshold %d, stacks read directly: %s."], settings.threshold, stacks and tostring(stacks) or L["unknown"])
 		else
-			msg("  Nur im Kampf: %s, Zauber bekannt: %s, Bedingung gerade erfüllt: %s.",
+			msg(L["  In combat only: %s, spell known: %s, condition met right now: %s."],
 				yesNo(settings.combatOnly), yesNo(spellKnown(alert)), yesNo(conditionMet(alert)))
 			local usable = spellUsable(alert)
 			local aggro = hasAggro()
 			if (settings.behind or "") ~= "" then
 				local hidden, by = standsBehind(alert)
-				msg("  Rangfolge: steht zurück hinter %s (gerade: %s).", settings.behind, hidden and ("ja, hinter \"" .. by.def.title .. "\"") or "nein")
+				msg(L["  Order: stands behind %s (right now: %s)."], settings.behind, hidden and (L["yes, behind \""] .. by.def.title .. "\"") or L["no"])
 			end
-			msg("  Im Kampf nur mit Aggro: %s (gerade Aggro: %s).", yesNo(settings.needAggro), aggro == nil and "unbekannt" or yesNo(aggro))
-			if settings.needPlayer then msg("  Nur gegen Spieler: ja (Ziel ist gerade ein Spieler: %s).", yesNo(targetIsPlayer())) end
-			if settings.noPlayer then msg("  Nicht gegen Spieler: ja (Ziel ist gerade ein Spieler: %s).", yesNo(targetIsPlayer(false))) end
+			msg(L["  In combat only with aggro: %s (aggro right now: %s)."], yesNo(settings.needAggro), aggro == nil and L["unknown"] or yesNo(aggro))
+			if settings.needPlayer then msg(L["  Only against players: yes (target is a player right now: %s)."], yesNo(targetIsPlayer())) end
+			if settings.noPlayer then msg(L["  Not against players: yes (target is a player right now: %s)."], yesNo(targetIsPlayer(false))) end
 			if alert.def.kind == "ready" then
 				local enemies, method = nearbyEnemies(settings.enemyRange)
-				msg("  Nur bei %d oder mehr Gegnern näher als %d m: %s (gerade gezählt: %s%s).", settings.minEnemies or 3, settings.enemyRange or 10, yesNo(settings.needEnemies),
-					enemies == nil and "nicht feststellbar, gegnerische Namensplaketten müssen an sein" or tostring(enemies),
-					method and (", gemessen über: " .. ENEMY_METHODS[method]) or "")
+				msg(L["  Only with %d or more enemies within %d yd: %s (counted right now: %s%s)."], settings.minEnemies or 3, settings.enemyRange or 10, yesNo(settings.needEnemies),
+					enemies == nil and L["cannot be determined, enemy nameplates must be switched on"] or tostring(enemies),
+					method and (L[", measured by: "] .. ENEMY_METHODS[method]) or "")
 				local fireTotem = ns.Totems and ns.Totems.IsActive(1)
-				msg("  Nur wenn ein Feuertotem steht: %s (gerade: %s).", yesNo(settings.needFireTotem), fireTotem == nil and "unbekannt" or (fireTotem and "steht" or "keins"))
+				msg(L["  Only while a fire totem stands: %s (right now: %s)."], yesNo(settings.needFireTotem), fireTotem == nil and L["unknown"] or (fireTotem and L["standing"] or L["none"]))
 				local casting = targetCasting()
-				msg("  Nur wenn das Ziel zaubert: %s (gerade: %s).", yesNo(settings.needCasting), casting == nil and "verrät das Spiel nicht" or (casting and "zaubert" or "zaubert nicht"))
+				msg(L["  Only while the target casts: %s (right now: %s)."], yesNo(settings.needCasting), casting == nil and L["the game does not tell"] or (casting and L["casting"] or L["not casting"]))
 			end
 			if alert.def.kind == "missing" then
 				local ready = spellReady(alert)
-				msg("  Nicht während der Abklingzeit: %s (gerade bereit: %s), Vorlaufzeit %.1f s.",
-					yesNo(settings.needReady), ready == nil and "unbekannt" or yesNo(ready), settings.lead or 0)
+				msg(L["  Not during the cooldown: %s (ready right now: %s), lead time %.1f s."],
+					yesNo(settings.needReady), ready == nil and L["unknown"] or yesNo(ready), settings.lead or 0)
 				local refresh, duration = settings.refresh or 0, settings.auraDuration or 0
 				if refresh <= 0 then
-					msg("  Früh auffrischen: aus.")
+					msg(L["  Early refresh: off."])
 				elseif duration <= 0 then
-					msg("  Früh auffrischen: ab %.1f s Restzeit, aber die Laufzeit der Aura ist unbekannt (/sha set %s duration 12).", refresh, alert.key)
+					msg(L["  Early refresh: from %.1f s remaining, but the aura duration is unknown (/sha set %s duration 12)."], refresh, alert.key)
 				else
 					local remaining = refreshRemaining(alert)
-					msg("  Früh auffrischen: ab %.1f s Restzeit, Laufzeit der Aura %.1f s, eigene Uhr: %s.", refresh, duration,
-						remaining == nil and "läuft nicht" or remaining > 0 and ("noch %.1f s"):format(remaining) or "abgelaufen")
+					msg(L["  Early refresh: from %.1f s remaining, aura duration %.1f s, own clock: %s."], refresh, duration,
+						remaining == nil and L["not running"] or remaining > 0 and (L["%.1f s left"]):format(remaining) or L["expired"])
 				end
 			end
-			msg("  Nur bei genug Mana: %s (gerade wirkbar: %s), Ziel-Leben mindestens: %s.",
-				yesNo(settings.needUsable), usable == nil and "unbekannt" or yesNo(usable),
-				settings.minHealth > 0 and (settings.minHealth .. " %" .. (healthCurve(alert) and "" or ", in diesem Client nicht möglich")) or "aus")
+			msg(L["  Only with enough mana: %s (usable right now: %s), target health at least: %s."],
+				yesNo(settings.needUsable), usable == nil and L["unknown"] or yesNo(usable),
+				settings.minHealth > 0 and (settings.minHealth .. " %" .. (healthCurve(alert) and "" or L[", not possible in this client"])) or L["off"])
 		end
 	end
 end
 
 local function printHelp()
-	msg("Befehle (Alarme: %s):", alertKeys())
-	print("  /sha - Optionsfenster öffnen oder schließen")
-	print("  /sha test [Alarm] - Vorschau für 3 Sekunden, dazu der Sound")
-	print("  /sha set <Alarm> <Feld> <Wert> - z. B. /sha set maelstrom threshold 4")
-	print("     Felder: enabled, threshold, size, alpha, texture, color, additive, pulse, icon, combatonly, needusable, needaggro, needplayer, noplayer, needtarget, needrange, needenemies, minenemies, enemyrange, needfiretotem, needcasting, needready, lead, refresh, duration, yieldto, behind, placelike, minhealth, offhand, sound, soundfile, name")
-	print("     Darstellung: display (icon, texture), iconzoom, iconborder, bordercolor, iconspell (Zauber-ID, Name, Pfad oder auto)")
-	print("     Anordnung: layout (center, bottom, top, left, right, sides, topbottom, around), count, distance, spread, rotate, angle, flip, perstack, x, y")
-	print("  /sha id <Alarm> <Aura-ID|reset> - Aura-ID ergänzen oder zurücksetzen")
-	print("  /sha new [Titel] - eigenen Alarm anlegen; /sha delete <Alarm> - eigenen Alarm löschen")
-	print("     Eigene Alarme: title, kind (active, missing, stacks, ready), unit (player, target), auratype (buff, debuff, mine), timer")
-	print("  /sha scan - eigene Buffs und eigene Debuffs auf dem Ziel mit IDs auflisten")
-	print("  /sha minimap [on|off] - Knopf an der Minimap zeigen oder verbergen")
-	print("  /sha profile - Seite für Profile und Austausch; /sha profile save|load|delete <Name>, /sha profile list")
-	print("  /sha export - die Einstellungen als Text zum Weitergeben")
-	print("  /sha totem - Einstellungen der Totem-Leiste; /sha totem <Feld> <Wert> oder /sha totem reset")
-	print("  /sha font <auto|Schriftname>, /sha font outline <auto|none|outline|thick>, /sha font timersize <Zahl>")
-	print("  /sha status, /sha reset [Alarm]")
-	print("  /sha debug - 30 Sekunden Diagnose aufzeichnen (danach /reload), /sha debug clear löscht sie")
+	msg(L["Commands (alerts: %s):"], alertKeys())
+	print(L["  /sha - open or close the options window"])
+	print(L["  /sha test [alert] - preview for 3 seconds, with the sound"])
+	print(L["  /sha set <alert> <field> <value> - e.g. /sha set maelstrom threshold 4"])
+	print(L["     Fields: enabled, threshold, size, alpha, texture, color, additive, pulse, icon, combatonly, needusable, needaggro, needplayer, noplayer, needtarget, needrange, needenemies, minenemies, enemyrange, needfiretotem, needcasting, needready, lead, refresh, duration, yieldto, behind, placelike, minhealth, offhand, sound, soundfile, name"])
+	print(L["     Display: display (icon, texture), iconzoom, iconborder, bordercolor, iconspell (spell ID, name, path or auto)"])
+	print(L["     Layout: layout (center, bottom, top, left, right, sides, topbottom, around), count, distance, spread, rotate, angle, flip, perstack, x, y"])
+	print(L["  /sha id <alert> <aura ID|reset> - add an aura ID or reset the IDs"])
+	print(L["  /sha new [title] - create your own alert; /sha delete <alert> - delete one of your own alerts"])
+	print(L["     Custom alerts: title, kind (active, missing, stacks, ready), unit (player, target), auratype (buff, debuff, mine), timer"])
+	print(L["  /sha scan - list your buffs and your debuffs on the target with their IDs"])
+	print(L["  /sha minimap [on|off] - show or hide the minimap button"])
+	print(L["  /sha profile - page for profiles and sharing; /sha profile save|load|delete <name>, /sha profile list"])
+	print(L["  /sha export - the settings as text to pass on"])
+	print(L["  /sha totem - settings of the totem bar; /sha totem <field> <value> or /sha totem reset"])
+	print(L["  /sha font <auto|font name>, /sha font outline <auto|none|outline|thick>, /sha font timersize <number>"])
+	print(L["  /sha status, /sha reset [alert]"])
+	print(L["  /sha debug - record 30 seconds of diagnostics (then /reload), /sha debug clear deletes them"])
 end
 
 local commands = {}
@@ -3463,36 +3493,36 @@ commands.set = function(rest)
 	local alertText, field, value = rest:match("^(%S+)%s+(%S+)%s*(.-)$")
 	local alert = findAlert(alertText)
 	local setter = field and FIELDS[field:lower()]
-	if not alert then return msg("Unbekannter Alarm. Vorhanden: %s.", alertKeys()) end
-	if not setter then return msg("Unbekanntes Feld. Die Liste zeigt /sha help.") end
+	if not alert then return msg(L["Unknown alert. Available: %s."], alertKeys()) end
+	if not setter then return msg(L["Unknown field. /sha help shows the list."]) end
 	local ok, problem = setter(alert, value or "")
 	if not ok then return msg(problem) end
 	local built = afterChange(alert)
-	msg("%s: %s geändert.", alert.def.title, field:lower())
+	msg(L["%s: %s changed."], alert.def.title, field:lower())
 	if alert.pendingBuild then
-		msg("Du bist im Kampf, die Änderung greift nach dem Kampf.")
+		msg(L["You are in combat, the change takes effect after combat."])
 	elseif not built then
-		msg("Die Anzeige konnte nicht aufgebaut werden: %s", tostring(alert.initError or "kein AuraContainer in diesem Client"))
+		msg(L["The display could not be built: %s"], tostring(alert.initError or L["no AuraContainer in this client"]))
 	end
 end
 
 commands.id = function(rest)
 	local alertText, value = rest:match("^(%S+)%s+(%S+)$")
 	local alert = findAlert(alertText)
-	if not alert then return msg("Beispiel: /sha id flameshock 8050. Alarme: %s.", alertKeys()) end
+	if not alert then return msg(L["Example: /sha id flameshock 8050. Alerts: %s."], alertKeys()) end
 	if value:lower() == "reset" then
 		alert.s.spellIDs = copyTable(alert.def.defaults.spellIDs)
 	else
 		local id = tonumber(value)
-		if not id or id < 1 then return msg("Bitte eine Aura-ID oder reset angeben.") end
+		if not id or id < 1 then return msg(L["Please enter an aura ID or reset."]) end
 		alert.s.spellIDs[math.floor(id)] = true
 	end
 	afterChange(alert)
-	msg("%s: Aura-IDs %s.", alert.def.title, table.concat(sortedSpellIDs(alert), ", "))
+	msg(L["%s: aura IDs %s."], alert.def.title, table.concat(sortedSpellIDs(alert), ", "))
 end
 
 commands.scan = function()
-	if aurasRestricted() then return msg("Auren sind gerade gesperrt (Kampf). Bitte außerhalb des Kampfes scannen.") end
+	if aurasRestricted() then return msg(L["Auras are restricted right now (combat). Please scan out of combat."]) end
 	local function tracked(spellID)
 		for _, alert in ipairs(alerts) do
 			if alert.s.spellIDs[spellID] then return "  <- " .. alert.def.title end
@@ -3505,10 +3535,10 @@ commands.scan = function()
 			local stacks = (not isSecret(count) and type(count) == "number" and count > 0) and (" x" .. count) or ""
 			print(("  %d  %s%s%s"):format(spellID, tostring(name), stacks, tracked(spellID)))
 		end)
-		if not ok then print("  nicht lesbar") end
+		if not ok then print(L["  not readable"]) end
 	end
-	list("Deine Buffs:", "player", "HELPFUL")
-	list("Deine Debuffs auf dem Ziel:", "target", "HARMFUL|PLAYER")
+	list(L["Your buffs:"], "player", "HELPFUL")
+	list(L["Your debuffs on the target:"], "target", "HARMFUL|PLAYER")
 end
 
 commands.test = function(rest)
@@ -3523,7 +3553,7 @@ commands.test = function(rest)
 		end)
 	end
 	playAlertSound(alert)
-	msg("Test für \"%s\": So sieht die Anzeige aus (3 Sekunden), dazu der Sound.", alert.def.title)
+	msg(L["Test for \"%s\": this is what the display looks like (3 seconds), with the sound."], alert.def.title)
 end
 
 commands.status = printStatus
@@ -3540,24 +3570,24 @@ commands.reset = function(rest)
 		ns.Totems.Reset()
 		if ns.RefreshTotemOptions then ns.RefreshTotemOptions() end
 	end
-	msg(only and ("Einstellungen für \"" .. only.def.title .. "\" zurückgesetzt.") or "Alle Einstellungen zurückgesetzt.")
+	msg(only and (L["Settings for \""] .. only.def.title .. L["\" reset."]) or L["All settings reset."])
 end
 
 commands.new = function(rest)
 	local alert = createCustomAlert(rest)
 	updateEngineSounds()
 	if ns.SelectAlert then ns.SelectAlert(alert) end
-	msg("Eigener Alarm \"%s\" angelegt (Schlüssel %s). Trag im Optionsfenster den Namen der Aura ein.", alert.def.title, alert.key)
+	msg(L["Custom alert \"%s\" created (key %s). Enter the name of the aura in the options window."], alert.def.title, alert.key)
 end
 
 commands.delete = function(rest)
 	local alert = findAlert(rest)
-	if not alert then return msg("Unbekannter Alarm. Vorhanden: %s.", alertKeys()) end
-	if not alert.def.custom then return msg("\"%s\" ist eingebaut und lässt sich nur abschalten, nicht löschen.", alert.def.title) end
+	if not alert then return msg(L["Unknown alert. Available: %s."], alertKeys()) end
+	if not alert.def.custom then return msg(L["\"%s\" is built in and can only be switched off, not deleted."], alert.def.title) end
 	local title = alert.def.title
 	deleteCustomAlert(alert)
 	if ns.SelectAlert then ns.SelectAlert(alerts[1]) end
-	msg("Eigener Alarm \"%s\" gelöscht.", title)
+	msg(L["Custom alert \"%s\" deleted."], title)
 end
 
 -- Baut alles neu auf, was Text zeigt: Totem-Leiste, Restzeit, Stapelzahl.
@@ -3574,20 +3604,20 @@ end
 commands.font = function(rest)
 	local first, value = rest:match("^(%S*)%s*(.-)$")
 	if first:lower() == "outline" then
-		if not OUTLINE_NAMES[value:lower()] then return msg("Erlaubt: auto, none, outline, thick.") end
+		if not OUTLINE_NAMES[value:lower()] then return msg(L["Allowed: auto, none, outline, thick."]) end
 		db.font.outline = value:lower()
 	elseif first:lower() == "timersize" then
 		local size = toNumber(value)
-		if not size or size < 6 or size > 40 then return msg("Bitte eine Größe von 6 bis 40 angeben.") end
+		if not size or size < 6 or size > 40 then return msg(L["Please enter a size from 6 to 40."]) end
 		db.font.timerSize = math.floor(size + 0.5)
 	elseif rest == "" then
 		local path, flags = resolveFont()
-		return msg("Schrift: %s (%s), Umriss: %s, Restzeit-Größe %d.", db.font.face, path, flags == "" and "keiner (Schatten)" or flags, db.font.timerSize)
+		return msg(L["Font: %s (%s), outline: %s, timer size %d."], db.font.face, path, flags == "" and L["none (shadow)"] or flags, db.font.timerSize)
 	else
 		db.font.face = rest:lower() == "auto" and "auto" or rest
 	end
 	refreshTexts()
-	msg("Schrift geändert.")
+	msg(L["Font changed."])
 end
 
 commands.help = printHelp
@@ -3602,7 +3632,7 @@ commands.config = commands.options
 commands.minimap = function(rest)
 	if not ns.Minimap then return end
 	ns.Minimap.SetShown(toBoolean(rest, ns.Minimap.IsShown()))
-	msg("Knopf an der Minimap: %s.", ns.Minimap.IsShown() and "sichtbar" or "verborgen")
+	msg(L["Minimap button: %s."], ns.Minimap.IsShown() and L["visible"] or L["hidden"])
 	if ns.RefreshOptions then ns.RefreshOptions(true) end
 end
 commands.optionen = commands.options
@@ -3658,8 +3688,8 @@ end
 -- Ersetzt alle Einstellungen durch den Stand aus "snapshot". Die Tabellen der
 -- eingebauten Alarme bleiben dieselben, damit jeder Verweis gültig bleibt.
 function ns.applySnapshot(snapshot)
-	if inCombat() then return false, "Im Kampf geht das nicht. Bitte nach dem Kampf noch einmal." end
-	if type(snapshot) ~= "table" or type(snapshot.alerts) ~= "table" then return false, "Darin stehen keine Einstellungen von ShamanAlerts." end
+	if inCombat() then return false, L["That does not work in combat. Please try again after combat."] end
+	if type(snapshot) ~= "table" or type(snapshot.alerts) ~= "table" then return false, L["There are no ShamanAlerts settings in it."] end
 	setMoving(nil)
 	for index = #alerts, 1, -1 do
 		if alerts[index].def.custom then deleteCustomAlert(alerts[index]) end

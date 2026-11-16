@@ -13,6 +13,7 @@
 -- Zahl heißt Abklingzeit. Welche Zauber dort stehen, ist einstellbar.
 
 local ADDON_NAME, ns = ...
+local L = ns.L
 
 local Totems = {}
 ns.Totems = Totems
@@ -22,10 +23,10 @@ local ART = "Interface\\AddOns\\" .. ADDON_NAME .. "\\Media\\Art\\"
 -- Reihenfolge der Totem-Plätze im klassischen Spiel. "art" ist das gemalte
 -- Totem, das einen leeren Platz und die Beispiele beim Platzieren darstellt.
 local ELEMENTS = {
-	{ name = "Feuer", color = { 1, 0.42, 0.1 }, art = ART .. "totem_fire.tga" },
-	{ name = "Erde", color = { 0.62, 0.45, 0.25 }, art = ART .. "totem_earth.tga" },
-	{ name = "Wasser", color = { 0.25, 0.6, 1 }, art = ART .. "totem_water.tga" },
-	{ name = "Luft", color = { 0.75, 0.9, 1 }, art = ART .. "totem_air.tga" },
+	{ name = L["Fire"], color = { 1, 0.42, 0.1 }, art = ART .. "totem_fire.tga" },
+	{ name = L["Earth"], color = { 0.62, 0.45, 0.25 }, art = ART .. "totem_earth.tga" },
+	{ name = L["Water"], color = { 0.25, 0.6, 1 }, art = ART .. "totem_water.tga" },
+	{ name = L["Air"], color = { 0.75, 0.9, 1 }, art = ART .. "totem_air.tga" },
 }
 
 local DEFAULTS = {
@@ -44,13 +45,27 @@ local DEFAULTS = {
 	cdSize = 26,
 	cdSide = "TOP", -- wo die Symbole an der Leiste hängen: BOTTOM, TOP, LEFT, RIGHT
 	-- Namen aus dem Zauberbuch, durch Komma getrennt. Unbekannte Zauber bleiben weg.
-	cdSpells = "Totem der Erdung, Totem der Erdbindung, Totem der Manaflut, Zorn des Scharfsehers",
+	cdSpells = L["Grounding Totem, Earthbind Totem, Mana Tide Totem"],
 }
 
-local GROWTH_NAMES = { RIGHT = "nach rechts", LEFT = "nach links", DOWN = "nach unten", UP = "nach oben" }
+-- In anderen Sprachen als Deutsch und Englisch kommen die Namen der drei
+-- Totems aus dem Spiel selbst (über ihre IDs), damit die Reihe sicher gefunden wird.
+do
+	local lookup = C_Spell and C_Spell.GetSpellName
+	if lookup and ns.locale ~= "deDE" and ns.locale ~= "enUS" and ns.locale ~= "enGB" then
+		local names = {}
+		for _, id in ipairs({ 8177, 2484, 16190 }) do
+			local ok, name = pcall(lookup, id)
+			if ok and type(name) == "string" and name ~= "" then names[#names + 1] = name end
+		end
+		if #names == 3 then DEFAULTS.cdSpells = table.concat(names, ", ") end
+	end
+end
+
+local GROWTH_NAMES = { RIGHT = L["to the right"], LEFT = L["to the left"], DOWN = L["downwards"], UP = L["upwards"] }
 local GROWTH_ORDER = { "RIGHT", "LEFT", "DOWN", "UP" }
-local STYLE_NAMES = { icons = "Symbole", bars = "Balken" }
-local CD_SIDE_NAMES = { BOTTOM = "unter der Leiste", TOP = "über der Leiste", LEFT = "links daneben", RIGHT = "rechts daneben" }
+local STYLE_NAMES = { icons = L["Icons"], bars = L["Bars"] }
+local CD_SIDE_NAMES = { BOTTOM = L["below the bar"], TOP = L["above the bar"], LEFT = L["to its left"], RIGHT = L["to its right"] }
 local CD_SIDE_ORDER = { "BOTTOM", "TOP", "LEFT", "RIGHT" }
 local CD_GAP = 4 -- Abstand der Symbole untereinander
 local CD_OFFSET = 6 -- Abstand zur Leiste
@@ -547,7 +562,7 @@ function Totems.Init(db)
 		frame.backdrop:Hide()
 		frame.label = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 		frame.label:SetPoint("BOTTOM", frame, "TOP", 0, 6)
-		frame.label:SetText("Totem-Leiste: zum Verschieben ziehen")
+		frame.label:SetText(L["Totem bar: drag to move"])
 		frame.label:Hide()
 		frame:SetScript("OnDragStart", function(self)
 			if unlocked then self:StartMoving() end
@@ -639,7 +654,7 @@ function Totems.SetField(field, value)
 		local key, minimum, maximum = NUMBER_FIELDS[field][1], NUMBER_FIELDS[field][2], NUMBER_FIELDS[field][3]
 		local number = toNumber(value)
 		if not number or number < minimum or number > maximum then
-			return false, ("Bitte eine Zahl von %s bis %s angeben."):format(minimum, maximum)
+			return false, (L["Please enter a number from %s to %s."]):format(minimum, maximum)
 		end
 		settings[key] = key == "alpha" and number or math.floor(number + 0.5)
 	elseif BOOLEAN_FIELDS[field] then
@@ -647,22 +662,22 @@ function Totems.SetField(field, value)
 	elseif field == "style" then
 		local wanted = (value or ""):lower()
 		if wanted == "symbole" then wanted = "icons" elseif wanted == "balken" then wanted = "bars" end
-		if not STYLE_NAMES[wanted] then return false, "Erlaubt: icons (Symbole) oder bars (Balken)." end
+		if not STYLE_NAMES[wanted] then return false, L["Allowed: icons or bars."] end
 		settings.style = wanted
 	elseif field == "growth" then
 		local wanted = (value or ""):upper()
-		if not GROWTH_NAMES[wanted] then return false, "Erlaubt: right, left, down, up." end
+		if not GROWTH_NAMES[wanted] then return false, L["Allowed: right, left, down, up."] end
 		settings.growth = wanted
 	elseif field == "cdside" then
 		local wanted = CD_SIDE_WORDS[(value or ""):lower()]
-		if not wanted then return false, "Erlaubt: bottom (unten), top (oben), left (links), right (rechts)." end
+		if not wanted then return false, L["Allowed: bottom, top, left, right."] end
 		settings.cdSide = wanted
 	elseif field == "cdspells" then
 		-- leer = wieder die Voreinstellung
 		local list = (value or ""):match("^%s*(.-)%s*$")
 		settings.cdSpells = list ~= "" and list or DEFAULTS.cdSpells
 	else
-		return false, "Felder: enabled, style, growth, size, fontsize, spacing, barwidth, names, empty, alpha, x, y, cooldowns, cdsize, cdside, cdspells."
+		return false, L["Fields: enabled, style, growth, size, fontsize, spacing, barwidth, names, empty, alpha, x, y, cooldowns, cdsize, cdside, cdspells."]
 	end
 	Totems.Apply()
 	if ns.RefreshTotemOptions then ns.RefreshTotemOptions() end
@@ -677,24 +692,24 @@ function Totems.Status()
 			local ok, object = pcall(GetTotemDuration, index)
 			has = ok and object ~= nil
 		end
-		active[#active + 1] = ELEMENTS[index].name .. (has and " steht" or " leer")
+		active[#active + 1] = ELEMENTS[index].name .. (has and L[" standing"] or L[" empty"])
 	end
-	ns.msg("Totem-Leiste: aktiv %s, Darstellung %s, Position %d/%d, Schnittstelle für Totem-Dauer: %s.",
-		settings.enabled and "ja" or "nein", STYLE_NAMES[settings.style], settings.x, settings.y,
-		GetTotemDuration and "vorhanden" or (GetTotemInfo and "nur die ältere" or "fehlt"))
+	ns.msg(L["Totem bar: enabled %s, style %s, position %d/%d, interface for totem duration: %s."],
+		settings.enabled and L["yes"] or L["no"], STYLE_NAMES[settings.style], settings.x, settings.y,
+		GetTotemDuration and L["available"] or (GetTotemInfo and L["only the older one"] or L["missing"]))
 	ns.msg("  %s.", table.concat(active, ", "))
-	ns.msg("  Abklingzeiten: %s.", Totems.CooldownSummary())
+	ns.msg(L["  Cooldowns: %s."], Totems.CooldownSummary())
 end
 
 -- Welche der eingestellten Zauber das Zauberbuch kennt, als Text
 function Totems.CooldownSummary()
-	if not settings.cooldowns then return "ausgeschaltet" end
+	if not settings.cooldowns then return L["switched off"] end
 	local known = {}
 	for _, name in ipairs(cooldownNames()) do
 		local id, spellName = lookupSpell(name)
 		if id then known[#known + 1] = (not isSecret(spellName) and spellName) or name end
 	end
-	if #known == 0 then return "keiner der eingestellten Zauber ist im Zauberbuch" end
+	if #known == 0 then return L["none of the configured spells is in your spellbook"] end
 	return table.concat(known, ", ")
 end
 
@@ -718,9 +733,9 @@ ns.commands.totem = function(rest)
 	if field:lower() == "reset" then
 		Totems.Reset()
 		if ns.RefreshTotemOptions then ns.RefreshTotemOptions() end
-		return ns.msg("Totem-Leiste zurückgesetzt.")
+		return ns.msg(L["Totem bar reset."])
 	end
 	local ok, problem = Totems.SetField(field, value)
-	if ok then ns.msg("Totem-Leiste: %s geändert.", field:lower()) else ns.msg(problem) end
+	if ok then ns.msg(L["Totem bar: %s changed."], field:lower()) else ns.msg(problem) end
 end
 ns.commands.totems = ns.commands.totem
