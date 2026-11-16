@@ -1,0 +1,18 @@
+## Interface: 16001
+## Title: ShamanAlerts
+## Notes: Alarme rund um den Charakter für Schamanen: Waffe des Mahlstroms, Flammenschock, Frostschock, Erdschock, Feuernova, Unterbrechen, Sturmschlag, Schild, Waffenverzauberung, Freizaubern, Schlaghagel, Kochendes Blut und Berserker. Dazu eine Totem-Leiste, eigene Alarme und Profile. Optionen: /sha
+## Version: 2.40.0
+## Author: Koruyo
+## X-License: MIT
+## X-Website: https://github.com/Koruyo/ShamanAlerts
+## SavedVariables: ShamanAlertsDB
+## OptionalDeps: EllesmereUI
+## IconTexture: Interface\AddOns\ShamanAlerts\Media\icon
+## AddonCompartmentFunc: ShamanAlerts_OnAddonCompartmentClick
+
+ShamanAlerts.lua
+Totems.lua
+Profiles.lua
+Options.lua
+Minimap.lua
+Debug.lua

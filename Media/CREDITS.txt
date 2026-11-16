@@ -1,0 +1,4 @@
+Die Grafiken in Art/ und Wow/ und das Symbol des Addons (icon.tga) wurden für
+ShamanAlerts mit der Bilderzeugung von ChatGPT (Codex) erstellt.
+
+Alle Sounds wurden für ShamanAlerts berechnet.
