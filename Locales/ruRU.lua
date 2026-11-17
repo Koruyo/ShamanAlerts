@@ -666,5 +666,5 @@ L["Diagnostics run for %d seconds. Fight as usual now (apply Flame Shock, wait u
 L["off"] = "выкл."
 L["."] = ","
 L["Priority while the target casts"] = "Приоритет, пока цель произносит заклинание"
-L["While your target casts something that can be interrupted and this spell is ready, this alert is shown and the other alerts in the same place stay hidden."] = "Пока цель произносит заклинание, которое можно прервать, и это заклинание готово, показывается это оповещение, а остальные оповещения на том же месте скрыты."
+L["While your target casts something that can be interrupted and this spell is ready, this alert is shown, and the alerts it otherwise stands behind stay hidden."] = "Пока цель произносит заклинание, которое можно прервать, и это заклинание готово, показывается это оповещение, а оповещения, которым оно обычно уступает, скрыты."
 L["  Priority while the target casts: %s (right now: %s)."] = "  Приоритет, пока цель произносит заклинание: %s (сейчас: %s)."

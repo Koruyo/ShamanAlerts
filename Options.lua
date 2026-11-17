@@ -995,19 +995,45 @@ local function createFrame()
 		self.label:SetText(L["Same place as \""] .. (shareTitle() or "") .. "\"")
 		shareRefresh(self)
 	end
-	local function mateNames()
-		local names = {}
-		if shareTitle() == nil then
-			for _, other in ipairs((ns.internals.placeMates(selected))) do names[#names + 1] = other.def.title end
+	-- Beim Alarm, der die Stelle vorgibt: ein Häkchen, das alle auf einmal koppelt oder löst.
+	local function followers()
+		local list = {}
+		for _, other in ipairs(ns.alerts) do
+			if other ~= selected and other.def.defaults.placeLike == selected.key then list[#list + 1] = other end
 		end
-		return names
+		return list
 	end
-	local shareText = addText(place, "", "GameFontHighlightSmall", 384, -250, 340)
-	shareText.visibleIf = function() return #mateNames() > 0 end
-	shareText.Refresh = function(self)
-		self:SetText(L["Place and size also apply to: "] .. table.concat(mateNames(), ", ") .. ".")
+	local leadCheck = tip(addCheck(place, "", 384, -254,
+		function()
+			for _, other in ipairs(followers()) do
+				if ns.internals.placeLeader(other) == selected then return true end
+			end
+			return false
+		end,
+		function(value)
+			for _, other in ipairs(followers()) do
+				if value then
+					other.s.placeLike = selected.key
+					ns.internals.joinPlacement(other)
+				else
+					other.s.placeLike = ""
+				end
+				ns.scheduleBuild(other)
+			end
+			ns.RefreshOptions()
+			changed()
+		end), L["Place and size apply to all alerts with this checkbox together, only the picture changes. Moving or resizing one of them changes all. Without the checkbox this alert stands on its own."], L["Shared place"])
+	leadCheck.visibleIf = function() return shareTitle() == nil and #followers() > 0 end
+	leadCheck.label:SetWidth(330)
+	leadCheck.label:SetJustifyH("LEFT")
+	if leadCheck.label.SetWordWrap then leadCheck.label:SetWordWrap(true) end
+	local leadRefresh = leadCheck.Refresh
+	leadCheck.Refresh = function(self)
+		local names = {}
+		for _, other in ipairs(followers()) do names[#names + 1] = other.def.title end
+		self.label:SetText(L["Place and size also apply to: "] .. table.concat(names, ", ") .. ".")
+		leadRefresh(self)
 	end
-	widgets[#widgets + 1] = shareText
 	addButton(place, L["Reset to center"], 170, 200, -255, function()
 		cur().x, cur().y = 0, 0
 		ns.RefreshOptions()
@@ -1111,7 +1137,7 @@ local function createFrame()
 		function(value)
 			cur().castFirst = value
 			changed()
-		end, "ready"), L["While your target casts something that can be interrupted and this spell is ready, this alert is shown and the other alerts in the same place stay hidden."])
+		end, "ready"), L["While your target casts something that can be interrupted and this spell is ready, this alert is shown, and the alerts it otherwise stands behind stay hidden."])
 	local enemiesCheck = tip(addCheck(rules, "", 0, -192,
 		function() return cur().needEnemies end,
 		function(value)

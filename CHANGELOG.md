@@ -5,6 +5,9 @@
   now always suggested: the general shock alert takes the place of Flame Shock and Frost Shock
   for that time. New checkbox "Priority while the target casts" on the conditions tab
   (`/sha set earthshock castfirst off` switches it off)
+- The shocks can be taken apart: a checkbox on the layout tab of "Earth Shock ready" releases
+  Flame Shock and Frost Shock from the shared place and size, or ties them together again. Each
+  follower still has its own checkbox. The order of the shocks stays the same either way
 
 ## 2.41.1
 - Releases are now uploaded to CurseForge as well; no change to the addon itself

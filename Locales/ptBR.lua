@@ -659,5 +659,5 @@ L["Diagnostics run for %d seconds. Fight as usual now (apply Flame Shock, wait u
 L["off"] = "desligado"
 L["."] = ","
 L["Priority while the target casts"] = "Prioridade enquanto o alvo lança"
-L["While your target casts something that can be interrupted and this spell is ready, this alert is shown and the other alerts in the same place stay hidden."] = "Enquanto seu alvo lança algo que pode ser interrompido e este feitiço está pronto, este alerta é exibido e os outros alertas no mesmo lugar ficam ocultos."
+L["While your target casts something that can be interrupted and this spell is ready, this alert is shown, and the alerts it otherwise stands behind stay hidden."] = "Enquanto seu alvo lança algo que pode ser interrompido e este feitiço está pronto, este alerta é exibido e os alertas aos quais ele normalmente dá prioridade ficam ocultos."
 L["  Priority while the target casts: %s (right now: %s)."] = "  Prioridade enquanto o alvo lança: %s (agora: %s)."

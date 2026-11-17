@@ -2409,7 +2409,8 @@ end
 
 -- Vorrang beim Unterbrechen ("castFirst"): Zaubert das Ziel etwas
 -- Unterbrechbares und ist der Zauber dieses Alarms bereit, erscheint er sofort.
--- Die anderen Alarme an derselben Stelle schweigen so lange.
+-- Die Alarme, hinter denen er sonst zurücksteht ("behind" und "yieldTo"),
+-- schweigen so lange. Das gilt unabhängig davon, wo die Alarme stehen.
 function ns.castPriority(alert)
 	if not alert.s.castFirst or alert.def.kind ~= "ready" then return false end
 	if not alert.s.enabled or not classOK(alert) or not alert.current then return false end
@@ -2419,9 +2420,12 @@ end
 
 function standsBehind(alert, depth)
 	depth = depth or 0
-	if depth == 0 and ns.placeMates then
-		for _, other in ipairs((ns.placeMates(alert))) do
-			if ns.castPriority(other) then return true, other end
+	if depth == 0 and not alert.s.needCasting then
+		for _, other in ipairs(alerts) do
+			if other ~= alert and other.s.castFirst and ns.castPriority(other) then
+				local leads = "," .. ((other.s.behind or ""):gsub("%s+", "")) .. "," .. (other.s.yieldTo or "") .. ","
+				if leads:find("," .. alert.key .. ",", 1, true) then return true, other end
+			end
 		end
 	end
 	local list = alert.s.behind
@@ -2625,8 +2629,6 @@ local function placeMates(alert)
 	end
 	return mates, leader
 end
-
-ns.placeMates = placeMates
 
 -- Der Stand, auf den sich die Gruppe geeinigt hat. Beim ersten Mal zählt der
 -- Alarm, der sie anführt.
