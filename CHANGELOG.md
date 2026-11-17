@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.42.0
+- When your target casts something you can interrupt and the shocks are ready, Earth Shock is
+  now always suggested: the general shock alert takes the place of Flame Shock and Frost Shock
+  for that time. New checkbox "Priority while the target casts" on the conditions tab
+  (`/sha set earthshock castfirst off` switches it off)
+
 ## 2.41.1
 - Releases are now uploaded to CurseForge as well; no change to the addon itself
 

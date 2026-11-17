@@ -666,3 +666,6 @@ L["Diagnostics done: %d samples stored. Type /reload now, then they can be read.
 L["Diagnostics recording deleted."] = "진단 기록을 삭제했습니다."
 L["Diagnostics run for %d seconds. Fight as usual now (apply Flame Shock, wait until Earth Shock is ready). Then /reload."] = "진단이 %d초 동안 실행됩니다. 이제 평소처럼 싸우세요 (화염 충격 사용, 대지 충격이 준비될 때까지 대기). 그 후 /reload."
 L["off"] = "꺼짐"
+L["Priority while the target casts"] = "대상이 시전 중일 때 우선"
+L["While your target casts something that can be interrupted and this spell is ready, this alert is shown and the other alerts in the same place stay hidden."] = "대상이 차단할 수 있는 주문을 시전 중이고 이 주문이 준비되어 있으면, 이 알림이 표시되고 같은 위치의 다른 알림은 숨겨집니다."
+L["  Priority while the target casts: %s (right now: %s)."] = "  대상이 시전 중일 때 우선: %s (현재: %s)."

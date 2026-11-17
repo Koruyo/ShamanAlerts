@@ -1106,6 +1106,12 @@ local function createFrame()
 			cur().needFireTotem = value
 			changed()
 		end, "ready"), L["The alert only appears while one of your fire totems stands."])
+	tip(addCheck(rules, L["Priority while the target casts"], 0, -272,
+		function() return cur().castFirst end,
+		function(value)
+			cur().castFirst = value
+			changed()
+		end, "ready"), L["While your target casts something that can be interrupted and this spell is ready, this alert is shown and the other alerts in the same place stay hidden."])
 	local enemiesCheck = tip(addCheck(rules, "", 0, -192,
 		function() return cur().needEnemies end,
 		function(value)

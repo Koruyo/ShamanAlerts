@@ -60,6 +60,7 @@ local function describe(alert)
 	if settings.needEnemies then parts[#parts + 1] = "gegner=" .. try(internals.nearbyEnemies, settings.enemyRange) end
 	if settings.needFireTotem then parts[#parts + 1] = "feuertotem=" .. try(ns.Totems and ns.Totems.IsActive, 1) end
 	if settings.needCasting then parts[#parts + 1] = "zielzaubert=" .. try(internals.targetCasting) end
+	if settings.castFirst then parts[#parts + 1] = ("zaubervorrang=%s zielzaubert=%s"):format(try(ns.castPriority, alert), try(internals.targetCasting)) end
 
 	if def.kind == "ready" then
 		local id = internals.readySpell(alert)

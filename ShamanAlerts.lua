@@ -483,6 +483,7 @@ local ALERT_DEFS = {
 			needEnemies = false, minEnemies = 3, enemyRange = 10, -- nur bei so vielen Gegnern in diesem Umkreis (Namensplaketten)
 			needFireTotem = false, -- nur solange ein Feuertotem steht
 			needCasting = false, -- nur solange das Ziel etwas Unterbrechbares zaubert
+			castFirst = true, -- zaubert das Ziel etwas Unterbrechbares, geht der Erdschock allen Schocks vor
 			yieldTo = "flameshock", -- erst zeigen, wenn Flammenschock nicht erneuert werden muss
 			behind = "interrupt,frostshock", -- Unterbrechen und (gegen Spieler) Frostschock gehen vor
 			lead = 1, leadRevision = 1,
@@ -788,6 +789,7 @@ local CUSTOM_DEFAULTS = {
 	needEnemies = false, minEnemies = 3, enemyRange = 10, -- nur bei so vielen Gegnern in diesem Umkreis (Namensplaketten)
 	needFireTotem = false, -- nur solange ein Feuertotem steht
 	needCasting = false, -- nur solange das Ziel etwas Unterbrechbares zaubert
+	castFirst = false, -- nur bei "Zauber bereit": Vorrang an seiner Stelle, solange das Ziel etwas Unterbrechbares zaubert
 	needPlayer = false, -- nur solange das Ziel ein Spieler ist (PvP)
 	noPlayer = false, -- nicht, solange das Ziel ein Spieler ist
 	placeLike = "", -- Lage und Größe mit diesem Alarm teilen (Schlüssel)
@@ -2405,8 +2407,23 @@ local function claimsPriority(other, depth)
 	return not standsBehind(other, depth + 1)
 end
 
+-- Vorrang beim Unterbrechen ("castFirst"): Zaubert das Ziel etwas
+-- Unterbrechbares und ist der Zauber dieses Alarms bereit, erscheint er sofort.
+-- Die anderen Alarme an derselben Stelle schweigen so lange.
+function ns.castPriority(alert)
+	if not alert.s.castFirst or alert.def.kind ~= "ready" then return false end
+	if not alert.s.enabled or not classOK(alert) or not alert.current then return false end
+	if targetCasting() ~= true then return false end
+	return conditionMet(alert) and spellReady(alert) == true
+end
+
 function standsBehind(alert, depth)
 	depth = depth or 0
+	if depth == 0 and ns.placeMates then
+		for _, other in ipairs((ns.placeMates(alert))) do
+			if ns.castPriority(other) then return true, other end
+		end
+	end
 	local list = alert.s.behind
 	if depth > 3 or type(list) ~= "string" or list == "" then return false end
 	for key in list:gmatch("[^,%s]+") do
@@ -2509,12 +2526,22 @@ local function updateAlert(alert)
 			-- Verrät das Spiel die Abklingzeit nicht, warnt der Alarm wie bisher.
 			show = show and (ready ~= false or cooling)
 		end
+		-- Vorrang beim Unterbrechen: Dann gilt für diesen Alarm keine Rangfolge,
+		-- außer hinter einem Alarm, der selbst auf den Zauber des Ziels wartet
+		-- (dem eigenen Unterbrechen-Alarm, falls er eingeschaltet ist).
+		local first = show and ns.castPriority(alert)
 		-- Rangfolge: Zeigt ein wichtigerer Alarm gerade etwas, schweigt dieser ganz.
-		if show and standsBehind(alert) then show = false end
+		if show then
+			local hidden, by = standsBehind(alert)
+			if hidden and not (first and not (by and by.s.needCasting)) then
+				show = false
+				first = false
+			end
+		end
 		-- Vorrang: Will der andere Alarm etwas zeigen, bleibt nur die Kopie, die
 		-- an dessen Aura hängt.
 		local wants = false
-		if kind == "ready" and show then
+		if kind == "ready" and show and not first then
 			local partner = partnerOf(alert)
 			wants = partner ~= nil and partnerWants(partner)
 		end
@@ -2598,6 +2625,8 @@ local function placeMates(alert)
 	end
 	return mates, leader
 end
+
+ns.placeMates = placeMates
 
 -- Der Stand, auf den sich die Gruppe geeinigt hat. Beim ersten Mal zählt der
 -- Alarm, der sie anführt.
@@ -3106,6 +3135,11 @@ local FIELDS = {
 		alert.s.needCasting = toBoolean(text, alert.s.needCasting)
 		return true
 	end,
+	castfirst = function(alert, text)
+		if alert.def.kind ~= "ready" then return false, L["This exists for \"spell ready\" alerts only."] end
+		alert.s.castFirst = toBoolean(text, alert.s.castFirst)
+		return true
+	end,
 	enemyrange = function(alert, text)
 		local yards = toNumber(text)
 		if not (yards and RANGE_ITEMS[yards]) then return false, L["Allowed: 5, 10 or 20 (yards)."] end
@@ -3443,6 +3477,7 @@ local function printStatus()
 				msg(L["  Only while a fire totem stands: %s (right now: %s)."], yesNo(settings.needFireTotem), fireTotem == nil and L["unknown"] or (fireTotem and L["standing"] or L["none"]))
 				local casting = targetCasting()
 				msg(L["  Only while the target casts: %s (right now: %s)."], yesNo(settings.needCasting), casting == nil and L["the game does not tell"] or (casting and L["casting"] or L["not casting"]))
+				if settings.castFirst then msg(L["  Priority while the target casts: %s (right now: %s)."], yesNo(true), yesNo(ns.castPriority(alert))) end
 			end
 			if alert.def.kind == "missing" then
 				local ready = spellReady(alert)
@@ -3471,7 +3506,7 @@ local function printHelp()
 	print(L["  /sha - open or close the options window"])
 	print(L["  /sha test [alert] - preview for 3 seconds, with the sound"])
 	print(L["  /sha set <alert> <field> <value> - e.g. /sha set maelstrom threshold 4"])
-	print(L["     Fields: enabled, threshold, size, alpha, texture, color, additive, pulse, icon, combatonly, needusable, needaggro, needplayer, noplayer, needtarget, needrange, needenemies, minenemies, enemyrange, needfiretotem, needcasting, needready, lead, refresh, duration, yieldto, behind, placelike, minhealth, offhand, sound, soundfile, name"])
+	print(L["     Fields: enabled, threshold, size, alpha, texture, color, additive, pulse, icon, combatonly, needusable, needaggro, needplayer, noplayer, needtarget, needrange, needenemies, minenemies, enemyrange, needfiretotem, needcasting, castfirst, needready, lead, refresh, duration, yieldto, behind, placelike, minhealth, offhand, sound, soundfile, name"])
 	print(L["     Display: display (icon, texture), iconzoom, iconborder, bordercolor, iconspell (spell ID, name, path or auto)"])
 	print(L["     Layout: layout (center, bottom, top, left, right, sides, topbottom, around), count, distance, spread, rotate, angle, flip, perstack, x, y"])
 	print(L["  /sha id <alert> <aura ID|reset> - add an aura ID or reset the IDs"])

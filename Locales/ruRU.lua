@@ -665,3 +665,6 @@ L["Diagnostics recording deleted."] = "Запись диагностики уд�
 L["Diagnostics run for %d seconds. Fight as usual now (apply Flame Shock, wait until Earth Shock is ready). Then /reload."] = "Диагностика идет %d сек. Теперь сражайтесь как обычно (наложите Огненный шок, дождитесь готовности Земного шока). Затем /reload."
 L["off"] = "выкл."
 L["."] = ","
+L["Priority while the target casts"] = "Приоритет, пока цель произносит заклинание"
+L["While your target casts something that can be interrupted and this spell is ready, this alert is shown and the other alerts in the same place stay hidden."] = "Пока цель произносит заклинание, которое можно прервать, и это заклинание готово, показывается это оповещение, а остальные оповещения на том же месте скрыты."
+L["  Priority while the target casts: %s (right now: %s)."] = "  Приоритет, пока цель произносит заклинание: %s (сейчас: %s)."

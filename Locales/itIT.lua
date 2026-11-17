@@ -654,3 +654,6 @@ L["Diagnostics recording deleted."] = "Registrazione della diagnostica eliminata
 L["Diagnostics run for %d seconds. Fight as usual now (apply Flame Shock, wait until Earth Shock is ready). Then /reload."] = "La diagnostica dura %d secondi. Combatti come al solito (applica Scossa di Fiamma, attendi che Scossa Tellurica sia pronta). Poi /reload."
 L["off"] = "disattivato"
 L["."] = ","
+L["Priority while the target casts"] = "Priorità mentre il bersaglio lancia"
+L["While your target casts something that can be interrupted and this spell is ready, this alert is shown and the other alerts in the same place stay hidden."] = "Finché il tuo bersaglio lancia qualcosa che può essere interrotto e questo incantesimo è pronto, questo avviso viene mostrato e gli altri avvisi nello stesso punto restano nascosti."
+L["  Priority while the target casts: %s (right now: %s)."] = "  Priorità mentre il bersaglio lancia: %s (adesso: %s)."
