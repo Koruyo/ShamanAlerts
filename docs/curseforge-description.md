@@ -18,7 +18,8 @@ ready, your shield is gone. You keep your eyes on the fight instead of on the ac
 - **One place for the shocks**: they follow an order (Interrupt, Frost Shock against players,
   Flame Shock, general shock), so only the most important one is shown and only the picture
   changes.
-- **159 graphics** made for this addon, 53 of them in the style of WoW ability icons. Place
+- **185 graphics** made for this addon: 53 in the style of WoW ability icons, 14 plain ones and
+  12 Maelstrom Weapon pictures that build up piece by piece with every stack. Place
   every alert in the center, as an arc, on both sides or all around your character, and set
   size, color, glow, pulse, rotation and mirroring per alert.
 - **Sounds** per alert, with your LibSharedMedia sounds if you have them.

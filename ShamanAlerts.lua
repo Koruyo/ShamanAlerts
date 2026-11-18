@@ -39,17 +39,25 @@ local STEP_GAP = 8 -- Sicherheitsabstand, damit unter der Schwelle nichts herein
 
 -- Die Grafiken des Addons: gemalte Bilder mit eigenen Farben. "colored" heißt:
 -- Die Farben stecken schon in der Datei, die Vorschau wird nicht eingefärbt.
+-- Ein dritter Wert im Eintrag nennt die Zahl der Teile: Dann gibt es neben dem
+-- ganzen Bild die Dateien <Name>_1.tga bis <Name>_<Zahl>.tga, jede so groß wie
+-- das ganze Bild und nur mit ihrem Teil gefüllt. Ein Stapel-Alarm setzt das
+-- Bild daraus Stapel für Stapel zusammen.
 -- Ein Eintrag mit "blend" erzwingt diese Überblendung. Wer etwas anderes zeigen
 -- will, trägt im Optionsfenster den Pfad einer eigenen Datei ein.
 local TEXTURES = {}
 local CATEGORY_ART = { name = L["Painted"], keys = {} }
 local CATEGORY_WOW = { name = L["WoW style"], keys = {} }
-local TEXTURE_CATEGORIES = { CATEGORY_ART, CATEGORY_WOW }
+local TEXTURE_CATEGORIES = { CATEGORY_ART, CATEGORY_WOW, { name = L["Simple"], keys = {} }, { name = L["In parts"], keys = {} } }
 
 local function registerTextures(category, folder, prefix, entries, colored, blend)
 	for _, entry in ipairs(entries) do
 		local key = prefix .. entry[1]:lower()
 		TEXTURES[key] = { name = entry[2], path = MEDIA .. folder .. "\\" .. entry[1] .. ".tga", colored = colored, blend = blend }
+		if entry[3] then
+			TEXTURES[key].parts = entry[3]
+			TEXTURES[key].partPath = MEDIA .. folder .. "\\" .. entry[1] .. "_%d.tga"
+		end
 		table.insert(category.keys, key)
 	end
 end
@@ -224,6 +232,41 @@ registerTextures(CATEGORY_WOW, "Wow", "wow_", {
 	{ "berserking_face", L["Berserking: Troll"] },
 	{ "berserking_mask", L["Berserking: Voodoo mask"] },
 	{ "berserking_tusks", L["Berserking: Tusks"] },
+}, true, "BLEND")
+
+-- Schlichte Motive im selben gemalten Stil: je Alarm ein einzelner, klarer Gegenstand.
+registerTextures(TEXTURE_CATEGORIES[3], "Simple", "simple_", {
+	{ "maelstrom", L["Maelstrom Weapon"] },
+	{ "flame_shock", L["Flame Shock"] },
+	{ "frost_shock", L["Frost Shock"] },
+	{ "earth_shock", L["Earth Shock"] },
+	{ "shock", L["Shock (all three)"] },
+	{ "interrupt", L["Interrupt"] },
+	{ "stormstrike", L["Stormstrike"] },
+	{ "shield", L["Lightning Shield"] },
+	{ "weapon", L["Windfury Weapon"] },
+	{ "firenova", L["Fire Nova"] },
+	{ "clearcast", L["Clearcasting"] },
+	{ "flurry", L["Flurry"] },
+	{ "bloodfury", L["Blood Fury"] },
+	{ "berserking", L["Berserking"] },
+}, true, "BLEND")
+
+-- Bilder in fünf Teilen für die Waffe des Mahlstroms: Ein Stapel-Alarm setzt
+-- sie Stapel für Stapel zusammen, bei fünf Stapeln steht das ganze Bild.
+registerTextures(TEXTURE_CATEGORIES[4], "Parts", "parts_", {
+	{ "orb", L["Storm orb"], 5 },
+	{ "crescent", L["Crescent"], 5 },
+	{ "ring", L["Ring"], 5 },
+	{ "bolt", L["Lightning bolt"], 5 },
+	{ "claws", L["Claws"], 5 },
+	{ "vortex", L["Vortex"], 5 },
+	{ "crown", L["Crown"], 5 },
+	{ "star", L["Star"], 5 },
+	{ "column", L["Column"], 5 },
+	{ "runes", L["Runes"], 5 },
+	{ "chain", L["Chain"], 5 },
+	{ "wings", L["Wings"], 5 },
 }, true, "BLEND")
 
 local DEFAULT_SOUND = MEDIA .. "alert.ogg"
@@ -1284,7 +1327,8 @@ local function newGraphic(owner)
 end
 
 -- Richtet eine Grafik nach den Einstellungen ein. Mit "animate" pulsiert sie.
-local function styleGraphic(graphic, alert, spot, animate)
+-- "partPath" zeigt statt des ganzen Bildes eines seiner Teile.
+local function styleGraphic(graphic, alert, spot, animate, partPath)
 	local settings = alert.s
 	local back, main = graphic.back, graphic.main
 	main:ClearAllPoints()
@@ -1306,7 +1350,7 @@ local function styleGraphic(graphic, alert, spot, animate)
 		local path, blend = resolveTexture(settings)
 		back:SetColorTexture(0, 0, 0, 0)
 		main:SetAllPoints(back)
-		main:SetTexture(path)
+		main:SetTexture(partPath or path)
 		main:SetBlendMode(blend)
 		local preset = TEXTURES[settings.texture]
 		if preset and preset.colored then
@@ -1465,6 +1509,8 @@ end
 
 -- Stapel-Alarm. Jede Kopie ist ein eigener AuraButton an ihrem Platz. Alles am
 -- AuraButton muss im Initializer eingerichtet werden, danach sperrt das Spiel ihn.
+-- Besteht das gewählte Bild aus Teilen, liegt an jedem Platz je Teil eine Ebene:
+-- Teil 1 erscheint mit den ersten Stapeln, das letzte Teil an der Schwelle.
 local function buildStacks(alert)
 	local settings = alert.s
 	local size = settings.size
@@ -1476,14 +1522,23 @@ local function buildStacks(alert)
 	container:SetAllPoints(UIParent)
 	container:SetUnit(alert.def.unit)
 
+	local preset = settings.display ~= "icon" and TEXTURES[settings.texture] or nil
+	local parts = preset and preset.parts or 1
+	alert.current.parts = parts
 	for index, spot in ipairs(spots) do
-		local threshold = spotThreshold(settings, index, #spots)
 		local host = createLayoutFrame(UIParent)
 		host:SetSize(size, size)
 		host:SetPoint("CENTER", UIParent, "CENTER", settings.x + spot.x, settings.y + spot.y)
 		table.insert(alert.current.frames, host)
 
-		local slot = container:AddAuraSlot(index == 1 and "alert" or ("alert" .. index), alert.def.filter, {
+		for part = 1, parts do
+		local threshold = spotThreshold(settings, index, #spots)
+		local partPath = nil
+		if parts > 1 then
+			threshold = math.max(1, math.ceil(part * settings.threshold / parts))
+			partPath = preset.partPath:format(part)
+		end
+		local slot = container:AddAuraSlot((index == 1 and "alert" or ("alert" .. index)) .. (part == 1 and "" or ("p" .. part)), alert.def.filter, {
 			candidateFilters = spellFilter(alert),
 			initializeFrame = function(button)
 				local ok, err = pcall(function()
@@ -1510,7 +1565,7 @@ local function buildStacks(alert)
 					local graphic = newGraphic(bar)
 					graphic.back:SetSize(size, size)
 					graphic.back:SetPoint("RIGHT", bar:GetStatusBarTexture(), "RIGHT", 0, 0)
-					styleGraphic(graphic, alert, spot, true)
+					styleGraphic(graphic, alert, spot, true, partPath)
 
 					local immediate = Enum and Enum.StatusBarInterpolation and Enum.StatusBarInterpolation.Immediate
 					local set = pcall(button.SetApplicationBar, button, bar, { maxApplications = threshold, interpolation = immediate })
@@ -1520,6 +1575,7 @@ local function buildStacks(alert)
 			end,
 		})
 		if not slot then error(L["AddAuraSlot did not return a button"]) end
+		end
 	end
 
 	if settings.icon then

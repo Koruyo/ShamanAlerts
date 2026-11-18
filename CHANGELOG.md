@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.43.0
+- Pictures that build up in parts: a stack alert can show a picture piece by piece, one more
+  piece with every stack, until the whole picture stands at the threshold. New picture category
+  "In parts" with twelve such pictures for Maelstrom Weapon: storm orb, crescent, ring, lightning
+  bolt, claws, vortex, crown, star, column, runes, chain and wings
+- New picture category "Simple": one plain motif per alert in the same painted style, 14 pictures
+
 ## 2.42.0
 - When your target casts something you can interrupt and the shocks are ready, Earth Shock is
   now always suggested: the general shock alert takes the place of Flame Shock and Frost Shock
