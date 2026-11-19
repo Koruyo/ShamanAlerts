@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.44.0
+- Broker displays such as Titan Panel or ChocolateBar now pick up the addon: it registers as a
+  LibDataBroker launcher whenever that library is loaded, no longer only together with LibDBIcon.
+  Left click opens the options, right click the totem bar
+
 ## 2.43.0
 - Pictures that build up in parts: a stack alert can show a picture piece by piece, one more
   piece with every stack, until the whole picture stands at the threshold. New picture category

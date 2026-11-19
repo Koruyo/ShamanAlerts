@@ -30,6 +30,7 @@ ready, your shield is gone. You keep your eyes on the fight instead of on the ac
 - **Profiles and sharing**: save your setup as a profile, or export it as a short text and send
   it to a friend. Importing never runs code.
 - **Minimap button**, **Addon Compartment** entry and an entry under **Options > AddOns**.
+  Broker displays (LibDataBroker) such as Titan Panel or ChocolateBar show the addon as a launcher.
 - **10 languages**: English, Deutsch, Français, Español, Italiano, Português, Русский, 한국어, 简体中文, 繁體中文
 
 ### Languages

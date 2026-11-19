@@ -1,11 +1,11 @@
 -- ShamanAlerts: Knopf an der Minimap
 --
 -- Linksklick öffnet die Optionen, Rechtsklick die Seite der Totem-Leiste.
--- Sind LibDataBroker und LibDBIcon geladen (viele Addons bringen sie mit),
--- meldet sich der Knopf dort an. Dann sammeln ihn auch Minimap-Addons ein und
--- Leisten für Datenquellen zeigen ShamanAlerts als Starter. Ohne die
--- Bibliotheken zeichnet das Addon einen eigenen Knopf, der sich um die Minimap
--- ziehen lässt.
+-- Ist LibDataBroker geladen (Broker-Leisten wie Titan Panel oder ChocolateBar
+-- bringen es mit), meldet sich das Addon dort als Starter an und erscheint in
+-- diesen Leisten. Ist außerdem LibDBIcon geladen, übernimmt es den Knopf an der
+-- Minimap; dann sammeln ihn auch Minimap-Addons ein. Ohne LibDBIcon zeichnet
+-- das Addon einen eigenen Knopf, der sich um die Minimap ziehen lässt.
 local ADDON, ns = ...
 local L = ns.L
 
@@ -19,6 +19,7 @@ local DEFAULT_ANGLE = 215 -- unten links an der Minimap
 
 local settings -- db.minimap: hide, minimapPos (Winkel in Grad), wie bei LibDBIcon
 local library -- LibDBIcon, falls vorhanden
+local launcher -- der Eintrag bei LibDataBroker, falls vorhanden
 local button -- der eigene Knopf, falls nicht
 
 local function version()
@@ -29,13 +30,14 @@ local function version()
 end
 M.Version = version
 
-local function fillTooltip(tooltip)
+-- "ownButton": Der Hinweis zum Ziehen gilt nur für den eigenen Knopf.
+local function fillTooltip(tooltip, ownButton)
 	if not tooltip or not tooltip.AddLine then return end
 	local number = version()
 	tooltip:AddLine(NAME .. (number and (" |cff999999" .. number .. "|r") or ""), 1, 0.82, 0)
 	tooltip:AddLine(L["Left click: open the options"], 1, 1, 1)
 	tooltip:AddLine(L["Right click: totem bar and font"], 1, 1, 1)
-	if not library then tooltip:AddLine(L["Drag: move the button"], 0.7, 0.7, 0.7) end
+	if ownButton == true then tooltip:AddLine(L["Drag: move the button"], 0.7, 0.7, 0.7) end
 end
 
 local function onClick(_, mouseButton)
@@ -107,7 +109,7 @@ local function createButton()
 	button:SetScript("OnEnter", function(self)
 		if not GameTooltip then return end
 		GameTooltip:SetOwner(self, "ANCHOR_LEFT")
-		fillTooltip(GameTooltip)
+		fillTooltip(GameTooltip, true)
 		GameTooltip:Show()
 	end)
 	button:SetScript("OnLeave", function()
@@ -116,21 +118,31 @@ local function createButton()
 	place()
 end
 
--- Meldet den Knopf bei LibDBIcon an. Schlägt das fehl, bleibt der eigene Weg.
-local function registerWithLibrary()
+-- Meldet das Addon bei LibDataBroker an. Broker-Leisten zeigen es dann als
+-- Starter, unabhängig vom Knopf an der Minimap.
+local function registerBroker()
 	if type(LibStub) ~= "table" and type(LibStub) ~= "function" then return false end
 	local okBroker, broker = pcall(LibStub, "LibDataBroker-1.1", true)
-	local okIcon, icons = pcall(LibStub, "LibDBIcon-1.0", true)
-	if not (okBroker and broker and okIcon and icons and broker.NewDataObject and icons.Register) then return false end
+	if not (okBroker and broker and broker.NewDataObject) then return false end
 	local ok, object = pcall(broker.NewDataObject, broker, NAME, {
 		type = "launcher",
+		label = NAME,
 		text = NAME,
 		icon = ICON,
 		OnClick = onClick,
-		OnTooltipShow = fillTooltip,
+		OnTooltipShow = function(tooltip) fillTooltip(tooltip) end,
 	})
 	if not ok or not object then return false end
-	if not pcall(icons.Register, icons, NAME, object, settings) then return false end
+	launcher = object
+	return true
+end
+
+-- Meldet den Knopf bei LibDBIcon an. Schlägt das fehl, bleibt der eigene Weg.
+local function registerWithLibrary()
+	if not launcher then return false end
+	local okIcon, icons = pcall(LibStub, "LibDBIcon-1.0", true)
+	if not (okIcon and icons and icons.Register) then return false end
+	if not pcall(icons.Register, icons, NAME, launcher, settings) then return false end
 	library = icons
 	return true
 end
@@ -157,8 +169,9 @@ function M.Init()
 	settings = db.minimap
 	if type(settings.hide) ~= "boolean" then settings.hide = false end
 	if type(settings.minimapPos) ~= "number" then settings.minimapPos = DEFAULT_ANGLE end
+	registerBroker()
 	if not registerWithLibrary() and not settings.hide and Minimap then createButton() end
 end
 
 -- für Tests
-M.internals = { place = function() if button then place() end end, button = function() return button end, usesLibrary = function() return library ~= nil end }
+M.internals = { place = function() if button then place() end end, button = function() return button end, usesLibrary = function() return library ~= nil end, launcher = function() return launcher end }
