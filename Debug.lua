@@ -58,6 +58,7 @@ local function describe(alert)
 	if (settings.behind or "") ~= "" then parts[#parts + 1] = ("hinter=%s zurück=%s"):format(settings.behind, try(internals.standsBehind, alert)) end
 	if settings.needAggro then parts[#parts + 1] = "aggro=" .. try(internals.hasAggro) end
 	if (settings.maxMana or 0) > 0 then parts[#parts + 1] = ("manahöchstens=%s kurve=%s"):format(tostring(settings.maxMana), tostring(ns.manaCurve(alert) ~= nil)) end
+	if (settings.specs or "") ~= "" then parts[#parts + 1] = ("spec=%s aktuell=%s"):format(tostring(settings.specs), tostring(ns.currentSpec())) end
 	if def.kind == "ready" then parts[#parts + 1] = ("gegnerbedingung=%s ab=%s umkreis=%s feuertotem-bedingung=%s"):format(show(settings.needEnemies), show(settings.minEnemies), show(settings.enemyRange), show(settings.needFireTotem)) end
 	if settings.needEnemies then parts[#parts + 1] = "gegner=" .. try(internals.nearbyEnemies, settings.enemyRange) end
 	if settings.needFireTotem then parts[#parts + 1] = "feuertotem=" .. try(ns.Totems and ns.Totems.IsActive, 1) end

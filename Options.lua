@@ -466,12 +466,14 @@ local KIND_DESCRIPTIONS = {
 local STATE_COLORS = {
 	on = { 0.25, 0.9, 0.35 },
 	unknown = { 0.95, 0.75, 0.2 },
+	spec = { 0.95, 0.75, 0.2 },
 	off = { 0.4, 0.4, 0.4 },
 	class = { 0.4, 0.4, 0.4 },
 }
 local STATE_TEXT = {
 	on = L["Switched on."],
 	unknown = L["Switched on, but the spell is not in your spellbook. The alert therefore stays invisible."],
+	spec = L["Switched on, but not for your current specialization. The alert therefore stays invisible."],
 	off = L["Switched off."],
 	class = L["For shamans only. On this character the alert stays invisible."],
 }
@@ -480,6 +482,7 @@ local function alertState(alert)
 	if alert.def.class ~= nil and alert.def.class ~= ns.state.class then return "class" end
 	if not alert.s.enabled then return "off" end
 	if ns.internals.spellKnown(alert) == false then return "unknown" end
+	if ns.specAllows(alert) == false then return "spec" end
 	return "on"
 end
 
@@ -1151,6 +1154,20 @@ local function createFrame()
 			cur().castFirst = value
 			changed()
 		end, "ready"), L["While your target casts something that can be interrupted and this spell is ready, this alert is shown, and the alerts it otherwise stands behind stay hidden."])
+	-- Spezialisierung: nur zeigen, solange einer der angehakten Talentbäume die meisten Punkte hat
+	local specLabel = addText(rules, L["Show in these specializations:"], "GameFontNormalSmall", 0, -306)
+	specLabel.hideFor = "stacks"
+	widgets[#widgets + 1] = specLabel
+	for index, key in ipairs(ns.SPECS) do
+		local check = tip(addCheck(rules, ns.SPEC_NAMES[key], (index - 1) * 130, -322,
+			function() return ns.specWanted(selected, key) end,
+			function(value)
+				if not ns.setSpecWanted(selected, key, value) then ns.msg(L["At least one specialization must stay checked."]) end
+				ns.RefreshOptions() -- kein Neuaufbau nötig: die Bedingung wird laufend geprüft
+			end), L["The alert only appears while one of the checked talent trees holds most of your talent points. All three checked: always. /sha spec shows what the addon reads."])
+		check.hideFor = "stacks"
+		check.specKey = key
+	end
 	local enemiesCheck = tip(addCheck(rules, "", 0, -192,
 		function() return cur().needEnemies end,
 		function(value)

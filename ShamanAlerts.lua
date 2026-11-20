@@ -1094,6 +1094,7 @@ local CUSTOM_DEFAULTS = {
 	needCasting = false, -- nur solange das Ziel etwas Unterbrechbares zaubert
 	castFirst = false, -- nur bei "Zauber bereit": Vorrang an seiner Stelle, solange das Ziel etwas Unterbrechbares zaubert
 	maxMana = 0, -- nur zeigen, solange das eigene Mana höchstens so viel Prozent hat (0 = immer)
+	specs = "", -- nur in diesen Spezialisierungen zeigen (Schlüssel durch Komma getrennt, "" = in jeder)
 	needPlayer = false, -- nur solange das Ziel ein Spieler ist (PvP)
 	noPlayer = false, -- nicht, solange das Ziel ein Spieler ist
 	bossAlways = false, -- nur bei Alarmen auf das Ziel: Bei einem Boss gilt die Lebens-Schwelle nicht
@@ -1136,6 +1137,11 @@ local function customDef(spec)
 		spec = spec,
 		defaults = CUSTOM_DEFAULTS,
 	}
+end
+
+-- Jeder Alarm lässt sich auf Spezialisierungen beschränken ("" = in jeder).
+for _, def in ipairs(ALERT_DEFS) do
+	if def.defaults.specs == nil then def.defaults.specs = "" end
 end
 
 local db
@@ -2701,6 +2707,98 @@ end
 -- Mana-Schwelle: sichtbar nur, solange das eigene Mana höchstens so viel
 -- Prozent hat. Der Wert ist im Kampf geheim, deshalb rechnet ihn das Spiel über
 -- eine Stufenkurve selbst in eine Deckkraft um, wie bei der Lebens-Schwelle.
+-- Spezialisierung. WoW Forever kennt keine wählbare Spezialisierung: Die drei
+-- Talentbäume liegen als Gruppen in einem einzigen Baum, und als Spezialisierung
+-- gilt hier der Baum mit den meisten Punkten (bei Gleichstand der linke).
+ns.SPECS = { "elemental", "enhancement", "restoration" }
+ns.SPEC_NAMES = { elemental = L["Elemental"], enhancement = L["Enhancement"], restoration = L["Restoration"] }
+
+-- Liest die Punkte je Baum. Rückgabe: Schlüssel der Spezialisierung oder nil,
+-- dazu die Punkte je Baum (Tabelle) oder der Grund, warum es nicht ging (Text).
+function ns.readSpec()
+	if not (C_ClassTalents and C_ClassTalents.GetActiveConfigID and C_Traits and C_Traits.GetConfigInfo
+		and C_Traits.GetGroupDisplayInfoByTreeID and C_Traits.GetGroupCurrencyInfo) then
+		return nil, "api"
+	end
+	local ok, spec, points = pcall(function()
+		local configID = C_ClassTalents.GetActiveConfigID()
+		local config = configID and C_Traits.GetConfigInfo(configID)
+		local treeID = config and config.treeIDs and config.treeIDs[1]
+		if not treeID then return nil, "config" end
+		local groups = C_Traits.GetGroupDisplayInfoByTreeID(treeID)
+		if type(groups) ~= "table" or #groups == 0 then return nil, "groups" end
+		table.sort(groups, function(a, b) return (a.orderIndex or 0) < (b.orderIndex or 0) end)
+		local ids = {}
+		for index, group in ipairs(groups) do ids[index] = group.groupID end
+		local spent = {}
+		for _, group in ipairs(C_Traits.GetGroupCurrencyInfo(configID, ids) or {}) do
+			local currency = group.currencyInfos and group.currencyInfos[1]
+			if currency then spent[group.traitNodeGroupID] = tonumber(currency.spent) end
+		end
+		local best, lead, counts = 0, nil, {}
+		for index, id in ipairs(ids) do
+			counts[index] = spent[id] or 0
+			if counts[index] > best then best, lead = counts[index], index end
+		end
+		return lead and ns.SPECS[lead] or nil, counts
+	end)
+	if not ok then return nil, "error" end
+	return spec, points
+end
+
+-- Die Spezialisierung des Schamanen oder nil, wenn sie sich nicht erkennen
+-- lässt. Von Hand festgelegt (/sha spec) geht vor. Gemerkt bis zum nächsten
+-- Talent-Ereignis; ein Fehlschlag wird nach ein paar Sekunden neu versucht.
+function ns.currentSpec()
+	local forced = db and db.specOverride
+	if forced and ns.SPEC_NAMES[forced] then return forced end
+	local now = GetTime and GetTime() or 0
+	if state.spec == nil or (state.spec == false and now - (state.specAt or 0) >= 5) then
+		local spec, points = ns.readSpec()
+		state.spec, state.specPoints, state.specAt = spec or false, points, now
+	end
+	return state.spec or nil
+end
+
+-- Gilt der Alarm in dieser Spezialisierung? "specs" nennt die erlaubten
+-- Schlüssel, "" heißt: in jeder.
+function ns.specWanted(alert, key)
+	local wanted = alert.s.specs
+	return type(wanted) ~= "string" or wanted == "" or wanted:find(key, 1, true) ~= nil
+end
+
+-- Darf der Alarm gerade erscheinen? Lässt sich die Spezialisierung nicht
+-- erkennen, gilt keine Beschränkung.
+function ns.specAllows(alert)
+	local wanted = alert.s.specs
+	if type(wanted) ~= "string" or wanted == "" then return true end
+	local spec = ns.currentSpec()
+	if not spec then return true end
+	return wanted:find(spec, 1, true) ~= nil
+end
+
+-- Hakt eine Spezialisierung für den Alarm an oder ab. Mindestens eine bleibt.
+function ns.setSpecWanted(alert, key, on)
+	local list = {}
+	for _, spec in ipairs(ns.SPECS) do
+		local keep = ns.specWanted(alert, spec)
+		if spec == key then keep = on and true or false end
+		if keep then list[#list + 1] = spec end
+	end
+	if #list == 0 then return false end
+	alert.s.specs = #list == #ns.SPECS and "" or table.concat(list, ",")
+	return true
+end
+
+-- Die erlaubten Spezialisierungen eines Alarms als Text.
+function ns.specText(alert)
+	local names = {}
+	for _, spec in ipairs(ns.SPECS) do
+		if ns.specWanted(alert, spec) then names[#names + 1] = ns.SPEC_NAMES[spec] end
+	end
+	return table.concat(names, ", ")
+end
+
 function ns.manaCurve(alert)
 	local threshold = alert.s.maxMana or 0
 	if threshold <= 0 or threshold >= 100 then return nil end
@@ -2889,6 +2987,7 @@ function conditionMet(alert)
 	if alert.s.combatOnly and not combat then return false end
 	if not spellKnown(alert) then return false end
 	if alert.s.needUsable and spellUsable(alert) == false then return false end
+	if not ns.specAllows(alert) then return false end
 	-- Die Aggro-Bedingung gilt nur im Kampf. Außerhalb darf der Alarm ans Nachbuffen erinnern.
 	if alert.s.needAggro and combat and hasAggro() == false then return false end
 	local ready = alert.def.kind == "ready"
@@ -3373,6 +3472,10 @@ events:SetScript("OnEvent", function(self, event, arg1, _, arg3)
 		self:RegisterUnitEvent("UNIT_HEALTH", "target")
 		self:RegisterUnitEvent("UNIT_THREAT_SITUATION_UPDATE", "player")
 		pcall(self.RegisterUnitEvent, self, "UNIT_POWER_UPDATE", "player") -- für die Mana-Schwelle
+		-- Talente geändert: für die Beschränkung auf eine Spezialisierung
+		for _, name in ipairs({ "TRAIT_CONFIG_UPDATED", "PLAYER_TALENT_UPDATE", "ACTIVE_COMBAT_CONFIG_CHANGED", "TRAIT_TREE_CURRENCY_INFO_UPDATED" }) do
+			pcall(self.RegisterEvent, self, name)
+		end
 		-- Zauber des Ziels: für den Unterbrechen-Alarm ohne Verzögerung
 		for _, name in ipairs(CAST_EVENTS) do pcall(self.RegisterUnitEvent, self, name, "target") end
 		pcall(self.RegisterUnitEvent, self, "UNIT_SPELLCAST_SUCCEEDED", "player") -- startet die Uhr zum frühen Auffrischen
@@ -3407,6 +3510,7 @@ events:SetScript("OnEvent", function(self, event, arg1, _, arg3)
 		-- Neuer Zauber oder Rang gelernt: "bekannt" neu prüfen und die ID nachtragen
 		for _, alert in ipairs(alerts) do alert.known, alert.readySpell = nil, nil end
 		state.rangeSpells = nil
+		state.spec = nil
 		state.lastScan = 0
 		onAuraChanged()
 		updateConditions()
@@ -3423,6 +3527,11 @@ events:SetScript("OnEvent", function(self, event, arg1, _, arg3)
 			if alert.def.unit == "target" and alert.s.minHealth > 0 then applyHealthGate(alert) end
 			applyLowGate(alert)
 		end
+	elseif event == "TRAIT_CONFIG_UPDATED" or event == "PLAYER_TALENT_UPDATE" or event == "ACTIVE_COMBAT_CONFIG_CHANGED" or event == "TRAIT_TREE_CURRENCY_INFO_UPDATED" then
+		-- Talente geändert: Spezialisierung neu lesen
+		state.spec = nil
+		updateConditions()
+		if ns.RefreshOptions then pcall(ns.RefreshOptions) end
 	elseif event == "UNIT_POWER_UPDATE" then
 		-- häufiges Ereignis: nur die Mana-Schwelle nachführen
 		for _, alert in ipairs(alerts) do
@@ -3632,6 +3741,30 @@ local FIELDS = {
 		local value = toNumber(text)
 		if not value or value < 0 or value > 100 then return false, (L["Please enter a number from %s to %s."]):format(0, 100) end
 		alert.s.maxMana = math.floor(value + 0.5)
+		return true
+	end,
+	specs = function(alert, text)
+		if alert.def.kind == "stacks" then return false, L["Stack alerts cannot be limited to a specialization."] end
+		local lowered = text:lower()
+		if lowered == "" or lowered == "all" or lowered == "alle" then
+			alert.s.specs = ""
+			return true
+		end
+		local chosen, count = {}, 0
+		for word in lowered:gmatch("[^,%s]+") do
+			local match
+			for _, spec in ipairs(ns.SPECS) do
+				if #word >= 3 and spec:sub(1, #word) == word then match = spec end
+			end
+			if not match then return false, L["Please enter all, or one or more of: elemental, enhancement, restoration."] end
+			if not chosen[match] then chosen[match] = true; count = count + 1 end
+		end
+		if count == 0 then return false, L["Please enter all, or one or more of: elemental, enhancement, restoration."] end
+		local list = {}
+		for _, spec in ipairs(ns.SPECS) do
+			if chosen[spec] then list[#list + 1] = spec end
+		end
+		alert.s.specs = count == #ns.SPECS and "" or table.concat(list, ",")
 		return true
 	end,
 	bossalways = function(alert, text)
@@ -3890,6 +4023,10 @@ local function printStatus()
 				msg(L["  Stands behind \"%s\" (wants to show right now: %s)."], partner.def.title, yesNo(partnerWants(partner)))
 			end
 		end
+		if (settings.specs or "") ~= "" then
+			local spec = ns.currentSpec()
+			msg(L["  Only as: %s (your specialization right now: %s)."], ns.specText(alert), spec and ns.SPEC_NAMES[spec] or L["unknown"])
+		end
 		if alert.def.kind == "weapon" then
 			-- schon oben ausgegeben
 		elseif alert.def.kind == "stacks" then
@@ -3950,7 +4087,7 @@ local function printHelp()
 	print(L["  /sha - open or close the options window"])
 	print(L["  /sha test [alert] - preview for 3 seconds, with the sound"])
 	print(L["  /sha set <alert> <field> <value> - e.g. /sha set maelstrom threshold 4"])
-	print(L["     Fields: enabled, threshold, size, alpha, texture, color, additive, pulse, icon, combatonly, needusable, needaggro, needplayer, noplayer, needtarget, needrange, needenemies, minenemies, enemyrange, needfiretotem, needcasting, castfirst, needready, lead, refresh, duration, yieldto, behind, placelike, minhealth, maxmana, bossalways, offhand, sound, soundfile, name"])
+	print(L["     Fields: enabled, threshold, size, alpha, texture, color, additive, pulse, icon, combatonly, needusable, needaggro, needplayer, noplayer, needtarget, needrange, needenemies, minenemies, enemyrange, needfiretotem, needcasting, castfirst, needready, lead, refresh, duration, yieldto, behind, placelike, minhealth, maxmana, bossalways, specs, offhand, sound, soundfile, name"])
 	print(L["     Display: display (icon, texture), iconzoom, iconborder, bordercolor, iconspell (spell ID, name, path or auto)"])
 	print(L["     Layout: layout (center, bottom, top, left, right, sides, topbottom, around), count, distance, spread, rotate, angle, flip, perstack, x, y"])
 	print(L["  /sha id <alert> <aura ID|reset> - add an aura ID or reset the IDs"])
@@ -3958,6 +4095,7 @@ local function printHelp()
 	print(L["     Custom alerts: title, kind (active, missing, stacks, ready), unit (player, target), auratype (buff, debuff, mine), timer"])
 	print(L["  /sha scan - list your buffs and your debuffs on the target with their IDs"])
 	print(L["  /sha minimap [on|off] - show or hide the minimap button"])
+	print(L["  /sha spec [auto|elemental|enhancement|restoration] - show your specialization or set it by hand"])
 	print(L["  /sha profile - page for profiles and sharing; /sha profile save|load|delete <name>, /sha profile list"])
 	print(L["  /sha export - the settings as text to pass on"])
 	print(L["  /sha totem - settings of the totem bar; /sha totem <field> <value> or /sha totem reset"])
@@ -4114,6 +4252,52 @@ commands.minimap = function(rest)
 	msg(L["Minimap button: %s."], ns.Minimap.IsShown() and L["visible"] or L["hidden"])
 	if ns.RefreshOptions then ns.RefreshOptions(true) end
 end
+
+-- /sha spec [auto|elemental|enhancement|restoration]: Spezialisierung zeigen
+-- oder von Hand festlegen, falls das Spiel sie nicht verrät.
+commands.spec = function(rest)
+	local word = (rest or ""):lower():match("^%s*(%S*)")
+	if word ~= "" then
+		local match
+		for _, spec in ipairs(ns.SPECS) do
+			if #word >= 3 and spec:sub(1, #word) == word then match = spec end
+		end
+		if word == "auto" then
+			db.specOverride = nil
+		elseif match then
+			db.specOverride = match
+		else
+			msg(L["Please enter auto, elemental, enhancement or restoration."])
+			return
+		end
+		state.spec = nil
+		updateConditions()
+		if ns.RefreshOptions then ns.RefreshOptions() end
+	end
+	if db.specOverride and ns.SPEC_NAMES[db.specOverride] then
+		msg(L["Specialization set by hand: %s. /sha spec auto reads it from your talents again."], ns.SPEC_NAMES[db.specOverride])
+		return
+	end
+	state.spec = nil
+	local spec = ns.currentSpec()
+	local points = state.specPoints
+	local detail
+	if type(points) == "table" then
+		local parts = {}
+		for index, count in ipairs(points) do
+			parts[#parts + 1] = (ns.SPEC_NAMES[ns.SPECS[index] or ""] or ("#" .. index)) .. " " .. tostring(count)
+		end
+		detail = table.concat(parts, ", ")
+	else
+		detail = tostring(points)
+	end
+	if spec then
+		msg(L["Specialization: %s (talent points: %s)."], ns.SPEC_NAMES[spec], detail)
+	else
+		msg(L["Specialization: not recognizable (%s). Alerts limited to a specialization show in every one then. /sha spec enhancement sets it by hand."], detail)
+	end
+end
+commands.spezialisierung = commands.spec
 commands.optionen = commands.options
 
 -------------------------------------------------------------------------------

@@ -37,7 +37,7 @@ ready, Lightning Shield is gone. You keep your eyes on the fight instead of on t
 - **Sounds** per alert, with your LibSharedMedia sounds if you have them.
 - **Conditions** per alert: in combat only, enough mana, own mana below a threshold, in range,
   target is casting, number of enemies nearby, target health, only against players or never
-  against players.
+  against players, only in certain specializations (Elemental, Enhancement, Restoration).
 - **Your own alerts** for any buff, debuff or spell: "is active", "is missing", "from X stacks"
   or "spell ready".
 - **Profiles and sharing**: save your setup as a profile, or export it as a short text and send

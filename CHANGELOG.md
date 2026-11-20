@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.48.0
+- Alerts per specialization: on the conditions tab every alert (except stack alerts) can be
+  limited to Elemental, Enhancement or Restoration. Your specialization is the talent tree
+  that holds most of your points. `/sha spec` shows what the addon reads, and
+  `/sha spec enhancement` sets it by hand if the game does not tell
+  (`/sha set shield specs enhancement,elemental`, `all` lifts the limit)
+
 ## 2.47.0
 - Five new alerts: "Rage of the Farseer ready" and "Nature's Swiftness ready" for the two
   talents, "Mana Tide Totem ready", "Water Shield missing" and "Riptide ready". Water Shield and
