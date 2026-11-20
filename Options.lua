@@ -1108,6 +1108,14 @@ local function createFrame()
 		end), L["While your target is a player, the alert stays invisible. Against ordinary enemies it appears as usual."]).visibleIf = function()
 			return selected.def.kind == "missing" and selected.def.unit == "target"
 		end
+	tip(addCheck(rules, L["Always against bosses"], 0, -168,
+		function() return cur().bossAlways end,
+		function(value)
+			cur().bossAlways = value
+			changed()
+		end), L["While your target is a boss, the health threshold does not apply: the alert appears however little health the boss has left. A boss is what the game ranks as one or what shows a skull as its level."]).visibleIf = function()
+			return selected.def.unit == "target" and selected.def.kind ~= "stacks"
+		end
 	tip(addCheck(rules, L["Only with an attackable target"], 0, -96,
 		function() return cur().needTarget end,
 		function(value)

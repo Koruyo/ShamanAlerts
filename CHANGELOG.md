@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.46.0
+- Against a boss, Flame Shock is now always suggested while your Flame Shock is not on it: the
+  health threshold of the alert (35 % by default) no longer applies there, and Earth Shock no
+  longer takes its place below that threshold. A boss is what the game ranks as one, what holds
+  a boss frame or what shows a skull as its level. Earth Shock still comes first while the
+  target casts something you can interrupt. New checkbox "Always against bosses" on the
+  conditions tab (`/sha set flameshock bossalways off` switches it off)
+
 ## 2.45.0
 - Sixteen more Maelstrom Weapon pictures that build up in five parts, plainer in form and of
   very different footprints, from compact to widely spread: dots, sparks, short bolt, gem, orbit,

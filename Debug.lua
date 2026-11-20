@@ -53,6 +53,7 @@ local function describe(alert)
 	if settings.needUsable then parts[#parts + 1] = "wirkbar=" .. try(internals.spellUsable, alert) end
 	if settings.needPlayer then parts[#parts + 1] = "spieler=" .. try(internals.targetIsPlayer) end
 	if settings.noPlayer then parts[#parts + 1] = "nichtspieler=" .. try(internals.targetIsPlayer, false) end
+	if settings.bossAlways then parts[#parts + 1] = "boss=" .. try(internals.targetIsBoss) end
 	if (settings.placeLike or "") ~= "" then parts[#parts + 1] = "lage=" .. tostring(settings.placeLike) end
 	if (settings.behind or "") ~= "" then parts[#parts + 1] = ("hinter=%s zurück=%s"):format(settings.behind, try(internals.standsBehind, alert)) end
 	if settings.needAggro then parts[#parts + 1] = "aggro=" .. try(internals.hasAggro) end

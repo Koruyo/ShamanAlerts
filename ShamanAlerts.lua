@@ -393,6 +393,7 @@ local ALERT_DEFS = {
 			refresh = 2, -- schon warnen, wenn der Debuff nur noch so viele Sekunden läuft
 			auraDuration = 12, -- so lange läuft der Debuff; daran misst die eigene Uhr
 			minHealth = 35, -- nur warnen, wenn das Ziel noch so viel Prozent Leben hat
+			bossAlways = true, -- bei einem Boss gilt diese Schwelle nicht: Fehlt der Flammenschock, wird er immer vorgeschlagen
 			auraName = L["Flame Shock"],
 			-- Alle Ränge auf Forever, dazu die Retail-ID
 			spellIDs = { [8050] = true, [8052] = true, [8053] = true, [10447] = true, [10448] = true, [29228] = true, [188389] = true },
@@ -852,6 +853,7 @@ local CUSTOM_DEFAULTS = {
 	castFirst = false, -- nur bei "Zauber bereit": Vorrang an seiner Stelle, solange das Ziel etwas Unterbrechbares zaubert
 	needPlayer = false, -- nur solange das Ziel ein Spieler ist (PvP)
 	noPlayer = false, -- nicht, solange das Ziel ein Spieler ist
+	bossAlways = false, -- nur bei Alarmen auf das Ziel: Bei einem Boss gilt die Lebens-Schwelle nicht
 	placeLike = "", -- Lage und Größe mit diesem Alarm teilen (Schlüssel)
 	yieldTo = "", -- nur bei "Zauber bereit": hinter diesem Alarm zurückstehen
 	behind = "", -- Rangfolge: hinter diesen Alarmen ganz zurückstehen (Schlüssel durch Komma getrennt)
@@ -2372,6 +2374,57 @@ local function castReport()
 	return ("zielzauber: unterbrechbar=%s %s"):format(tostring(targetCasting()), table.concat(parts, " "))
 end
 
+-- Ist das Ziel ein Boss? Als Boss gilt, was das Spiel selbst so einstuft
+-- (Rang "worldboss", Boss-Kennzeichen), was einen der Boss-Rahmen belegt und
+-- was als Stufe den Totenkopf trägt. Rückgabe: true, false oder nil (das Spiel
+-- verrät es gerade nicht). Ein Ja gilt, bis das Ziel wechselt. Ein Nein kann
+-- noch kippen, weil die Boss-Rahmen erst mit dem Kampfbeginn belegt werden.
+local BOSS_UNITS = 8
+
+local function targetIsBoss()
+	if state.targetBoss then return true end
+	-- Im selben Augenblick fragen mehrere Alarme: dann genügt eine Abfrage.
+	local now = GetTime and GetTime() or 0
+	if state.bossAt == now then return state.bossSeen end
+	state.bossAt, state.bossSeen = now, nil
+	local unknown = false
+	-- Fehlt eine Abfrage in diesem Client, zählt sie nicht. Scheitert sie oder
+	-- ist ihr Ergebnis geheim, bleibt die Antwort offen.
+	local function ask(fn, ...)
+		if type(fn) ~= "function" then return nil end
+		local ok, result = pcall(fn, ...)
+		if not ok or isSecret(result) then
+			unknown = true
+			return nil
+		end
+		return result
+	end
+	local exists = ask(UnitExists, "target")
+	if exists == nil then return nil end
+	if not exists then
+		state.bossSeen = false
+		return false
+	end
+	local boss = ask(UnitClassification, "target") == "worldboss"
+		or ask(UnitLevel, "target") == -1
+		or ask(UnitIsBossMob, "target") == true
+	for index = 1, BOSS_UNITS do
+		if boss then break end
+		local unit = "boss" .. index
+		if ask(UnitExists, unit) then
+			local same = ask(UnitIsUnit, "target", unit)
+			boss = same == true or same == 1
+		end
+	end
+	if boss then
+		state.targetBoss = true
+		return true
+	end
+	if unknown then return nil end
+	state.bossSeen = false
+	return false
+end
+
 -- Leben des Ziels: Die Prozentzahl ist im Kampf geheim. Erlaubt ist aber, sie
 -- vom Spiel über eine Stufenkurve in eine Deckkraft umrechnen zu lassen (0
 -- unter der Schwelle, 1 darüber) und diese direkt an den Rahmen zu geben.
@@ -2397,6 +2450,8 @@ local function applyHealthGate(alert)
 	local visuals = alert.current and alert.current.visuals
 	if not visuals or #visuals == 0 then return end
 	local curve = healthCurve(alert)
+	-- Bei einem Boss gilt die Schwelle auf Wunsch nicht ("bossAlways").
+	if curve and alert.s.bossAlways and targetIsBoss() then curve = nil end
 	local alpha = 1
 	if curve then
 		local ok, value = pcall(UnitHealthPercent, "target", false, curve)
@@ -2529,7 +2584,10 @@ local function applyLowGate(alert)
 		alert.lowCurveAt = threshold
 	end
 	local alpha = 0 -- ohne Kurve bleibt diese Kopie unsichtbar
-	if alert.lowCurve and UnitHealthPercent then
+	-- Gilt die Schwelle des anderen Alarms bei einem Boss nicht ("bossAlways"),
+	-- warnt er dort selbst, und diese Kopie bleibt ebenfalls unsichtbar.
+	local lifted = current.partner.s.bossAlways and targetIsBoss()
+	if not lifted and alert.lowCurve and UnitHealthPercent then
 		local ok, value = pcall(UnitHealthPercent, "target", false, alert.lowCurve)
 		if ok and value ~= nil then alpha = value end
 	end
@@ -2864,6 +2922,7 @@ end
 
 -- Container, die am Ziel hängen, nach einem Zielwechsel neu einlesen.
 local function onTargetChanged()
+	state.targetBoss, state.bossAt = nil, nil -- ob das neue Ziel ein Boss ist, wird neu gefragt
 	for _, alert in ipairs(alerts) do
 		-- Ohne Kennung des Ziels gilt die Uhr nur, bis das Ziel wechselt.
 		if alert.castTarget == false then alert.castAt = nil end
@@ -3275,6 +3334,11 @@ local FIELDS = {
 		return true
 	end,
 	minhealth = numberField("minHealth", 0, 95, true),
+	bossalways = function(alert, text)
+		if alert.def.unit ~= "target" then return false, L["This exists for alerts on the target only."] end
+		alert.s.bossAlways = toBoolean(text, alert.s.bossAlways)
+		return true
+	end,
 	title = function(alert, text)
 		if not alert.def.custom then return false, L["Only your own alerts can be renamed."] end
 		if text == "" then return false, L["Please enter a title."] end
@@ -3572,6 +3636,10 @@ local function printStatus()
 			msg(L["  Only with enough mana: %s (usable right now: %s), target health at least: %s."],
 				yesNo(settings.needUsable), usable == nil and L["unknown"] or yesNo(usable),
 				settings.minHealth > 0 and (settings.minHealth .. " %" .. (healthCurve(alert) and "" or L[", not possible in this client"])) or L["off"])
+			if settings.bossAlways and alert.def.unit == "target" then
+				local boss = targetIsBoss()
+				msg(L["  Always against bosses: %s (target is a boss right now: %s)."], yesNo(true), boss == nil and L["unknown"] or yesNo(boss))
+			end
 		end
 	end
 end
@@ -3581,7 +3649,7 @@ local function printHelp()
 	print(L["  /sha - open or close the options window"])
 	print(L["  /sha test [alert] - preview for 3 seconds, with the sound"])
 	print(L["  /sha set <alert> <field> <value> - e.g. /sha set maelstrom threshold 4"])
-	print(L["     Fields: enabled, threshold, size, alpha, texture, color, additive, pulse, icon, combatonly, needusable, needaggro, needplayer, noplayer, needtarget, needrange, needenemies, minenemies, enemyrange, needfiretotem, needcasting, castfirst, needready, lead, refresh, duration, yieldto, behind, placelike, minhealth, offhand, sound, soundfile, name"])
+	print(L["     Fields: enabled, threshold, size, alpha, texture, color, additive, pulse, icon, combatonly, needusable, needaggro, needplayer, noplayer, needtarget, needrange, needenemies, minenemies, enemyrange, needfiretotem, needcasting, castfirst, needready, lead, refresh, duration, yieldto, behind, placelike, minhealth, bossalways, offhand, sound, soundfile, name"])
 	print(L["     Display: display (icon, texture), iconzoom, iconborder, bordercolor, iconspell (spell ID, name, path or auto)"])
 	print(L["     Layout: layout (center, bottom, top, left, right, sides, topbottom, around), count, distance, spread, rotate, angle, flip, perstack, x, y"])
 	print(L["  /sha id <alert> <aura ID|reset> - add an aura ID or reset the IDs"])
@@ -3852,7 +3920,7 @@ ns.ALERT_DEFS = ALERT_DEFS
 ns.internals = {
 	conditionMet = conditionMet, spellKnown = spellKnown, spellUsable = spellUsable, hasAggro = hasAggro,
 	readySpell = readySpell, spellReady = spellReady, spellInRange = spellInRange, nearbyEnemies = nearbyEnemies, enemyReport = enemyReport, targetCasting = targetCasting, castReport = castReport,
-	partnerOf = partnerOf, partnerWants = partnerWants, standsBehind = standsBehind, targetIsPlayer = targetIsPlayer, placeLeader = placeLeader, placeMates = placeMates, joinPlacement = joinPlacement, refreshRemaining = refreshRemaining, refreshDue = refreshDue, noteCast = noteCast,
+	partnerOf = partnerOf, partnerWants = partnerWants, standsBehind = standsBehind, targetIsPlayer = targetIsPlayer, targetIsBoss = targetIsBoss, placeLeader = placeLeader, placeMates = placeMates, joinPlacement = joinPlacement, refreshRemaining = refreshRemaining, refreshDue = refreshDue, noteCast = noteCast,
 }
 ns.CUSTOM_KINDS = CUSTOM_KINDS
 ns.PLAIN_KINDS = PLAIN_KINDS
