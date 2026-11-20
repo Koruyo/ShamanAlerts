@@ -4106,13 +4106,17 @@ local function alertKeys()
 	return table.concat(keys, ", ")
 end
 
-local function printStatus()
-	local _, _, _, interface = GetBuildInfo()
-	msg(L["Client interface %s, AuraContainer: %s, auras restricted right now: %s."],
-		tostring(interface), state.containerOK == nil and L["not checked"] or yesNo(state.containerOK), yesNo(aurasRestricted()))
-	if not state.isShaman then msg(L["This character is not a shaman: the built-in alerts and the totem bar stay silent, your own alerts work."]) end
-	if ns.Totems then ns.Totems.Status() end
-	for _, alert in ipairs(alerts) do
+-- /sha status [alarm]: mit einem Schlüssel nur die Zeilen dieses einen Alarms
+local function printStatus(rest)
+	local only = alerts[tostring(rest or ""):lower():match("^%s*(%a[%w_]*)") or ""]
+	if not only then
+		local _, _, _, interface = GetBuildInfo()
+		msg(L["Client interface %s, AuraContainer: %s, auras restricted right now: %s."],
+			tostring(interface), state.containerOK == nil and L["not checked"] or yesNo(state.containerOK), yesNo(aurasRestricted()))
+		if not state.isShaman then msg(L["This character is not a shaman: the built-in alerts and the totem bar stay silent, your own alerts work."]) end
+		if ns.Totems then ns.Totems.Status() end
+	end
+	for _, alert in ipairs(only and { only } or alerts) do
 		local settings = alert.s
 		msg(L["%s (%s): enabled %s, display built %s, size %d, %s, sound %s."],
 			alert.def.title, alert.key, yesNo(settings.enabled), yesNo(alert.current ~= nil), settings.size,

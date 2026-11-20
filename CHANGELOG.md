@@ -7,7 +7,8 @@
   `/sha set weapon offimbue flametongue` (`any` accepts every enchant, as before)
 - New alert "Flametongue Weapon missing" for healers: it shows as Restoration while the main
   hand does not carry Flametongue Weapon. While it warns, "Weapon enchant missing" stays quiet
-- `/sha status` names the enchant on each weapon
+- `/sha status` names the enchant on each weapon, and `/sha status weapon` prints the lines of
+  one alert only
 - Specialization: a character without talent points counts as Enhancement, and right after
   login an alert limited to a specialization waits until the talents are known instead of
   flashing up
