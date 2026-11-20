@@ -88,6 +88,7 @@ local function describe(alert)
 		parts[#parts + 1] = ("zauber=%s bereit=%s vorlauf=%s"):format(show(internals.readySpell(alert)), try(internals.spellReady, alert), show(settings.lead))
 	elseif def.kind == "weapon" then
 		parts[#parts + 1] = "fehlt=" .. show(alert.weaponMissing)
+		parts[#parts + 1] = ("erwartet=%s/%s"):format(tostring(settings.mainImbue), tostring(settings.offImbue))
 	end
 	-- Früh auffrischen: Stand der eigenen Uhr, beim Fehlt-Alarm und bei dem Alarm, der hinter ihm zurücksteht
 	local refreshSource = def.kind == "missing" and alert or (def.kind == "ready" and internals.partnerOf(alert)) or nil

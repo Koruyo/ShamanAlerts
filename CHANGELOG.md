@@ -1,5 +1,17 @@
 # Changelog
 
+## 2.49.0
+- Weapon enchants by kind: a weapon alert can now expect a certain enchant per hand (Windfury,
+  Flametongue, Rockbiter or Frostbrand Weapon) and also warns while the weapon carries another
+  one. Two buttons on the conditions tab, or `/sha set weapon mainimbue windfury` and
+  `/sha set weapon offimbue flametongue` (`any` accepts every enchant, as before)
+- New alert "Flametongue Weapon missing" for healers: it shows as Restoration while the main
+  hand does not carry Flametongue Weapon. While it warns, "Weapon enchant missing" stays quiet
+- `/sha status` names the enchant on each weapon
+- Specialization: a character without talent points counts as Enhancement, and right after
+  login an alert limited to a specialization waits until the talents are known instead of
+  flashing up
+
 ## 2.48.0
 - Alerts per specialization: on the conditions tab every alert (except stack alerts) can be
   limited to Elemental, Enhancement or Restoration. Your specialization is the talent tree

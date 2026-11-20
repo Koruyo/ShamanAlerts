@@ -452,6 +452,7 @@ local DESCRIPTIONS = {
 	manatide = L["Appears as soon as Mana Tide Totem is ready and your mana is low. The threshold is set on the conditions tab."],
 	watershield = L["Warns in combat while Water Shield is missing, even if another shield is active. By default only for Restoration."],
 	riptide = L["Appears as soon as Riptide is ready. Switched off by default."],
+	flametongue = L["Warns while your main hand does not carry Flametongue Weapon. By default only for Restoration."],
 	bloodfury = L["Appears as soon as Blood Fury (orc) is ready."],
 	berserking = L["Appears as soon as Berserking (troll) is ready."],
 }
@@ -1088,7 +1089,26 @@ local function createFrame()
 		function(value)
 			cur().offhand = value
 			changed()
+			ns.RefreshOptions() -- der Knopf für die Nebenhand kommt und geht damit
 		end, "weapon"), L["Also warns if only the off-hand weapon is missing its enchant."])
+	-- Waffen-Alarm: welche Verzauberung jede Hand tragen soll
+	for index, field in ipairs({ "mainImbue", "offImbue" }) do
+		local button = tip(addButton(rules, "", 300, 0, -100 - index * 28, function()
+			local list = { "", unpack(ns.IMBUES) }
+			local position = 1
+			for at, key in ipairs(list) do
+				if key == (cur()[field] or "") then position = at end
+			end
+			ns.setImbue(selected, field, list[position % #list + 1])
+			ns.afterChange(selected)
+		end), L["Which enchant this weapon should carry. With \"any enchant\" every temporary enchant counts, also a sharpening stone or an oil. Each click picks the next one."], L["Expected enchant"])
+		button.Refresh = function(self)
+			self:SetText((index == 1 and L["Main hand: %s"] or L["Off hand: %s"]):format(ns.imbueName(cur()[field])))
+		end
+		button.visibleIf = function() return selected.def.kind == "weapon" and (index == 1 or cur().offhand == true) end
+		button.imbueField = field
+		widgets[#widgets + 1] = button
+	end
 	tip(addCheck(rules, L["Not during the cooldown of the spell"], 0, -96,
 		function() return cur().needReady end,
 		function(value)

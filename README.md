@@ -21,11 +21,12 @@ ready, Lightning Shield is gone. You keep your eyes on the fight instead of on t
 - **Shock ready** for everything else, and **Interrupt** when your target casts something you
   can stop
 - **Stormstrike ready** and **Fire Nova ready** (only with enough enemies around you)
-- **Lightning Shield missing** and **weapon enchant missing**, off hand included
+- **Lightning Shield missing** and **weapon enchant missing**, off hand included, with the
+  enchant you expect on each hand
 - **Clearcasting**, **Flurry**, **Blood Fury** and **Berserking**
 - **Rage of the Farseer ready** and **Nature's Swiftness ready**
-- For healing: **Mana Tide Totem ready** (only below a mana threshold), **Water Shield
-  missing** and **Riptide ready**
+- For healing: **Flametongue Weapon missing**, **Mana Tide Totem ready** (only below a mana
+  threshold), **Water Shield missing** and **Riptide ready**
 - **Totem bar** with your active totems and a row of totem cooldowns
 - **One place for the shocks**: they follow an order (Interrupt, Frost Shock against players,
   Flame Shock, general shock), so only the most important one is shown and only the picture

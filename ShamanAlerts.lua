@@ -511,6 +511,7 @@ local ALERT_DEFS = {
 			needAggro = false,
 			minHealth = 0,
 			offhand = true, -- auch eine Waffe in der Nebenhand prüfen
+			mainImbue = "", offImbue = "", -- welche Verzauberung die Hand tragen soll ("" = irgendeine)
 			auraName = "",
 			spellIDs = {},
 		},
@@ -1068,6 +1069,39 @@ local ALERT_DEFS = {
 			minHealth = 0,
 			auraName = L["Riptide"],
 			spellIDs = { [408521] = true, [1239242] = true, [1239243] = true },
+		},
+	},
+	{
+		key = "flametongue",
+		class = "SHAMAN",
+		title = L["Flametongue Weapon missing"],
+		kind = "weapon",
+		unit = "player",
+		learnNames = {},
+		defaultIcon = "Interface\\Icons\\Spell_Fire_FlameTounge",
+		defaults = {
+			enabled = true,
+			specs = "restoration", -- Heiler tragen die Flammenzunge; für die übrigen gibt es den Alarm "weapon"
+			threshold = 1,
+			size = 140, x = 0, y = 0, alpha = 1,
+			layout = "top", count = 1, distance = 220, spread = 20, rotate = false, angle = 0, flip = false, perStack = false,
+			display = "texture", iconZoom = 8, iconBorder = 1, iconBorderColor = { 0, 0, 0 }, iconSpell = "",
+			texture = "wow_weapon_flametongue",
+			textureRevision = 1,
+			color = { 1, 1, 1 },
+			additive = true,
+			pulse = true,
+			sound = "off", -- "off" | "removed"
+			soundFile = MEDIA .. "war_horn.ogg",
+			icon = false,
+			combatOnly = false,
+			needUsable = false,
+			needAggro = false,
+			minHealth = 0,
+			offhand = false,
+			mainImbue = "flametongue", offImbue = "", -- welche Verzauberung die Hand tragen soll ("" = irgendeine)
+			auraName = "",
+			spellIDs = {},
 		},
 	},
 }
@@ -2100,14 +2134,61 @@ local function buildPlain(alert)
 	alert.current.visual = alert.current.visuals[1]
 end
 
+-- Die Waffenverzauberungen des Schamanen. Welche auf der Waffe liegt, verrät
+-- die Kennung der Verzauberung (alle Ränge, dazu die Kennungen von WoW Forever).
+ns.IMBUES = { "windfury", "flametongue", "rockbiter", "frostbrand" }
+ns.IMBUE_NAMES = { windfury = L["Windfury Weapon"], flametongue = L["Flametongue Weapon"], rockbiter = L["Rockbiter Weapon"], frostbrand = L["Frostbrand Weapon"] }
+ns.IMBUE_IDS = {}
+for family, ids in pairs({
+	windfury = { 283, 284, 525, 1669, 7569 },
+	flametongue = { 3, 4, 5, 523, 1665, 1666, 7567 },
+	rockbiter = { 1, 6, 29, 503, 683, 1663, 1664, 7568 },
+	frostbrand = { 2, 12, 524, 1667, 1668, 7566 },
+}) do
+	for _, id in ipairs(ids) do ns.IMBUE_IDS[id] = family end
+end
+
+-- Name der erwarteten Verzauberung für Texte.
+function ns.imbueName(key)
+	return ns.IMBUE_NAMES[key or ""] or L["any enchant"]
+end
+
+-- Trägt eine Hand die erwartete Verzauberung? "families" nennt, was auf der
+-- Waffe liegt. true/false, oder nil, wenn es sich nicht erkennen lässt.
+function ns.imbueFits(families, expected)
+	if not ns.IMBUE_NAMES[expected or ""] then return true end
+	if type(families) ~= "table" then return nil end
+	if families[expected] then return true end
+	if families.unknown then return nil end
+	return false
+end
+
+-- Setzt die erwartete Verzauberung einer Hand ("mainImbue" oder "offImbue").
+function ns.setImbue(alert, field, text)
+	if alert.def.kind ~= "weapon" then return false, L["This exists for weapon alerts only."] end
+	local word = tostring(text or ""):lower()
+	if word == "" or word == "any" or word == "egal" then
+		alert.s[field] = ""
+		return true
+	end
+	for _, family in ipairs(ns.IMBUES) do
+		if #word >= 3 and family:sub(1, #word) == word then
+			alert.s[field] = family
+			return true
+		end
+	end
+	return false, L["Please enter any, windfury, flametongue, rockbiter or frostbrand."]
+end
+
 -- Hat die Waffe in diesem Platz eine zeitlich begrenzte Verzauberung?
--- true/false, oder nil, wenn das Spiel es gerade nicht verrät.
+-- true/false, oder nil, wenn das Spiel es gerade nicht verrät. Bei true dazu
+-- die Arten, die auf der Waffe liegen: { windfury = true, other = true, unknown = true }.
 local function slotImbued(invSlot)
 	local slots, kinds = Enum and Enum.WeaponSlot, Enum and Enum.ItemEnchantType
 	if C_Item and C_Item.GetWeaponEnchantInfo and slots and kinds then
 		local ok, enchants = pcall(C_Item.GetWeaponEnchantInfo, invSlot == 16 and slots.MainHand or slots.OffHand)
 		if not ok or isSecret(enchants) or type(enchants) ~= "table" then return nil end
-		local unknown = false
+		local unknown, found, families = false, false, {}
 		for _, enchant in pairs(enchants) do
 			if isSecret(enchant) or type(enchant) ~= "table" then
 				unknown = true
@@ -2116,18 +2197,27 @@ local function slotImbued(invSlot)
 				if isSecret(active) or isSecret(kind) or active == nil then
 					unknown = true
 				elseif active == true and (kind == kinds.Temporary or kind == kinds.Imbue) then
-					return true
+					found = true
+					local id = enchant.enchantID
+					if id == nil or isSecret(id) then families.unknown = true else families[ns.IMBUE_IDS[id] or "other"] = true end
 				end
 			end
+		end
+		if found then
+			if unknown then families.unknown = true end
+			return true, families
 		end
 		if unknown then return nil end
 		return false
 	end
 	if GetWeaponEnchantInfo then -- ältere Schnittstelle
-		local ok, hasMain, _, _, _, hasOff = pcall(GetWeaponEnchantInfo)
+		local ok, hasMain, _, _, mainID, hasOff, _, _, offID = pcall(GetWeaponEnchantInfo)
 		local has = invSlot == 16 and hasMain or hasOff
 		if not ok or isSecret(has) then return nil end
-		return has and true or false
+		if not has then return false end
+		local id, families = invSlot == 16 and mainID or offID, {}
+		if id == nil or isSecret(id) then families.unknown = true else families[ns.IMBUE_IDS[id] or "other"] = true end
+		return true, families
 	end
 	return nil
 end
@@ -2143,6 +2233,19 @@ local function slotHasWeapon(invSlot)
 	return classID == 2 and subclassID ~= 20
 end
 
+-- Ein Waffen-Alarm, der irgendeine Verzauberung gelten lässt, schweigt, solange
+-- ein anderer gerade eine bestimmte vermisst: Der sagt genauer, was fehlt.
+function ns.weaponCovered(alert)
+	if (alert.s.mainImbue or "") ~= "" or (alert.s.offImbue or "") ~= "" then return false end
+	for _, other in ipairs(alerts) do
+		if other ~= alert and other.def.kind == "weapon" and other.s.enabled and other.current and other.weaponMissing == true
+			and ((other.s.mainImbue or "") ~= "" or (other.s.offImbue or "") ~= "") and ns.internals.conditionMet(other) then
+			return true
+		end
+	end
+	return false
+end
+
 -- Aktualisiert "Verzauberung fehlt" für jeden Waffen-Alarm. Ist der Zustand
 -- gerade nicht lesbar, gilt der zuletzt bekannte.
 local function updateWeaponState()
@@ -2151,7 +2254,11 @@ local function updateWeaponState()
 			local anyMissing, anyUnknown = false, false
 			for _, invSlot in ipairs({ 16, 17 }) do
 				if (invSlot == 16 or alert.s.offhand) and slotHasWeapon(invSlot) then
-					local imbued = slotImbued(invSlot)
+					local imbued, families = slotImbued(invSlot)
+					if imbued == true then
+						-- verzaubert, aber womöglich nicht mit dem, was die Hand tragen soll
+						imbued = ns.imbueFits(families, invSlot == 16 and alert.s.mainImbue or alert.s.offImbue)
+					end
 					if imbued == false then anyMissing = true elseif imbued == nil then anyUnknown = true end
 				end
 			end
@@ -2757,6 +2864,10 @@ function ns.currentSpec()
 	local now = GetTime and GetTime() or 0
 	if state.spec == nil or (state.spec == false and now - (state.specAt or 0) >= 5) then
 		local spec, points = ns.readSpec()
+		-- Punkte lesbar, aber noch keiner vergeben (unter Stufe 10): Dann gilt
+		-- Verstärkung, der Baum, mit dem die meisten Schamanen aufsteigen.
+		state.specAssumed = spec == nil and type(points) == "table"
+		if state.specAssumed then spec = "enhancement" end
 		state.spec, state.specPoints, state.specAt = spec or false, points, now
 	end
 	return state.spec or nil
@@ -2770,12 +2881,14 @@ function ns.specWanted(alert, key)
 end
 
 -- Darf der Alarm gerade erscheinen? Lässt sich die Spezialisierung nicht
--- erkennen, gilt keine Beschränkung.
+-- erkennen, gilt keine Beschränkung. In den ersten Sekunden nach der Anmeldung
+-- kennt das Spiel die Talente womöglich noch nicht: Solange wartet ein
+-- beschränkter Alarm, statt kurz aufzublitzen.
 function ns.specAllows(alert)
 	local wanted = alert.s.specs
 	if type(wanted) ~= "string" or wanted == "" then return true end
 	local spec = ns.currentSpec()
-	if not spec then return true end
+	if not spec then return (GetTime and GetTime() or 0) - (state.loginAt or 0) >= 10 end
 	return wanted:find(spec, 1, true) ~= nil
 end
 
@@ -3035,7 +3148,7 @@ local function updateAlert(alert)
 		-- "eingeblendet"; sichtbar macht sie dann erst die Deckkraft.
 		local cooling = timed and ready == false and (alert.s.lead or 0) > 0
 		local met = conditionMet(alert)
-		local show = met and (kind ~= "weapon" or alert.weaponMissing == true)
+		local show = met and (kind ~= "weapon" or (alert.weaponMissing == true and not ns.weaponCovered(alert)))
 		if kind == "ready" then
 			show = show and (ready == true or cooling)
 		elseif timed then
@@ -3476,6 +3589,7 @@ for _, name in ipairs(CAST_EVENTS) do IS_CAST_EVENT[name] = true end
 events:RegisterEvent("PLAYER_LOGIN")
 events:SetScript("OnEvent", function(self, event, arg1, _, arg3)
 	if event == "PLAYER_LOGIN" then
+		state.loginAt = GetTime and GetTime() or 0
 		initDB()
 		if ns.Minimap then pcall(ns.Minimap.Init) end
 		-- Auf anderen Klassen bleibt das Addon still.
@@ -3637,6 +3751,8 @@ local FIELDS = {
 	icon = booleanField("icon"),
 	combatonly = booleanField("combatOnly"),
 	offhand = booleanField("offhand"),
+	mainimbue = function(alert, text) return ns.setImbue(alert, "mainImbue", text) end,
+	offimbue = function(alert, text) return ns.setImbue(alert, "offImbue", text) end,
 	timer = booleanField("timer"),
 	needusable = booleanField("needUsable"),
 	needaggro = booleanField("needAggro"),
@@ -4018,11 +4134,21 @@ local function printStatus()
 		if alert.def.kind == "weapon" then
 			local function describe(invSlot)
 				if not slotHasWeapon(invSlot) then return L["no weapon"] end
-				local imbued = slotImbued(invSlot)
-				return imbued == nil and L["not readable"] or (imbued and L["enchanted"] or L["not enchanted"])
+				local imbued, families = slotImbued(invSlot)
+				if imbued == nil then return L["not readable"] end
+				if not imbued then return L["not enchanted"] end
+				local names = {}
+				for _, family in ipairs(ns.IMBUES) do
+					if families and families[family] then names[#names + 1] = ns.IMBUE_NAMES[family] end
+				end
+				if families and families.other then names[#names + 1] = L["another enchant"] end
+				return L["enchanted"] .. (#names > 0 and (" (" .. table.concat(names, ", ") .. ")") or "")
 			end
 			msg(L["  Main hand: %s, off hand: %s (checked: %s), condition met right now: %s."],
 				describe(16), describe(17), yesNo(settings.offhand), yesNo(conditionMet(alert)))
+			if (settings.mainImbue or "") ~= "" or (settings.offImbue or "") ~= "" then
+				msg(L["  Expected: main hand %s, off hand %s."], ns.imbueName(settings.mainImbue), ns.imbueName(settings.offImbue))
+			end
 		else
 			msg(L["  Aura IDs: %s"], table.concat(ids, ", "))
 		end
@@ -4106,7 +4232,7 @@ local function printHelp()
 	print(L["  /sha - open or close the options window"])
 	print(L["  /sha test [alert] - preview for 3 seconds, with the sound"])
 	print(L["  /sha set <alert> <field> <value> - e.g. /sha set maelstrom threshold 4"])
-	print(L["     Fields: enabled, threshold, size, alpha, texture, color, additive, pulse, icon, combatonly, needusable, needaggro, needplayer, noplayer, needtarget, needrange, needenemies, minenemies, enemyrange, needfiretotem, needcasting, castfirst, needready, lead, refresh, duration, yieldto, behind, placelike, minhealth, maxmana, bossalways, specs, offhand, sound, soundfile, name"])
+	print(L["     Fields: enabled, threshold, size, alpha, texture, color, additive, pulse, icon, combatonly, needusable, needaggro, needplayer, noplayer, needtarget, needrange, needenemies, minenemies, enemyrange, needfiretotem, needcasting, castfirst, needready, lead, refresh, duration, yieldto, behind, placelike, minhealth, maxmana, bossalways, specs, offhand, mainimbue, offimbue, sound, soundfile, name"])
 	print(L["     Display: display (icon, texture), iconzoom, iconborder, bordercolor, iconspell (spell ID, name, path or auto)"])
 	print(L["     Layout: layout (center, bottom, top, left, right, sides, topbottom, around), count, distance, spread, rotate, angle, flip, perstack, x, y"])
 	print(L["  /sha id <alert> <aura ID|reset> - add an aura ID or reset the IDs"])
@@ -4310,7 +4436,9 @@ commands.spec = function(rest)
 	else
 		detail = tostring(points)
 	end
-	if spec then
+	if spec and state.specAssumed then
+		msg(L["Specialization: no talent points spent yet, so %s is assumed."], ns.SPEC_NAMES[spec])
+	elseif spec then
 		msg(L["Specialization: %s (talent points: %s)."], ns.SPEC_NAMES[spec], detail)
 	else
 		msg(L["Specialization: not recognizable (%s). Alerts limited to a specialization show in every one then. /sha spec enhancement sets it by hand."], detail)
