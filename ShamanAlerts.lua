@@ -476,6 +476,7 @@ local ALERT_DEFS = {
 			minHealth = 0,
 			auraName = L["Lightning Shield"],
 			shieldRevision = 1, -- seit 2.47 zählt hier nur noch das Blitzschlagschild
+			specs = "elemental,enhancement", -- Heiler tragen das Wasserschild, siehe den Alarm "watershield"
 			-- Blitzschlagschild (alle Ränge), dazu die Retail-ID
 			spellIDs = {
 				[324] = true, [325] = true, [905] = true, [945] = true, [8134] = true, [10431] = true, [10432] = true,
@@ -1002,7 +1003,8 @@ local ALERT_DEFS = {
 		requireKnown = true,
 		defaultIcon = "Interface\\Icons\\Ability_Shaman_WaterShield",
 		defaults = {
-			enabled = false, -- wer das Blitzschlagschild trägt, braucht diesen Alarm nicht
+			enabled = true,
+			specs = "restoration", -- wer das Blitzschlagschild trägt, braucht diesen Alarm nicht
 			threshold = 1,
 			size = 104, x = 0, y = 0, alpha = 1,
 			layout = "top", count = 1, distance = 350, spread = 20, rotate = false, angle = 0, flip = false, perStack = false,
@@ -3439,6 +3441,23 @@ local function initDB()
 		else
 			table.remove(db.custom, index)
 		end
+	end
+	-- Einstellungen und Profile aus der Zeit vor 2.48 kennen keine Beschränkung auf
+	-- Spezialisierungen. Sie bleiben ohne, auch wo die Voreinstellung heute eine nennt.
+	if db.specsRevision == nil then
+		local function keep(list)
+			if type(list) ~= "table" then return end
+			for _, stored in pairs(list) do
+				if type(stored) == "table" and stored.specs == nil then stored.specs = "" end
+			end
+		end
+		keep(db.alerts)
+		if type(db.profiles) == "table" then
+			for _, profile in pairs(db.profiles) do
+				if type(profile) == "table" then keep(profile.alerts) end
+			end
+		end
+		db.specsRevision = 1
 	end
 	state.placement = nil -- die gemeinsame Lage richtet sich nach den geladenen Werten
 	rebuildAlertList()

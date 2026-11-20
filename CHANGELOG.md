@@ -6,6 +6,9 @@
   that holds most of your points. `/sha spec` shows what the addon reads, and
   `/sha spec enhancement` sets it by hand if the game does not tell
   (`/sha set shield specs enhancement,elemental`, `all` lifts the limit)
+- New defaults for the two shield alerts: "Lightning Shield missing" shows as Elemental and
+  Enhancement, "Water Shield missing" is switched on and shows as Restoration. Settings and
+  profiles you already have stay as they are; "Reset" brings the new defaults
 
 ## 2.47.0
 - Five new alerts: "Rage of the Farseer ready" and "Nature's Swiftness ready" for the two
