@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.45.0
+- Sixteen more Maelstrom Weapon pictures that build up in five parts, plainer in form and of
+  very different footprints, from compact to widely spread: dots, sparks, short bolt, gem, orbit,
+  fan, arch, chevrons, spiral, compass star, arrow, row of bolts, starburst, frame, V shape and
+  roots. They are in the picture category "In parts"
+
 ## 2.44.0
 - Broker displays such as Titan Panel or ChocolateBar now pick up the addon: it registers as a
   LibDataBroker launcher whenever that library is loaded, no longer only together with LibDBIcon.

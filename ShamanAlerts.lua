@@ -267,6 +267,23 @@ registerTextures(TEXTURE_CATEGORIES[4], "Parts", "parts_", {
 	{ "runes", L["Runes"], 5 },
 	{ "chain", L["Chain"], 5 },
 	{ "wings", L["Wings"], 5 },
+	-- Schlichtere Formen, von kompakt bis breit gefächert
+	{ "dots", L["Dots"], 5 },
+	{ "sparks", L["Sparks"], 5 },
+	{ "shortbolt", L["Short bolt"], 5 },
+	{ "gem", L["Gem"], 5 },
+	{ "orbit", L["Orbit"], 5 },
+	{ "fan", L["Fan"], 5 },
+	{ "arch", L["Arch"], 5 },
+	{ "chevrons", L["Chevrons"], 5 },
+	{ "spiral", L["Spiral"], 5 },
+	{ "compass", L["Compass star"], 5 },
+	{ "arrow", L["Arrow"], 5 },
+	{ "row", L["Row of bolts"], 5 },
+	{ "burst", L["Starburst"], 5 },
+	{ "frame", L["Frame"], 5 },
+	{ "vee", L["V shape"], 5 },
+	{ "roots", L["Roots"], 5 },
 }, true, "BLEND")
 
 local DEFAULT_SOUND = MEDIA .. "alert.ogg"
