@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.47.0
+- Three new alerts: "Rage of the Farseer ready" and "Nature's Swiftness ready" for the two
+  talents, and "Mana Spring Totem missing" for the buff of the totem. The totem alert is switched
+  off by default
+- 24 new pictures for them: three in the style of WoW ability icons, three painted ones and two
+  plain ones per spell
+
 ## 2.46.0
 - Against a boss, Flame Shock is now always suggested while your Flame Shock is not on it: the
   health threshold of the alert (35 % by default) no longer applies there, and Earth Shock no

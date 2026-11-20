@@ -174,6 +174,16 @@ registerTextures(CATEGORY_ART, "Art", "art_", {
 	{ "nature_leaf", L["Nature leaf"] },
 	{ "poison_drop", L["Poison drop"] },
 	{ "snowflake", L["Snowflake"] },
+	-- Zorn des Scharfsehers, Schnelligkeit der Natur, Totem der Manaquelle
+	{ "farseer_mask", L["Rage of the Farseer"] .. ": " .. L["Mask"] },
+	{ "farseer_wolf", L["Rage of the Farseer"] .. ": " .. L["Wolf"] },
+	{ "farseer_storm", L["Rage of the Farseer"] .. ": " .. L["Storm"] },
+	{ "swiftness_feather", L["Nature's Swiftness"] .. ": " .. L["Feather"] },
+	{ "swiftness_hourglass", L["Nature's Swiftness"] .. ": " .. L["Hourglass"] },
+	{ "swiftness_bolt", L["Nature's Swiftness"] .. ": " .. L["Lightning bolt"] },
+	{ "manaspring_totem", L["Mana Spring Totem"] .. ": " .. L["Totem"] },
+	{ "manaspring_wave", L["Mana Spring Totem"] .. ": " .. L["Wave"] },
+	{ "manaspring_bowl", L["Mana Spring Totem"] .. ": " .. L["Bowl"] },
 }, true, "BLEND")
 
 -- Dieselben Motive noch einmal im Stil der Fähigkeitssymbole: mindestens drei
@@ -232,6 +242,15 @@ registerTextures(CATEGORY_WOW, "Wow", "wow_", {
 	{ "berserking_face", L["Berserking: Troll"] },
 	{ "berserking_mask", L["Berserking: Voodoo mask"] },
 	{ "berserking_tusks", L["Berserking: Tusks"] },
+	{ "farseer_wolf", L["Rage of the Farseer"] .. ": " .. L["Wolf"] },
+	{ "farseer_eye", L["Rage of the Farseer"] .. ": " .. L["Eye"] },
+	{ "farseer_axes", L["Rage of the Farseer"] .. ": " .. L["Axes"] },
+	{ "swiftness_leaf", L["Nature's Swiftness"] .. ": " .. L["Leaf"] },
+	{ "swiftness_raven", L["Nature's Swiftness"] .. ": " .. L["Raven"] },
+	{ "swiftness_vortex", L["Nature's Swiftness"] .. ": " .. L["Vortex"] },
+	{ "manaspring_totem", L["Mana Spring Totem"] .. ": " .. L["Totem"] },
+	{ "manaspring_drop", L["Mana Spring Totem"] .. ": " .. L["Water drop"] },
+	{ "manaspring_fountain", L["Mana Spring Totem"] .. ": " .. L["Fountain"] },
 }, true, "BLEND")
 
 -- Schlichte Motive im selben gemalten Stil: je Alarm ein einzelner, klarer Gegenstand.
@@ -250,6 +269,12 @@ registerTextures(TEXTURE_CATEGORIES[3], "Simple", "simple_", {
 	{ "flurry", L["Flurry"] },
 	{ "bloodfury", L["Blood Fury"] },
 	{ "berserking", L["Berserking"] },
+	{ "farseer", L["Rage of the Farseer"] },
+	{ "farseer_eye", L["Rage of the Farseer"] .. ": " .. L["Eye"] },
+	{ "swiftness", L["Nature's Swiftness"] },
+	{ "swiftness_feather", L["Nature's Swiftness"] .. ": " .. L["Feather"] },
+	{ "manaspring", L["Mana Spring Totem"] },
+	{ "manaspring_drop", L["Mana Spring Totem"] .. ": " .. L["Water drop"] },
 }, true, "BLEND")
 
 -- Bilder in fünf Teilen für die Waffe des Mahlstroms: Ein Stapel-Alarm setzt
@@ -826,6 +851,124 @@ local ALERT_DEFS = {
 			spellIDs = { [8056] = true, [8058] = true, [10472] = true, [10473] = true, [25464] = true, [196840] = true },
 		},
 	},
+	{
+		key = "farseer",
+		class = "SHAMAN",
+		title = L["Rage of the Farseer ready"],
+		kind = "ready",
+		unit = "player",
+		learnNames = { "Rage of the Farseer", "Zorn des Scharfsehers" },
+		useSpellbook = true,
+		requireKnown = true, -- ein Talent: ohne es bleibt der Alarm still
+		defaultIcon = "Interface\\Icons\\Spell_Nature_BloodLust",
+		defaults = {
+			enabled = true,
+			threshold = 1,
+			-- Talent auf Forever: 30 % Angriffstempo für 25 Sekunden. Links und rechts außen neben den Schocks.
+			size = 110, x = 0, y = 0, alpha = 1,
+			layout = "sides", count = 1, distance = 190, spread = 26, rotate = false, angle = 0, flip = false, perStack = false,
+			display = "texture", iconZoom = 8, iconBorder = 1, iconBorderColor = { 0, 0, 0 }, iconSpell = "",
+			texture = "wow_farseer_wolf",
+			textureRevision = 1,
+			color = { 1, 1, 1 },
+			additive = true,
+			pulse = true,
+			sound = "off", -- "off" | "added"
+			soundFile = MEDIA .. "war_horn.ogg",
+			icon = false,
+			combatOnly = true,
+			needUsable = true,
+			needAggro = false,
+			needTarget = true, -- nur mit einem angreifbaren Ziel
+			needRange = false, -- wirkt auf den Schamanen selbst
+			needEnemies = false, minEnemies = 3, enemyRange = 10, -- nur bei so vielen Gegnern in diesem Umkreis (Namensplaketten)
+			needFireTotem = false, -- nur solange ein Feuertotem steht
+			needCasting = false, -- nur solange das Ziel etwas Unterbrechbares zaubert
+			yieldTo = "",
+			lead = 1, leadRevision = 1, -- so viele Sekunden vor "bereit" schon anzeigen
+			minHealth = 0,
+			auraName = L["Rage of the Farseer"],
+			spellIDs = { [425336] = true },
+		},
+	},
+	{
+		key = "swiftness",
+		class = "SHAMAN",
+		title = L["Nature's Swiftness ready"],
+		kind = "ready",
+		unit = "player",
+		learnNames = { "Nature's Swiftness", "Schnelligkeit der Natur" },
+		useSpellbook = true,
+		requireKnown = true, -- ein Talent: ohne es bleibt der Alarm still
+		defaultIcon = "Interface\\Icons\\Spell_Nature_RavenForm",
+		defaults = {
+			enabled = true,
+			threshold = 1,
+			-- Der nächste Naturzauber ist ein Spontanzauber. Unter den anderen Alarmen am unteren Rand.
+			size = 100, x = 0, y = 0, alpha = 1,
+			layout = "bottom", count = 1, distance = 300, spread = 26, rotate = false, angle = 0, flip = false, perStack = false,
+			display = "texture", iconZoom = 8, iconBorder = 1, iconBorderColor = { 0, 0, 0 }, iconSpell = "",
+			texture = "wow_swiftness_leaf",
+			textureRevision = 1,
+			color = { 1, 1, 1 },
+			additive = true,
+			pulse = true,
+			sound = "off", -- "off" | "added"
+			soundFile = MEDIA .. "chime.ogg",
+			icon = false,
+			combatOnly = true,
+			needUsable = false, -- kostet nichts
+			needAggro = false,
+			needTarget = false, -- auch für Heilzauber
+			needRange = false, -- wirkt auf den Schamanen selbst
+			needEnemies = false, minEnemies = 3, enemyRange = 10, -- nur bei so vielen Gegnern in diesem Umkreis (Namensplaketten)
+			needFireTotem = false, -- nur solange ein Feuertotem steht
+			needCasting = false, -- nur solange das Ziel etwas Unterbrechbares zaubert
+			yieldTo = "",
+			lead = 1, leadRevision = 1, -- so viele Sekunden vor "bereit" schon anzeigen
+			minHealth = 0,
+			auraName = L["Nature's Swiftness"],
+			spellIDs = { [16188] = true },
+		},
+	},
+	{
+		key = "manaspring",
+		class = "SHAMAN",
+		title = L["Mana Spring Totem missing"],
+		kind = "missing",
+		unit = "player",
+		filter = "HELPFUL",
+		-- Der Buff heißt anders als das Totem: beide Namen, damit Zauberbuch und Aura gefunden werden.
+		learnNames = { "Mana Spring Totem", "Totem der Manaquelle", "Mana Spring", "Manaquelle" },
+		castIDs = { 5675, 10495, 10496, 10497 }, -- die Ränge des Totems; die Auren haben eigene IDs
+		requireKnown = true,
+		defaultIcon = "Interface\\Icons\\Spell_Nature_ManaRegenTotem",
+		defaults = {
+			enabled = false, -- nicht jeder stellt dieses Totem: von Haus aus ausgeschaltet
+			threshold = 1,
+			size = 100, x = 0, y = 0, alpha = 1,
+			layout = "top", count = 1, distance = 350, spread = 20, rotate = false, angle = 0, flip = false, perStack = false,
+			display = "texture", iconZoom = 8, iconBorder = 1, iconBorderColor = { 0, 0, 0 }, iconSpell = "",
+			texture = "wow_manaspring_totem",
+			textureRevision = 1,
+			color = { 1, 1, 1 },
+			additive = true,
+			pulse = true,
+			sound = "off", -- "off" | "removed"
+			soundFile = MEDIA .. "water_splash.ogg",
+			icon = false,
+			combatOnly = true,
+			needUsable = true,
+			needAggro = false,
+			needReady = false,
+			lead = 1, leadRevision = 1,
+			refresh = 0, auraDuration = 0,
+			minHealth = 0,
+			auraName = L["Mana Spring"],
+			-- der Buff "Manaquelle" je Rang des Totems
+			spellIDs = { [5677] = true, [10491] = true, [10493] = true, [10494] = true },
+		},
+	},
 }
 
 -- Voreinstellungen eines selbst angelegten Alarms
@@ -1062,6 +1205,11 @@ function ns.gameNames(def)
 				names[name] = true
 				found = true
 			end
+		end
+		-- Heißt der Zauber anders als seine Aura (Totems), kommen seine Ränge dazu.
+		for _, id in ipairs(def.castIDs or {}) do
+			local ok, name = pcall(lookup, id)
+			if ok and type(name) == "string" and not isSecret(name) and name ~= "" then names[name] = true end
 		end
 	end
 	-- Liefert das Spiel kurz nach dem Start noch nichts, später noch einmal versuchen.
@@ -2054,6 +2202,10 @@ local function spellKnown(alert)
 			if type(byID) == "function" then
 				checked = true
 				for id in pairs(alert.s.spellIDs) do
+					local ok, result = pcall(byID, id)
+					if ok and not isSecret(result) and result == true then known = true end
+				end
+				for _, id in ipairs(alert.def.castIDs or {}) do
 					local ok, result = pcall(byID, id)
 					if ok and not isSecret(result) and result == true then known = true end
 				end

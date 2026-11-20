@@ -447,6 +447,9 @@ local DESCRIPTIONS = {
 	clearcast = L["Appears while Clearcasting is active: your next spell costs no mana."],
 	flurry = L["Appears while Flurry is active."],
 	frostshock = L["In combat against players, reminds you to put Frost Shock on your target while the slow is missing there."],
+	farseer = L["Appears as soon as Rage of the Farseer is ready."],
+	swiftness = L["Appears as soon as Nature's Swiftness is ready."],
+	manaspring = L["Warns in combat while the buff of your Mana Spring Totem is missing. Switched off by default."],
 	bloodfury = L["Appears as soon as Blood Fury (orc) is ready."],
 	berserking = L["Appears as soon as Berserking (troll) is ready."],
 }
