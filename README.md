@@ -13,7 +13,7 @@
 
 ShamanAlerts shows large, glowing symbols next to your character at the moment something
 needs your attention: Maelstrom Weapon is full, Flame Shock is about to run out, Stormstrike is
-ready, your shield is gone. You keep your eyes on the fight instead of on the action bars.
+ready, Lightning Shield is gone. You keep your eyes on the fight instead of on the action bars.
 
 - **Maelstrom Weapon** at full stacks
 - **Flame Shock missing** on your target, already two seconds before it runs out
@@ -23,18 +23,21 @@ ready, your shield is gone. You keep your eyes on the fight instead of on the ac
 - **Stormstrike ready** and **Fire Nova ready** (only with enough enemies around you)
 - **Lightning Shield missing** and **weapon enchant missing**, off hand included
 - **Clearcasting**, **Flurry**, **Blood Fury** and **Berserking**
-- **Rage of the Farseer ready**, **Nature's Swiftness ready** and **Mana Spring Totem missing**
+- **Rage of the Farseer ready** and **Nature's Swiftness ready**
+- For healing: **Mana Tide Totem ready** (only below a mana threshold), **Water Shield
+  missing** and **Riptide ready**
 - **Totem bar** with your active totems and a row of totem cooldowns
 - **One place for the shocks**: they follow an order (Interrupt, Frost Shock against players,
   Flame Shock, general shock), so only the most important one is shown and only the picture
   changes.
-- **225 graphics** made for this addon: 62 in the style of WoW ability icons, 20 plain ones and
+- **241 graphics** made for this addon: 68 in the style of WoW ability icons, 24 plain ones and
   28 Maelstrom Weapon pictures that build up piece by piece with every stack. Place
   every alert in the center, as an arc, on both sides or all around your character, and set
   size, color, glow, pulse, rotation and mirroring per alert.
 - **Sounds** per alert, with your LibSharedMedia sounds if you have them.
-- **Conditions** per alert: in combat only, enough mana, in range, target is casting, number of
-  enemies nearby, target health, only against players or never against players.
+- **Conditions** per alert: in combat only, enough mana, own mana below a threshold, in range,
+  target is casting, number of enemies nearby, target health, only against players or never
+  against players.
 - **Your own alerts** for any buff, debuff or spell: "is active", "is missing", "from X stacks"
   or "spell ready".
 - **Profiles and sharing**: save your setup as a profile, or export it as a short text and send
@@ -108,7 +111,7 @@ were computed for ShamanAlerts.
 
 **Alarme rund um den Charakter für Verstärker-Schamanen.** ShamanAlerts zeigt große, leuchtende
 Symbole neben deinem Charakter, sobald etwas deine Aufmerksamkeit braucht: Waffe des Mahlstroms
-ist voll, der Flammenschock läuft gleich aus, Sturmschlag ist bereit, dein Schild fehlt.
+ist voll, der Flammenschock läuft gleich aus, Sturmschlag ist bereit, das Blitzschlagschild fehlt.
 
 - `/sha` öffnet die Optionen, `/sha help` listet alle Befehle.
 - Die Schocks teilen sich eine Stelle und haben eine Rangfolge: Unterbrechen, Frostschock gegen

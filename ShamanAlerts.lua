@@ -181,9 +181,16 @@ registerTextures(CATEGORY_ART, "Art", "art_", {
 	{ "swiftness_feather", L["Nature's Swiftness"] .. ": " .. L["Feather"] },
 	{ "swiftness_hourglass", L["Nature's Swiftness"] .. ": " .. L["Hourglass"] },
 	{ "swiftness_bolt", L["Nature's Swiftness"] .. ": " .. L["Lightning bolt"] },
-	{ "manaspring_totem", L["Mana Spring Totem"] .. ": " .. L["Totem"] },
-	{ "manaspring_wave", L["Mana Spring Totem"] .. ": " .. L["Wave"] },
-	{ "manaspring_bowl", L["Mana Spring Totem"] .. ": " .. L["Bowl"] },
+	{ "manatide_totem", L["Mana Tide Totem"] .. ": " .. L["Totem"] },
+	{ "manatide_wave", L["Mana Tide Totem"] .. ": " .. L["Wave"] },
+	{ "manatide_bowl", L["Mana Tide Totem"] .. ": " .. L["Bowl"] },
+	-- Springflut und Wasserschild
+	{ "riptide_wave", L["Riptide"] .. ": " .. L["Wave"] },
+	{ "riptide_spiral", L["Riptide"] .. ": " .. L["Spiral"] },
+	{ "riptide_ring", L["Riptide"] .. ": " .. L["Ring"] },
+	{ "watershield_bubble", L["Water Shield"] .. ": " .. L["Bubble"] },
+	{ "watershield_orbs", L["Water Shield"] .. ": " .. L["Orbs"] },
+	{ "watershield_crest", L["Water Shield"] .. ": " .. L["Crest"] },
 }, true, "BLEND")
 
 -- Dieselben Motive noch einmal im Stil der Fähigkeitssymbole: mindestens drei
@@ -248,9 +255,15 @@ registerTextures(CATEGORY_WOW, "Wow", "wow_", {
 	{ "swiftness_leaf", L["Nature's Swiftness"] .. ": " .. L["Leaf"] },
 	{ "swiftness_raven", L["Nature's Swiftness"] .. ": " .. L["Raven"] },
 	{ "swiftness_vortex", L["Nature's Swiftness"] .. ": " .. L["Vortex"] },
-	{ "manaspring_totem", L["Mana Spring Totem"] .. ": " .. L["Totem"] },
-	{ "manaspring_drop", L["Mana Spring Totem"] .. ": " .. L["Water drop"] },
-	{ "manaspring_fountain", L["Mana Spring Totem"] .. ": " .. L["Fountain"] },
+	{ "manatide_totem", L["Mana Tide Totem"] .. ": " .. L["Totem"] },
+	{ "manatide_drop", L["Mana Tide Totem"] .. ": " .. L["Water drop"] },
+	{ "manatide_fountain", L["Mana Tide Totem"] .. ": " .. L["Fountain"] },
+	{ "riptide_wave", L["Riptide"] .. ": " .. L["Wave"] },
+	{ "riptide_vortex", L["Riptide"] .. ": " .. L["Vortex"] },
+	{ "riptide_heart", L["Riptide"] .. ": " .. L["Heart"] },
+	{ "watershield_bubble", L["Water Shield"] .. ": " .. L["Bubble"] },
+	{ "watershield_orbs", L["Water Shield"] .. ": " .. L["Orbs"] },
+	{ "watershield_crest", L["Water Shield"] .. ": " .. L["Crest"] },
 }, true, "BLEND")
 
 -- Schlichte Motive im selben gemalten Stil: je Alarm ein einzelner, klarer Gegenstand.
@@ -273,8 +286,12 @@ registerTextures(TEXTURE_CATEGORIES[3], "Simple", "simple_", {
 	{ "farseer_eye", L["Rage of the Farseer"] .. ": " .. L["Eye"] },
 	{ "swiftness", L["Nature's Swiftness"] },
 	{ "swiftness_feather", L["Nature's Swiftness"] .. ": " .. L["Feather"] },
-	{ "manaspring", L["Mana Spring Totem"] },
-	{ "manaspring_drop", L["Mana Spring Totem"] .. ": " .. L["Water drop"] },
+	{ "manatide", L["Mana Tide Totem"] },
+	{ "manatide_drop", L["Mana Tide Totem"] .. ": " .. L["Water drop"] },
+	{ "riptide", L["Riptide"] },
+	{ "riptide_drop", L["Riptide"] .. ": " .. L["Water drop"] },
+	{ "watershield", L["Water Shield"] },
+	{ "watershield_crest", L["Water Shield"] .. ": " .. L["Crest"] },
 }, true, "BLEND")
 
 -- Bilder in fünf Teilen für die Waffe des Mahlstroms: Ein Stapel-Alarm setzt
@@ -427,12 +444,12 @@ local ALERT_DEFS = {
 	{
 		key = "shield",
 		class = "SHAMAN",
-		title = L["Shield missing"],
+		title = L["Lightning Shield missing"],
 		kind = "missing",
 		unit = "player",
 		filter = "HELPFUL",
-		-- Jedes dieser Schilde gilt als "Schild ist da".
-		learnNames = { "Lightning Shield", "Blitzschlagschild", "Water Shield", "Wasserschild", "Earth Shield", "Erdschild" },
+		-- Nur das Blitzschlagschild. Für das Wasserschild gibt es den eigenen Alarm "watershield".
+		learnNames = { "Lightning Shield", "Blitzschlagschild" },
 		useSpellbook = true, -- die Zauber-ID ist auch die Buff-ID
 		requireKnown = true,
 		defaultIcon = "Interface\\Icons\\Spell_Nature_LightningShield",
@@ -458,10 +475,11 @@ local ALERT_DEFS = {
 			refresh = 0, auraDuration = 600, -- nicht schon vor dem Ablauf warnen
 			minHealth = 0,
 			auraName = L["Lightning Shield"],
-			-- Blitzschlagschild (alle Ränge) und Wasserschild auf Forever, dazu Retail-IDs und Erdschild
+			shieldRevision = 1, -- seit 2.47 zählt hier nur noch das Blitzschlagschild
+			-- Blitzschlagschild (alle Ränge), dazu die Retail-ID
 			spellIDs = {
 				[324] = true, [325] = true, [905] = true, [945] = true, [8134] = true, [10431] = true, [10432] = true,
-				[408510] = true, [192106] = true, [52127] = true, [974] = true,
+				[192106] = true,
 			},
 		},
 	},
@@ -932,24 +950,64 @@ local ALERT_DEFS = {
 		},
 	},
 	{
-		key = "manaspring",
+		key = "manatide",
 		class = "SHAMAN",
-		title = L["Mana Spring Totem missing"],
+		title = L["Mana Tide Totem ready"],
+		kind = "ready",
+		unit = "player",
+		learnNames = { "Mana Tide Totem", "Totem der Manaflut" },
+		useSpellbook = true,
+		requireKnown = true,
+		defaultIcon = "Interface\\Icons\\Spell_Frost_SummonWaterElemental",
+		defaults = {
+			enabled = true,
+			threshold = 1,
+			-- Lange Abklingzeit, lohnt sich erst bei wenig Mana: deshalb die Mana-Schwelle.
+			size = 100, x = 0, y = 0, alpha = 1,
+			layout = "bottom", count = 1, distance = 360, spread = 26, rotate = false, angle = 0, flip = false, perStack = false,
+			display = "texture", iconZoom = 8, iconBorder = 1, iconBorderColor = { 0, 0, 0 }, iconSpell = "",
+			texture = "wow_manatide_totem",
+			textureRevision = 1,
+			color = { 1, 1, 1 },
+			additive = true,
+			pulse = true,
+			sound = "off", -- "off" | "added"
+			soundFile = MEDIA .. "water_splash.ogg",
+			icon = false,
+			combatOnly = true,
+			needUsable = true,
+			needAggro = false,
+			needTarget = false, -- wirkt auf den Schamanen und seine Gruppe
+			needRange = false,
+			needEnemies = false, minEnemies = 3, enemyRange = 10, -- nur bei so vielen Gegnern in diesem Umkreis (Namensplaketten)
+			needFireTotem = false, -- nur solange ein Feuertotem steht
+			needCasting = false, -- nur solange das Ziel etwas Unterbrechbares zaubert
+			yieldTo = "",
+			lead = 1, leadRevision = 1, -- so viele Sekunden vor "bereit" schon anzeigen
+			maxMana = 40, -- nur zeigen, solange das eigene Mana höchstens so viel Prozent hat (0 = immer)
+			minHealth = 0,
+			auraName = L["Mana Tide Totem"],
+			spellIDs = { [16190] = true, [17354] = true, [17359] = true, [1325256] = true },
+		},
+	},
+	{
+		key = "watershield",
+		class = "SHAMAN",
+		title = L["Water Shield missing"],
 		kind = "missing",
 		unit = "player",
 		filter = "HELPFUL",
-		-- Der Buff heißt anders als das Totem: beide Namen, damit Zauberbuch und Aura gefunden werden.
-		learnNames = { "Mana Spring Totem", "Totem der Manaquelle", "Mana Spring", "Manaquelle" },
-		castIDs = { 5675, 10495, 10496, 10497 }, -- die Ränge des Totems; die Auren haben eigene IDs
+		learnNames = { "Water Shield", "Wasserschild" },
+		useSpellbook = true, -- die Zauber-ID ist auch die Buff-ID
 		requireKnown = true,
-		defaultIcon = "Interface\\Icons\\Spell_Nature_ManaRegenTotem",
+		defaultIcon = "Interface\\Icons\\Ability_Shaman_WaterShield",
 		defaults = {
-			enabled = false, -- nicht jeder stellt dieses Totem: von Haus aus ausgeschaltet
+			enabled = false, -- wer das Blitzschlagschild trägt, braucht diesen Alarm nicht
 			threshold = 1,
-			size = 100, x = 0, y = 0, alpha = 1,
+			size = 104, x = 0, y = 0, alpha = 1,
 			layout = "top", count = 1, distance = 350, spread = 20, rotate = false, angle = 0, flip = false, perStack = false,
 			display = "texture", iconZoom = 8, iconBorder = 1, iconBorderColor = { 0, 0, 0 }, iconSpell = "",
-			texture = "wow_manaspring_totem",
+			texture = "wow_watershield_orbs",
 			textureRevision = 1,
 			color = { 1, 1, 1 },
 			additive = true,
@@ -962,11 +1020,52 @@ local ALERT_DEFS = {
 			needAggro = false,
 			needReady = false,
 			lead = 1, leadRevision = 1,
-			refresh = 0, auraDuration = 0,
+			refresh = 0, auraDuration = 600, -- nicht schon vor dem Ablauf warnen
 			minHealth = 0,
-			auraName = L["Mana Spring"],
-			-- der Buff "Manaquelle" je Rang des Totems
-			spellIDs = { [5677] = true, [10491] = true, [10493] = true, [10494] = true },
+			auraName = L["Water Shield"],
+			-- Wasserschild auf Forever, dazu die Retail-ID
+			spellIDs = { [408510] = true, [52127] = true },
+		},
+	},
+	{
+		key = "riptide",
+		class = "SHAMAN",
+		title = L["Riptide ready"],
+		kind = "ready",
+		unit = "player",
+		learnNames = { "Riptide", "Springflut" },
+		useSpellbook = true,
+		requireKnown = true,
+		defaultIcon = "Interface\\Icons\\Spell_Nature_Riptide",
+		defaults = {
+			enabled = false, -- kurze Abklingzeit: stünde sonst fast immer da,
+			threshold = 1,
+			-- Heilzauber mit kurzer Abklingzeit, links und rechts weit außen.
+			size = 100, x = 0, y = 0, alpha = 1,
+			layout = "sides", count = 1, distance = 250, spread = 26, rotate = false, angle = 0, flip = false, perStack = false,
+			display = "texture", iconZoom = 8, iconBorder = 1, iconBorderColor = { 0, 0, 0 }, iconSpell = "",
+			texture = "wow_riptide_wave",
+			textureRevision = 1,
+			color = { 1, 1, 1 },
+			additive = true,
+			pulse = true,
+			sound = "off", -- "off" | "added"
+			soundFile = MEDIA .. "water_splash.ogg",
+			icon = false,
+			combatOnly = true,
+			needUsable = true,
+			needAggro = false,
+			needTarget = false, -- wirkt auf den Schamanen und seine Gruppe
+			needRange = false,
+			needEnemies = false, minEnemies = 3, enemyRange = 10, -- nur bei so vielen Gegnern in diesem Umkreis (Namensplaketten)
+			needFireTotem = false, -- nur solange ein Feuertotem steht
+			needCasting = false, -- nur solange das Ziel etwas Unterbrechbares zaubert
+			yieldTo = "",
+			lead = 1, leadRevision = 1, -- so viele Sekunden vor "bereit" schon anzeigen
+			maxMana = 0, -- nur zeigen, solange das eigene Mana höchstens so viel Prozent hat (0 = immer)
+			minHealth = 0,
+			auraName = L["Riptide"],
+			spellIDs = { [408521] = true, [1239242] = true, [1239243] = true },
 		},
 	},
 }
@@ -994,6 +1093,7 @@ local CUSTOM_DEFAULTS = {
 	needFireTotem = false, -- nur solange ein Feuertotem steht
 	needCasting = false, -- nur solange das Ziel etwas Unterbrechbares zaubert
 	castFirst = false, -- nur bei "Zauber bereit": Vorrang an seiner Stelle, solange das Ziel etwas Unterbrechbares zaubert
+	maxMana = 0, -- nur zeigen, solange das eigene Mana höchstens so viel Prozent hat (0 = immer)
 	needPlayer = false, -- nur solange das Ziel ein Spieler ist (PvP)
 	noPlayer = false, -- nicht, solange das Ziel ein Spieler ist
 	bossAlways = false, -- nur bei Alarmen auf das Ziel: Bei einem Boss gilt die Lebens-Schwelle nicht
@@ -2598,6 +2698,27 @@ local function healthCurve(alert)
 	return alert.healthCurve or nil
 end
 
+-- Mana-Schwelle: sichtbar nur, solange das eigene Mana höchstens so viel
+-- Prozent hat. Der Wert ist im Kampf geheim, deshalb rechnet ihn das Spiel über
+-- eine Stufenkurve selbst in eine Deckkraft um, wie bei der Lebens-Schwelle.
+function ns.manaCurve(alert)
+	local threshold = alert.s.maxMana or 0
+	if threshold <= 0 or threshold >= 100 then return nil end
+	if not (UnitPowerPercent and C_CurveUtil and C_CurveUtil.CreateCurve and Enum and Enum.LuaCurveType) then return nil end
+	if alert.manaCurve == nil or alert.manaCurveAt ~= threshold then
+		local ok, curve = pcall(function()
+			local created = C_CurveUtil.CreateCurve()
+			created:SetType(Enum.LuaCurveType.Step)
+			created:AddPoint(0, 1)
+			created:AddPoint(threshold / 100, 0)
+			return created
+		end)
+		alert.manaCurve = ok and curve or false
+		alert.manaCurveAt = threshold
+	end
+	return alert.manaCurve or nil
+end
+
 local function applyHealthGate(alert)
 	local visuals = alert.current and alert.current.visuals
 	if not visuals or #visuals == 0 then return end
@@ -2607,6 +2728,13 @@ local function applyHealthGate(alert)
 	local alpha = 1
 	if curve then
 		local ok, value = pcall(UnitHealthPercent, "target", false, curve)
+		if ok and value ~= nil then alpha = value end
+	end
+	-- Die Mana-Schwelle gibt es nur bei Alarmen auf den Schamanen selbst; dort
+	-- gibt es keine Lebens-Schwelle, die beiden kommen sich also nicht in die Quere.
+	local mana = ns.manaCurve(alert)
+	if mana then
+		local ok, value = pcall(UnitPowerPercent, "player", 0, true, mana) -- 0 = Mana
 		if ok and value ~= nil then alpha = value end
 	end
 	for _, visual in ipairs(visuals) do pcall(visual.SetAlpha, visual, alpha) end
@@ -3127,6 +3255,11 @@ local REPLACED_TEXTURES = {
 
 local function upgradeSettings(def, stored)
 	if type(stored) ~= "table" then return end
+	-- Bis 2.46 galt beim Schild-Alarm jedes Schild. Seit 2.47 heißt er
+	-- "Blitzschlagschild fehlt"; Wasserschild und Erdschild zählen dort nicht mehr.
+	if def.key == "shield" and stored.shieldRevision == nil and type(stored.spellIDs) == "table" then
+		for _, id in ipairs({ 408510, 52127, 974 }) do stored.spellIDs[id] = nil end
+	end
 	local replaced = REPLACED_TEXTURES[def.key]
 	if replaced and (tonumber(stored.textureRevision) or 0) < replaced.revision then
 		if replaced.old[stored.texture] then stored.texture = def.defaults.texture end
@@ -3239,6 +3372,7 @@ events:SetScript("OnEvent", function(self, event, arg1, _, arg3)
 		self:RegisterUnitEvent("UNIT_FACTION", "target")
 		self:RegisterUnitEvent("UNIT_HEALTH", "target")
 		self:RegisterUnitEvent("UNIT_THREAT_SITUATION_UPDATE", "player")
+		pcall(self.RegisterUnitEvent, self, "UNIT_POWER_UPDATE", "player") -- für die Mana-Schwelle
 		-- Zauber des Ziels: für den Unterbrechen-Alarm ohne Verzögerung
 		for _, name in ipairs(CAST_EVENTS) do pcall(self.RegisterUnitEvent, self, name, "target") end
 		pcall(self.RegisterUnitEvent, self, "UNIT_SPELLCAST_SUCCEEDED", "player") -- startet die Uhr zum frühen Auffrischen
@@ -3288,6 +3422,11 @@ events:SetScript("OnEvent", function(self, event, arg1, _, arg3)
 		for _, alert in ipairs(alerts) do
 			if alert.def.unit == "target" and alert.s.minHealth > 0 then applyHealthGate(alert) end
 			applyLowGate(alert)
+		end
+	elseif event == "UNIT_POWER_UPDATE" then
+		-- häufiges Ereignis: nur die Mana-Schwelle nachführen
+		for _, alert in ipairs(alerts) do
+			if (alert.s.maxMana or 0) > 0 and alert.current then applyHealthGate(alert) end
 		end
 	elseif event == "UNIT_AURA" then
 		onAuraChanged()
@@ -3486,6 +3625,15 @@ local FIELDS = {
 		return true
 	end,
 	minhealth = numberField("minHealth", 0, 95, true),
+	maxmana = function(alert, text)
+		if alert.def.unit ~= "player" or (alert.def.kind ~= "ready" and alert.def.kind ~= "missing") then
+			return false, L["The mana threshold exists for spell-ready and missing alerts on yourself only."]
+		end
+		local value = toNumber(text)
+		if not value or value < 0 or value > 100 then return false, (L["Please enter a number from %s to %s."]):format(0, 100) end
+		alert.s.maxMana = math.floor(value + 0.5)
+		return true
+	end,
 	bossalways = function(alert, text)
 		if alert.def.unit ~= "target" then return false, L["This exists for alerts on the target only."] end
 		alert.s.bossAlways = toBoolean(text, alert.s.bossAlways)
@@ -3769,6 +3917,7 @@ local function printStatus()
 				local casting = targetCasting()
 				msg(L["  Only while the target casts: %s (right now: %s)."], yesNo(settings.needCasting), casting == nil and L["the game does not tell"] or (casting and L["casting"] or L["not casting"]))
 				if settings.castFirst then msg(L["  Priority while the target casts: %s (right now: %s)."], yesNo(true), yesNo(ns.castPriority(alert))) end
+				if (settings.maxMana or 0) > 0 then msg(L["  Only with at most %d %% mana: %s."], settings.maxMana, ns.manaCurve(alert) and L["supported by the game"] or L["not possible in this client"]) end
 			end
 			if alert.def.kind == "missing" then
 				local ready = spellReady(alert)
@@ -3801,7 +3950,7 @@ local function printHelp()
 	print(L["  /sha - open or close the options window"])
 	print(L["  /sha test [alert] - preview for 3 seconds, with the sound"])
 	print(L["  /sha set <alert> <field> <value> - e.g. /sha set maelstrom threshold 4"])
-	print(L["     Fields: enabled, threshold, size, alpha, texture, color, additive, pulse, icon, combatonly, needusable, needaggro, needplayer, noplayer, needtarget, needrange, needenemies, minenemies, enemyrange, needfiretotem, needcasting, castfirst, needready, lead, refresh, duration, yieldto, behind, placelike, minhealth, bossalways, offhand, sound, soundfile, name"])
+	print(L["     Fields: enabled, threshold, size, alpha, texture, color, additive, pulse, icon, combatonly, needusable, needaggro, needplayer, noplayer, needtarget, needrange, needenemies, minenemies, enemyrange, needfiretotem, needcasting, castfirst, needready, lead, refresh, duration, yieldto, behind, placelike, minhealth, maxmana, bossalways, offhand, sound, soundfile, name"])
 	print(L["     Display: display (icon, texture), iconzoom, iconborder, bordercolor, iconspell (spell ID, name, path or auto)"])
 	print(L["     Layout: layout (center, bottom, top, left, right, sides, topbottom, around), count, distance, spread, rotate, angle, flip, perstack, x, y"])
 	print(L["  /sha id <alert> <aura ID|reset> - add an aura ID or reset the IDs"])

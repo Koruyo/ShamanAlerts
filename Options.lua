@@ -14,7 +14,7 @@ local L = ns.L
 local FRAME_NAME = "ShamanAlertsOptionsFrame"
 local WIDTH, HEIGHT = 1000, 700
 local SIDE_X, SIDE_W = 14, 200 -- Liste links
-local ROW_H, MAX_ROWS = 22, 18
+local ROW_H, MAX_ROWS = 22, 20
 local CONTENT_X = SIDE_X + SIDE_W + 20 -- Seite rechts
 local CONTENT_W = WIDTH - CONTENT_X - 20
 local PAGE_H = HEIGHT - 38
@@ -438,7 +438,7 @@ local PAGES = {
 local DESCRIPTIONS = {
 	maelstrom = L["Shows lightning around your character as soon as Maelstrom Weapon reaches the set number of stacks."],
 	flameshock = L["Reminds you to put Flame Shock on your target while it is missing there. Against players it stays off."],
-	shield = L["Warns while your shield is missing."],
+	shield = L["Warns while Lightning Shield is missing."],
 	weapon = L["Warns while a weapon is missing its enchant."],
 	stormstrike = L["Appears as soon as Stormstrike is ready."],
 	earthshock = L["The general shock: appears as soon as the shocks are ready and no particular shock has priority (Interrupt, Frost Shock against players, Flame Shock)."],
@@ -449,7 +449,9 @@ local DESCRIPTIONS = {
 	frostshock = L["In combat against players, reminds you to put Frost Shock on your target while the slow is missing there."],
 	farseer = L["Appears as soon as Rage of the Farseer is ready."],
 	swiftness = L["Appears as soon as Nature's Swiftness is ready."],
-	manaspring = L["Warns in combat while the buff of your Mana Spring Totem is missing. Switched off by default."],
+	manatide = L["Appears as soon as Mana Tide Totem is ready and your mana is low. The threshold is set on the conditions tab."],
+	watershield = L["Warns in combat while Water Shield is missing, even if another shield is active. Switched off by default."],
+	riptide = L["Appears as soon as Riptide is ready. Switched off by default."],
 	bloodfury = L["Appears as soon as Blood Fury (orc) is ready."],
 	berserking = L["Appears as soon as Berserking (troll) is ready."],
 }
@@ -1198,6 +1200,14 @@ local function createFrame()
 		L["Below this health threshold of the target the alert stays invisible, because the spell is no longer worth it then."]).visibleIf = function()
 			return selected.def.unit == "target" and selected.def.kind ~= "stacks"
 		end
+	tip(addSlider(rules, "MaxMana", L["Own mana at most"], 394, -90, 0, 95, 5,
+		function(value) return value == 0 and L["(off)"] or (L["%d %% mana"]):format(value) end,
+		function() return cur().maxMana or 0 end,
+		function(value) cur().maxMana = value end),
+		L["The alert only appears while your own mana is at or below this share. 0 switches the condition off."]).visibleIf = function()
+			local kind = selected.def.kind
+			return selected.def.unit == "player" and (kind == "ready" or kind == "missing")
+		end
 	tip(addSlider(rules, "Refresh", L["Early refresh"], 394, -136, 0, 5, 0.5,
 		function(value) return value == 0 and L["(off)"] or ((L["from %.1f s remaining"]):format(value):gsub("%.", L["."])) end,
 		function() return cur().refresh or 0 end,
@@ -1256,7 +1266,7 @@ local function createFrame()
 	-- Die Überschrift steht nur da, wenn darunter etwas zu sehen ist.
 	local timingToggle = {}
 	timingToggle.Refresh = function()
-		local shown = yieldButton:IsShown() or _G[FRAME_NAME .. "Lead"]:IsShown() or _G[FRAME_NAME .. "MinHealth"]:IsShown() or _G[FRAME_NAME .. "Refresh"]:IsShown() or behindText:IsShown()
+		local shown = yieldButton:IsShown() or _G[FRAME_NAME .. "Lead"]:IsShown() or _G[FRAME_NAME .. "MinHealth"]:IsShown() or _G[FRAME_NAME .. "MaxMana"]:IsShown() or _G[FRAME_NAME .. "Refresh"]:IsShown() or behindText:IsShown()
 		timingHeader:SetShown(shown)
 		timingHeader.line:SetShown(shown)
 	end

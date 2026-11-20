@@ -1,11 +1,18 @@
 # Changelog
 
 ## 2.47.0
-- Three new alerts: "Rage of the Farseer ready" and "Nature's Swiftness ready" for the two
-  talents, and "Mana Spring Totem missing" for the buff of the totem. The totem alert is switched
-  off by default
-- 24 new pictures for them: three in the style of WoW ability icons, three painted ones and two
+- Five new alerts: "Rage of the Farseer ready" and "Nature's Swiftness ready" for the two
+  talents, "Mana Tide Totem ready", "Water Shield missing" and "Riptide ready". Water Shield and
+  Riptide are switched off by default
+- New condition "Own mana at most" for spell-ready and missing alerts on yourself: the alert only
+  shows while your mana is at or below the threshold. Mana Tide Totem uses it with 40 %
+  (`/sha set manatide maxmana 40`, 0 switches it off)
+- The shield alert is now called "Lightning Shield missing" and only watches Lightning Shield.
+  Water Shield has its own alert, so healers can switch one on and the other off. Stored
+  settings are adjusted once
+- 40 new pictures for them: three in the style of WoW ability icons, three painted ones and two
   plain ones per spell
+- The alert list of the options window holds 20 rows
 
 ## 2.46.0
 - Against a boss, Flame Shock is now always suggested while your Flame Shock is not on it: the
