@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.50.0
+- Flame Shock: the alert reads the talent Call of Flame, which extends Flame Shock by 3 seconds
+  per rank, and sets the aura duration for the early warning by itself whenever the rank
+  changes. A duration you set by hand stays until then
+
 ## 2.49.0
 - Weapon enchants by kind: a weapon alert can now expect a certain enchant per hand (Windfury,
   Flametongue, Rockbiter or Frostbrand Weapon) and also warns while the weapon carries another

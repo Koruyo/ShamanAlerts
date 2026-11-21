@@ -750,3 +750,5 @@ L["This exists for weapon alerts only."] = "Esiste solo per gli avvisi delle arm
 L["Please enter any, windfury, flametongue, rockbiter or frostbrand."] = "Inserisci any, windfury, flametongue, rockbiter o frostbrand."
 L["  Expected: main hand %s, off hand %s."] = "  Atteso: mano primaria %s, mano secondaria %s."
 L["Specialization: no talent points spent yet, so %s is assumed."] = "Specializzazione: nessun punto talento speso, quindi si assume %s."
+L["%s: aura duration set to %s s from your talents."] = "%s: durata dell'aura impostata a %s s dai tuoi talenti."
+L["  Aura duration %s s; talent that extends it: rank %s."] = "  Durata dell'aura %s s; talento che la prolunga: grado %s."

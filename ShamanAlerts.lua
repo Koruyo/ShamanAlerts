@@ -408,6 +408,8 @@ local ALERT_DEFS = {
 		learnNames = { "Flame Shock", "Flammenschock" },
 		useSpellbook = true, -- bei Flammenschock ist die Zauber-ID auch die Debuff-ID
 		requireKnown = true, -- erst warnen, wenn der Charakter den Zauber gelernt hat
+		-- Ruf der Flamme verlängert den Debuff je Rang um 3 Sekunden.
+		talentDuration = { base = 12, spell = 16038, node = 104770, perRank = 3 },
 		defaultIcon = "Interface\\Icons\\Spell_Fire_FlameShock",
 		defaults = {
 			enabled = true,
@@ -434,6 +436,7 @@ local ALERT_DEFS = {
 			behind = "interrupt,frostshock", -- Unterbrechen und (gegen Spieler) Frostschock gehen vor
 			refresh = 2, -- schon warnen, wenn der Debuff nur noch so viele Sekunden läuft
 			auraDuration = 12, -- so lange läuft der Debuff; daran misst die eigene Uhr
+			talentDuration = 0, -- die Laufzeit, die zuletzt aus den Talenten gelesen wurde (0 = noch nie)
 			minHealth = 35, -- nur warnen, wenn das Ziel noch so viel Prozent Leben hat
 			bossAlways = true, -- bei einem Boss gilt diese Schwelle nicht: Fehlt der Flammenschock, wird er immer vorgeschlagen
 			auraName = L["Flame Shock"],
@@ -2873,6 +2876,70 @@ function ns.currentSpec()
 	return state.spec or nil
 end
 
+-- Rang eines Talents. Auf WoW Forever sind Talente Knoten eines Baums; der
+-- Knoten zählt nur, wenn er auch diesen Zauber trägt (ein Hotfix kann Knoten neu
+-- belegen), sonst wird der Baum nach dem Zauber abgesucht. nil = nicht lesbar.
+function ns.talentRank(spellID, nodeID)
+	if not (C_ClassTalents and C_ClassTalents.GetActiveConfigID and C_Traits and C_Traits.GetConfigInfo and C_Traits.GetNodeInfo
+		and C_Traits.GetEntryInfo and C_Traits.GetDefinitionInfo) then
+		return nil
+	end
+	local ok, rank = pcall(function()
+		local configID = C_ClassTalents.GetActiveConfigID()
+		local config = configID and C_Traits.GetConfigInfo(configID)
+		local treeID = config and config.treeIDs and config.treeIDs[1]
+		if not treeID then return nil end
+		local function read(id)
+			local node = id and C_Traits.GetNodeInfo(configID, id)
+			if type(node) ~= "table" then return nil end
+			local entryID = (node.activeEntry and node.activeEntry.entryID) or (node.entryIDs and node.entryIDs[1])
+			local entry = entryID and C_Traits.GetEntryInfo(configID, entryID)
+			local definition = entry and entry.definitionID and C_Traits.GetDefinitionInfo(entry.definitionID)
+			if not definition or (definition.spellID ~= spellID and definition.overriddenSpellID ~= spellID) then return nil end
+			return tonumber(node.activeRank or node.ranksPurchased or node.currentRank) or 0
+		end
+		state.talentNodes = state.talentNodes or {}
+		local found = read(state.talentNodes[spellID] or nodeID)
+		if found == nil and C_Traits.GetTreeNodes then
+			for _, id in ipairs(C_Traits.GetTreeNodes(treeID) or {}) do
+				found = read(id)
+				if found ~= nil then
+					state.talentNodes[spellID] = id
+					break
+				end
+			end
+		end
+		return found
+	end)
+	if not ok then return nil end
+	return rank
+end
+
+-- Verlängert ein Talent die Aura eines Alarms, stellt das Addon die Laufzeit
+-- selbst nach, sobald sich der Rang ändert. Was von Hand eingestellt oder
+-- außerhalb des Kampfes gelernt ist, bleibt bis zur nächsten Änderung stehen.
+function ns.applyTalentDurations()
+	for _, alert in ipairs(alerts) do
+		local rule = alert.def.talentDuration
+		if rule and (alert.def.class == nil or alert.def.class == state.class) then
+			local rank = ns.talentRank(rule.spell, rule.node)
+			if rank then
+				local wanted = rule.base + rank * rule.perRank
+				local first = (alert.s.talentDuration or 0) == 0
+				if alert.s.talentDuration ~= wanted then
+					alert.s.talentDuration = wanted
+					-- Beim ersten Mal ohne das Talent bleibt die eingestellte Laufzeit.
+					if not (first and rank == 0) and alert.s.auraDuration ~= wanted then
+						alert.s.auraDuration = wanted
+						msg(L["%s: aura duration set to %s s from your talents."], alert.def.title, tostring(wanted))
+						if ns.RefreshOptions then pcall(ns.RefreshOptions) end
+					end
+				end
+			end
+		end
+	end
+end
+
 -- Gilt der Alarm in dieser Spezialisierung? "specs" nennt die erlaubten
 -- Schlüssel, "" heißt: in jeder.
 function ns.specWanted(alert, key)
@@ -3634,6 +3701,7 @@ events:SetScript("OnEvent", function(self, event, arg1, _, arg3)
 			if alert.pendingBuild or (state.containerOK == nil and alert.s.enabled and not alert.current and not PLAIN_KINDS[alert.def.kind]) then Build(alert) end
 		end
 		if state.pendingSounds then updateEngineSounds() end
+		if event == "PLAYER_ENTERING_WORLD" then pcall(ns.applyTalentDurations) end
 		updateConditions()
 		onAuraChanged()
 	elseif event == "PLAYER_REGEN_DISABLED" or event == "UNIT_FACTION" or event == "WEAPON_ENCHANT_CHANGED" or event == "PLAYER_EQUIPMENT_CHANGED"
@@ -3644,6 +3712,7 @@ events:SetScript("OnEvent", function(self, event, arg1, _, arg3)
 		for _, alert in ipairs(alerts) do alert.known, alert.readySpell = nil, nil end
 		state.rangeSpells = nil
 		state.spec = nil
+		pcall(ns.applyTalentDurations)
 		state.lastScan = 0
 		onAuraChanged()
 		updateConditions()
@@ -3663,6 +3732,7 @@ events:SetScript("OnEvent", function(self, event, arg1, _, arg3)
 	elseif event == "TRAIT_CONFIG_UPDATED" or event == "PLAYER_TALENT_UPDATE" or event == "ACTIVE_COMBAT_CONFIG_CHANGED" or event == "TRAIT_TREE_CURRENCY_INFO_UPDATED" then
 		-- Talente geändert: Spezialisierung neu lesen
 		state.spec = nil
+		pcall(ns.applyTalentDurations)
 		updateConditions()
 		if ns.RefreshOptions then pcall(ns.RefreshOptions) end
 	elseif event == "UNIT_POWER_UPDATE" then
@@ -4210,6 +4280,10 @@ local function printStatus(rest)
 				msg(L["  Not during the cooldown: %s (ready right now: %s), lead time %.1f s."],
 					yesNo(settings.needReady), ready == nil and L["unknown"] or yesNo(ready), settings.lead or 0)
 				local refresh, duration = settings.refresh or 0, settings.auraDuration or 0
+				if alert.def.talentDuration then
+					local rank = ns.talentRank(alert.def.talentDuration.spell, alert.def.talentDuration.node)
+					msg(L["  Aura duration %s s; talent that extends it: rank %s."], tostring(duration), rank and tostring(rank) or L["unknown"])
+				end
 				if refresh <= 0 then
 					msg(L["  Early refresh: off."])
 				elseif duration <= 0 then

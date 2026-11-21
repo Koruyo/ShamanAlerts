@@ -763,3 +763,5 @@ L["This exists for weapon alerts only."] = "무기 경보에서만 쓸 수 있�
 L["Please enter any, windfury, flametongue, rockbiter or frostbrand."] = "any, windfury, flametongue, rockbiter, frostbrand 중 하나를 입력하세요."
 L["  Expected: main hand %s, off hand %s."] = "  기대: 주 장비 %s, 보조 장비 %s."
 L["Specialization: no talent points spent yet, so %s is assumed."] = "전문화: 아직 특성 점수를 쓰지 않아 %s(으)로 간주합니다."
+L["%s: aura duration set to %s s from your talents."] = "%s: 특성에 따라 오라 지속시간을 %s초로 맞췄습니다."
+L["  Aura duration %s s; talent that extends it: rank %s."] = "  오라 지속시간 %s초; 이를 늘리는 특성: %s레벨."
