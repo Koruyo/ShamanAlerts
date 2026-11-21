@@ -11,6 +11,9 @@
   graphic is then shown faintly while you have no attackable target within reach of your damage
   spell with the longest range, usually Lightning Bolt: ready, but too far away. Checkbox on the
   conditions tab, or `/sha reach on` for all alerts at once (`/sha set shield reachdim on` for one)
+- Fire Nova: while none of your fire totems stands, the alert shows a fire totem in place of its
+  own picture, so you know to place the totem first. Checkbox "Without a fire totem show a totem
+  instead" on the conditions tab (`/sha set firenova totemhint off`)
 - Loading a profile no longer switches options of the totem bar back on that were switched off
 
 ## 2.51.0

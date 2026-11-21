@@ -1168,6 +1168,12 @@ local function createFrame()
 			cur().needFireTotem = value
 			changed()
 		end, "ready"), L["The alert only appears while one of your fire totems stands."])
+	tip(addCheck(rules, L["Without a fire totem show a totem instead"], 0, -376,
+		function() return cur().totemHint end,
+		function(value)
+			cur().totemHint = value
+			changed()
+		end, "ready"), L["While none of your fire totems stands, the alert shows the picture of a fire totem in place of its own: first place the totem, then cast. Meant for Fire Nova."])
 	tip(addCheck(rules, L["Priority while the target casts"], 0, -272,
 		function() return cur().castFirst end,
 		function(value)

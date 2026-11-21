@@ -683,6 +683,7 @@ local ALERT_DEFS = {
 			needRange = true,
 			needEnemies = true, minEnemies = 4, enemyRange = 10, -- nur bei so vielen Gegnern in diesem Umkreis (Namensplaketten)
 			needFireTotem = false, -- nur solange ein Feuertotem steht
+			totemHint = true, -- ohne Feuertotem statt der Grafik das Bild eines Feuertotems zeigen: erst stellen, dann Feuernova
 			needCasting = false, -- nur solange das Ziel etwas Unterbrechbares zaubert
 			yieldTo = "",
 			lead = 1, leadRevision = 1, -- so viele Sekunden vor "bereit" schon anzeigen
@@ -1136,6 +1137,7 @@ local CUSTOM_DEFAULTS = {
 	needTarget = true, -- nur bei "Zauber bereit": angreifbares Ziel nötig
 	needRange = false, -- nur bei "Zauber bereit": Ziel muss in Reichweite sein
 	reachDim = false, -- blasser zeigen, solange kein angreifbares Ziel in Reichweite des weitesten Schadenszaubers steht
+	totemHint = false, -- nur bei "Zauber bereit": ohne Feuertotem das Bild eines Feuertotems zeigen
 	needEnemies = false, minEnemies = 3, enemyRange = 10, -- nur bei so vielen Gegnern in diesem Umkreis (Namensplaketten)
 	needFireTotem = false, -- nur solange ein Feuertotem steht
 	needCasting = false, -- nur solange das Ziel etwas Unterbrechbares zaubert
@@ -2220,6 +2222,24 @@ local function buildPlain(alert)
 		local graphic = newGraphic(visual)
 		graphic.back:SetAllPoints(visual)
 		styleGraphic(graphic, alert, spot, true)
+		-- Feuertotem-Hinweis: eine zweite Grafik an derselben Stelle, die statt
+		-- der gewöhnlichen erscheint, solange kein Feuertotem steht.
+		if settings.totemHint and alert.def.kind == "ready" and TEXTURES.art_totem_fire then
+			local hint = CreateFrame("Frame", nil, wrap)
+			hint:SetAllPoints(lead)
+			hint:EnableMouse(false)
+			hint:Hide()
+			local art = newGraphic(hint)
+			art.back:SetAllPoints(hint)
+			art.back:SetColorTexture(0, 0, 0, 0)
+			art.main:SetAllPoints(art.back)
+			art.main:SetTexture(TEXTURES.art_totem_fire.path)
+			art.main:SetBlendMode("BLEND")
+			art.main:SetVertexColor(1, 1, 1, settings.alpha)
+			if settings.pulse then addPulse(art.main) end
+			alert.current.hints = alert.current.hints or {}
+			table.insert(alert.current.hints, hint)
+		end
 		table.insert(alert.current.frames, lead)
 		table.insert(alert.current.leads, lead)
 		table.insert(alert.current.visuals, visual)
@@ -2537,12 +2557,14 @@ end
 -- reicht nicht. nil heißt: unbekannt oder vom Spiel nicht verraten. Das Spiel
 -- rechnet dabei selbst ein, ob der nächste Zauber gratis ist (Freizaubern).
 -- Mit "strictUsable" zählt bei einem Zauber aus dem Zauberbuch jedes "nicht
--- wirkbar" als false, etwa weil das nötige Totem fehlt.
-local function spellUsable(alert)
+-- wirkbar" als false, etwa weil das nötige Totem fehlt. "lenient" schaltet das
+-- ab: Dann zählt nur fehlendes Mana (für den Feuertotem-Hinweis, der gerade
+-- dann erscheinen soll, wenn das Totem fehlt).
+local function spellUsable(alert, lenient)
 	local check = (C_Spell and C_Spell.IsSpellUsable) or IsUsableSpell
 	if not check then return nil end
 	local lacksMana = false
-	local lookup = alert.def.strictUsable and C_Spell and C_Spell.GetSpellInfo
+	local lookup = not lenient and alert.def.strictUsable and C_Spell and C_Spell.GetSpellInfo
 	for name in pairs(auraNames(alert)) do
 		local ok, usable, noMana = pcall(check, name)
 		if ok and usable ~= nil and not isSecret(usable) then
@@ -3355,7 +3377,9 @@ function conditionMet(alert)
 	local combat = inCombat()
 	if alert.s.combatOnly and not combat then return false end
 	if not spellKnown(alert) then return false end
-	if alert.s.needUsable and spellUsable(alert) == false then return false end
+	-- Feuertotem-Hinweis: Ohne Feuertotem ist die Feuernova nicht wirkbar. Genau dann soll das Totem-Bild erscheinen.
+	local hintTotem = alert.current ~= nil and alert.current.hints ~= nil and ns.Totems ~= nil and ns.Totems.IsActive(1) == false
+	if alert.s.needUsable and spellUsable(alert, hintTotem) == false then return false end
 	if not ns.specAllows(alert) then return false end
 	-- Die Aggro-Bedingung gilt nur im Kampf. Außerhalb darf der Alarm ans Nachbuffen erinnern.
 	if alert.s.needAggro and combat and hasAggro() == false then return false end
@@ -3374,7 +3398,8 @@ function conditionMet(alert)
 		local enemies = nearbyEnemies(alert.s.enemyRange)
 		if enemies ~= nil and enemies < (alert.s.minEnemies or 3) then return false end
 	end
-	if ready and alert.s.needFireTotem and ns.Totems and ns.Totems.IsActive(1) == false then return false end
+	-- Mit dem Feuertotem-Hinweis verschwindet der Alarm ohne Totem nicht, er zeigt das Totem-Bild.
+	if ready and alert.s.needFireTotem and not (alert.current and alert.current.hints) and ns.Totems and ns.Totems.IsActive(1) == false then return false end
 	-- Ohne Auskunft des Spiels bliebe der Alarm dauernd stehen, deshalb zählt nur ein klares Ja.
 	if ready and alert.s.needCasting and targetCasting() ~= true then return false end
 	if alert.def.unit ~= "target" then
@@ -3431,7 +3456,14 @@ local function updateAlert(alert)
 		-- Die Kopien zum frühen Auffrischen erscheinen nur in den letzten Sekunden der Aura.
 		local early = alert.current.early
 		local due = early ~= nil and refreshDue(alert)
-		for _, visual in ipairs(visuals) do visual:SetShown(show and not wants and (due or not (early and early[visual]))) end
+		-- Feuertotem-Hinweis: Fehlt das Feuertotem, erscheint statt der Grafik das Totem-Bild.
+		local hints = alert.current.hints
+		local hinting = hints ~= nil and show and not wants and ns.Totems ~= nil and ns.Totems.IsActive(1) == false
+		alert.hinting = hinting or nil
+		for _, visual in ipairs(visuals) do visual:SetShown(show and not wants and not hinting and (due or not (early and early[visual]))) end
+		if hints then
+			for _, hint in ipairs(hints) do hint:SetShown(hinting) end
+		end
 		local gated = alert.current.gated
 		if gated then
 			-- Soll der andere Alarm gerade früh auffrischen, steht dieser auch dann zurück.
@@ -4054,6 +4086,11 @@ local FIELDS = {
 	needtarget = booleanField("needTarget"),
 	needrange = booleanField("needRange"),
 	reachdim = booleanField("reachDim"),
+	totemhint = function(alert, text)
+		if alert.def.kind ~= "ready" then return false, L["The fire totem hint exists for spell-ready alerts only."] end
+		alert.s.totemHint = toBoolean(text, alert.s.totemHint)
+		return true
+	end,
 	needenemies = function(alert, text)
 		if alert.def.kind ~= "ready" then return false, L["This exists for \"spell ready\" alerts only."] end
 		alert.s.needEnemies = toBoolean(text, alert.s.needEnemies)
@@ -4470,6 +4507,7 @@ local function printStatus(rest)
 					method and (L[", measured by: "] .. ENEMY_METHODS[method]) or "")
 				local fireTotem = ns.Totems and ns.Totems.IsActive(1)
 				msg(L["  Only while a fire totem stands: %s (right now: %s)."], yesNo(settings.needFireTotem), fireTotem == nil and L["unknown"] or (fireTotem and L["standing"] or L["none"]))
+				if settings.totemHint then msg(L["  Without a fire totem the totem picture shows instead: yes (showing it right now: %s)."], yesNo(alert.hinting == true)) end
 				local casting = targetCasting()
 				msg(L["  Only while the target casts: %s (right now: %s)."], yesNo(settings.needCasting), casting == nil and L["the game does not tell"] or (casting and L["casting"] or L["not casting"]))
 				if settings.castFirst then msg(L["  Priority while the target casts: %s (right now: %s)."], yesNo(true), yesNo(ns.castPriority(alert))) end
@@ -4510,7 +4548,7 @@ local function printHelp()
 	print(L["  /sha - open or close the options window"])
 	print(L["  /sha test [alert] - preview for 3 seconds, with the sound"])
 	print(L["  /sha set <alert> <field> <value> - e.g. /sha set maelstrom threshold 4"])
-	print(L["     Fields: enabled, threshold, size, alpha, texture, color, additive, pulse, icon, combatonly, needusable, needaggro, needplayer, noplayer, needtarget, needrange, needenemies, minenemies, enemyrange, needfiretotem, needcasting, castfirst, needready, lead, refresh, duration, yieldto, behind, placelike, minhealth, maxmana, bossalways, specs, reachdim, offhand, mainimbue, offimbue, sound, soundfile, name"])
+	print(L["     Fields: enabled, threshold, size, alpha, texture, color, additive, pulse, icon, combatonly, needusable, needaggro, needplayer, noplayer, needtarget, needrange, needenemies, minenemies, enemyrange, needfiretotem, needcasting, castfirst, needready, lead, refresh, duration, yieldto, behind, placelike, minhealth, maxmana, bossalways, specs, reachdim, totemhint, offhand, mainimbue, offimbue, sound, soundfile, name"])
 	print(L["     Display: display (icon, texture), iconzoom, iconborder, bordercolor, iconspell (spell ID, name, path or auto)"])
 	print(L["     Layout: layout (center, bottom, top, left, right, sides, topbottom, around), count, distance, spread, rotate, angle, flip, perstack, x, y"])
 	print(L["  /sha id <alert> <aura ID|reset> - add an aura ID or reset the IDs"])
