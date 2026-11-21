@@ -797,3 +797,7 @@ L["The fire totem hint exists for spell-ready alerts only."] = "불 토템 안�
 L["  Without a fire totem the totem picture shows instead: yes (showing it right now: %s)."] = "  불 토템이 없으면 대신 토템 그림 표시: 예 (지금 표시 중: %s)."
 L["Without a fire totem show a totem instead"] = "불 토템이 없으면 토템 표시"
 L["While none of your fire totems stands, the alert shows the picture of a fire totem in place of its own: first place the totem, then cast. Meant for Fire Nova."] = "불 토템이 하나도 서 있지 않으면 경보가 자기 그림 대신 불 토템을 보여 줍니다. 먼저 토템을 세우고 주문을 쓰세요. 불꽃 회오리를 위한 기능입니다."
+L["Fade out after combat or without a target: %s."] = "전투 후 또는 대상이 없을 때 서서히 사라짐: %s."
+L["  /sha fade <seconds> - let the graphics fade out after combat or without a target instead of vanishing (0 = off)"] = "  /sha fade <초> - 전투 후나 대상이 없을 때 그림이 바로 사라지지 않고 서서히 사라지게 함 (0 = 끔)"
+L["Fade out after combat"] = "전투 후 서서히 사라짐"
+L["When the fight ends or your target is gone, the graphics that were just visible do not vanish at once but fade out over this time. If the fight goes on or a new target comes, they are back at once. 0 switches it off."] = "전투가 끝나거나 대상이 사라지면, 보이던 그림이 바로 사라지지 않고 이 시간 동안 서서히 사라집니다. 전투가 이어지거나 새 대상이 생기면 즉시 돌아옵니다. 0이면 끕니다."

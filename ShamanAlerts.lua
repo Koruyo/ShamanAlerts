@@ -3003,6 +3003,58 @@ end
 -- weg. Das geht bei jedem Alarm, auch bei denen ohne eigenen Zauber auf das Ziel.
 ns.REACH_ALPHA = 0.35
 
+-- Ausblenden über Zeit: Endet der Kampf oder fällt das Ziel weg, verschwinden
+-- die gerade sichtbaren Grafiken nicht schlagartig, sondern verblassen über
+-- "db.fadeOut" Sekunden. Geht der Kampf weiter oder kommt ein neues Ziel, sind
+-- sie sofort wieder voll da. Verschwindet eine Grafik aus einem anderen Grund
+-- (Zauber gewirkt, Ziel zaubert nicht mehr), bleibt es beim sofortigen Ausblenden.
+
+-- Ist gerade Kampfende oder kein angreifbares Ziel da?
+function ns.fadeCause()
+	if not inCombat() then return true end
+	if not plain(UnitExists("target"), true) then return true end
+	if type(UnitIsDeadOrGhost) == "function" and plain(UnitIsDeadOrGhost("target"), false) then return true end
+	if type(UnitCanAttack) == "function" and not plain(UnitCanAttack("player", "target"), true) then return true end
+	return false
+end
+
+-- Läuft nach dem gewöhnlichen Ein- und Ausblenden eines Alarms. "met" sagt, ob
+-- seine Bedingungen erfüllt sind.
+function ns.applyFade(alert, met)
+	local current = alert.current
+	local list = ns.allVisuals(current)
+	for _, hint in ipairs(current.hints or {}) do list[#list + 1] = hint end
+	local shown
+	for _, visual in ipairs(list) do
+		if visual:IsShown() then
+			shown = shown or {}
+			shown[visual] = true
+		end
+	end
+	if shown then
+		-- gewöhnlich sichtbar: merken, was steht, und ein laufendes Ausblenden beenden
+		alert.fade, alert.fadeFactor = nil, nil
+		alert.lastShown, alert.lastShownIn = shown, current
+		return
+	end
+	local duration = tonumber(db.fadeOut) or 0
+	local now = GetTime and GetTime() or 0
+	local fade = alert.fade
+	if not fade and duration > 0 and alert.lastShown and alert.lastShownIn == current and met == false and ns.fadeCause() then
+		fade = { visuals = alert.lastShown, ends = now + duration, duration = duration, current = current }
+		alert.fade = fade
+	end
+	alert.lastShown = nil
+	if not fade then return end
+	local left = fade.ends - now
+	if left <= 0 or duration <= 0 or fade.current ~= current then
+		alert.fade, alert.fadeFactor = nil, nil
+		return
+	end
+	for visual in pairs(fade.visuals) do visual:Show() end
+	alert.fadeFactor = left / fade.duration
+end
+
 -- Rahmen zwischen Alarm und Grafik, der nur diese Deckkraft trägt. Die übrigen
 -- Deckkräfte (Vorlaufzeit, Lebens-Schwelle) liegen auf eigenen Rahmen, weil
 -- das Spiel sie im Kampf als geheime Zahl liefert.
@@ -3019,9 +3071,10 @@ function ns.applyReach(alert)
 	local current = alert.current
 	if not current then return end
 	local dim = alert.s.reachDim == true and ns.inReach() == false
-	if (current.reachDim or false) == dim then return end
-	current.reachDim = dim
-	local alpha = dim and ns.REACH_ALPHA or 1
+	-- dieselben Rahmen tragen auch das Ausblenden nach dem Kampf
+	local alpha = (dim and ns.REACH_ALPHA or 1) * (alert.fadeFactor or 1)
+	if current.wrapAlpha == alpha then return end
+	current.wrapAlpha = alpha
 	if alert.def.kind == "stacks" then
 		-- Stapel-Alarme zeichnet das Spiel selbst: hier trägt der ganze Container die Deckkraft.
 		if current.container then pcall(current.container.SetAlpha, current.container, alpha) end
@@ -3485,6 +3538,7 @@ local function updateAlert(alert)
 			alert.readyShown = isReady
 		end
 		if show then applyHealthGate(alert) end
+		ns.applyFade(alert, met)
 		-- Die Restzeit folgt derselben Bedingung wie die Grafik.
 		local timers = alert.current.timers
 		if timers and alert.current.timersShown ~= show then
@@ -3837,6 +3891,7 @@ local function initDB()
 	if type(db.font.timerSize) ~= "number" then db.font.timerSize = 14 end
 	if type(db.hotkeys) ~= "boolean" then db.hotkeys = false end -- Taste an den Grafiken zeigen
 	if not ns.HOTKEY_PLACE_NAMES[db.hotkeyPlace] then db.hotkeyPlace = "BOTTOMRIGHT" end
+	if type(db.fadeOut) ~= "number" or db.fadeOut < 0 or db.fadeOut > 15 then db.fadeOut = 0 end -- Sekunden, 0 = sofort ausblenden
 	-- Ein Zwischenstand von 2.52 hatte einen gemeinsamen Schalter für Grafiken und
 	-- Abklingzeit-Reihe und übernahm dabei den der Reihe. Das wird zurückgestellt.
 	if db.hotkeys == true and type(db.totems) == "table" and db.totems.hotkeys == nil and db.totems.enabled ~= nil then
@@ -4564,6 +4619,7 @@ local function printHelp()
 	print(L["  /sha minimap [on|off] - show or hide the minimap button"])
 	print(L["  /sha hotkeys [on|off|bottomright|top|center ...] - show the key of the spell at the graphics; /sha totem hotkeys on for the cooldown icons"])
 	print(L["  /sha reach [on|off] - show all alerts fainter while no target is in attack range (per alert: reachdim)"])
+	print(L["  /sha fade <seconds> - let the graphics fade out after combat or without a target instead of vanishing (0 = off)"])
 	print(L["  /sha spec [auto|elemental|enhancement|restoration] - show your specialization or set it by hand"])
 	print(L["  /sha profile - page for profiles and sharing; /sha profile save|load|delete <name>, /sha profile list"])
 	print(L["  /sha export - the settings as text to pass on"])
@@ -4714,6 +4770,19 @@ commands.options = function()
 	if ns.ToggleOptions then ns.ToggleOptions() else printHelp() end
 end
 commands.config = commands.options
+
+-- /sha fade <Sekunden>: Grafiken nach Kampfende oder Zielverlust über diese Zeit ausblenden (0 = sofort)
+commands.fade = function(rest)
+	local word = (rest or ""):match("^%s*(%S*)")
+	if word ~= "" then
+		local value = toNumber(word)
+		if not value or value < 0 or value > 15 then return msg(L["Please enter a number from %s to %s."], 0, 15) end
+		db.fadeOut = math.floor(value * 2 + 0.5) / 2
+		if ns.RefreshOptions then ns.RefreshOptions() end
+	end
+	msg(L["Fade out after combat or without a target: %s."], db.fadeOut > 0 and (("%.1f s"):format(db.fadeOut):gsub("%.", L["."])) or L["(off)"])
+end
+commands.ausblenden = commands.fade
 
 -- /sha reach <on|off>: "außer Angriffsreichweite blasser" bei allen Alarmen auf einmal ein- oder ausschalten
 commands.reach = function(rest)

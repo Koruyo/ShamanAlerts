@@ -796,3 +796,7 @@ L["The fire totem hint exists for spell-ready alerts only."] = "Подсказк
 L["  Without a fire totem the totem picture shows instead: yes (showing it right now: %s)."] = "  Без тотема огня вместо этого показывается изображение тотема: да (показывается сейчас: %s)."
 L["Without a fire totem show a totem instead"] = "Без тотема огня показывать тотем"
 L["While none of your fire totems stands, the alert shows the picture of a fire totem in place of its own: first place the totem, then cast. Meant for Fire Nova."] = "Пока не стоит ни один ваш тотем огня, оповещение показывает тотем огня вместо своего изображения: сначала поставьте тотем, затем применяйте заклинание. Задумано для «Кольца огня»."
+L["Fade out after combat or without a target: %s."] = "Затухание после боя или без цели: %s."
+L["  /sha fade <seconds> - let the graphics fade out after combat or without a target instead of vanishing (0 = off)"] = "  /sha fade <секунды> - плавно скрывать изображения после боя или без цели вместо мгновенного исчезновения (0 = выкл.)"
+L["Fade out after combat"] = "Затухание после боя"
+L["When the fight ends or your target is gone, the graphics that were just visible do not vanish at once but fade out over this time. If the fight goes on or a new target comes, they are back at once. 0 switches it off."] = "Когда бой заканчивается или цель пропала, видимые изображения не исчезают мгновенно, а затухают за это время. Если бой продолжается или появляется новая цель, они сразу возвращаются. 0 отключает."

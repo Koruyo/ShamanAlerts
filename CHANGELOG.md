@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.53.0
+- Fade out, optional: when the fight ends or your target is gone, the graphics that were just
+  visible fade out over a time you set instead of vanishing at once. If the fight goes on or a
+  new target comes, they are back at once, so they no longer flicker away between two enemies.
+  Slider "Fade out after combat" on the page "Help & diagnostics", or `/sha fade 5` (0 = off)
+
 ## 2.52.0
 - Hotkeys, optional: an alert shows the key its spell is bound to, and the cooldown icons of the
   totem bar can show it too. The keys are read from your action bars, macros included. The key

@@ -790,3 +790,7 @@ L["The fire totem hint exists for spell-ready alerts only."] = "El aviso del tó
 L["  Without a fire totem the totem picture shows instead: yes (showing it right now: %s)."] = "  Sin tótem de fuego se muestra el gráfico del tótem: sí (mostrándolo ahora: %s)."
 L["Without a fire totem show a totem instead"] = "Sin tótem de fuego, mostrar un tótem"
 L["While none of your fire totems stands, the alert shows the picture of a fire totem in place of its own: first place the totem, then cast. Meant for Fire Nova."] = "Mientras no haya ninguno de tus tótems de fuego, la alerta muestra un tótem de fuego en lugar de su propio gráfico: primero coloca el tótem, luego lanza. Pensado para Nova de Fuego."
+L["Fade out after combat or without a target: %s."] = "Desvanecer tras el combate o sin objetivo: %s."
+L["  /sha fade <seconds> - let the graphics fade out after combat or without a target instead of vanishing (0 = off)"] = "  /sha fade <segundos> - desvanecer los gráficos tras el combate o sin objetivo en vez de ocultarlos al instante (0 = desactivado)"
+L["Fade out after combat"] = "Desvanecer tras el combate"
+L["When the fight ends or your target is gone, the graphics that were just visible do not vanish at once but fade out over this time. If the fight goes on or a new target comes, they are back at once. 0 switches it off."] = "Cuando termina el combate o tu objetivo desaparece, los gráficos visibles no se ocultan de golpe sino que se desvanecen durante este tiempo. Si el combate sigue o llega un nuevo objetivo, vuelven al instante. 0 lo desactiva."

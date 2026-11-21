@@ -801,3 +801,7 @@ L["The fire totem hint exists for spell-ready alerts only."] = "火焰圖騰提�
 L["  Without a fire totem the totem picture shows instead: yes (showing it right now: %s)."] = "  沒有火焰圖騰時改為顯示圖騰圖形：是（目前正在顯示：%s）。"
 L["Without a fire totem show a totem instead"] = "沒有火焰圖騰時顯示圖騰"
 L["While none of your fire totems stands, the alert shows the picture of a fire totem in place of its own: first place the totem, then cast. Meant for Fire Nova."] = "當你沒有任何火焰圖騰存在時，警報會顯示一個火焰圖騰來代替自己的圖形：先放圖騰，再施法。為火焰新星而設。"
+L["Fade out after combat or without a target: %s."] = "戰鬥結束或沒有目標時淡出：%s。"
+L["  /sha fade <seconds> - let the graphics fade out after combat or without a target instead of vanishing (0 = off)"] = "  /sha fade <秒> - 戰鬥結束或沒有目標時讓圖形淡出而不是立即消失（0 = 關閉）"
+L["Fade out after combat"] = "戰鬥後淡出"
+L["When the fight ends or your target is gone, the graphics that were just visible do not vanish at once but fade out over this time. If the fight goes on or a new target comes, they are back at once. 0 switches it off."] = "戰鬥結束或目標消失時，剛才可見的圖形不會立刻消失，而是在這段時間內淡出。如果戰鬥繼續或有了新目標，它們會立即恢復。0 為關閉。"

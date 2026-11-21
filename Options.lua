@@ -1547,6 +1547,11 @@ local function createFrame()
 	placeButton.Refresh = function(self) self:SetText(L["Key: "] .. ns.HOTKEY_PLACE_NAMES[ns.db.hotkeyPlace]) end
 	placeButton.hotkeyPlace = true
 	widgets[#widgets + 1] = placeButton
+	tip(addSlider(help, "FadeOut", L["Fade out after combat"], 4, -566, 0, 10, 0.5,
+		function(value) return value == 0 and L["(off)"] or (("%.1f s"):format(value):gsub("%.", L["."])) end,
+		function() return ns.db.fadeOut or 0 end,
+		function(value) ns.db.fadeOut = value end),
+		L["When the fight ends or your target is gone, the graphics that were just visible do not vanish at once but fade out over this time. If the fight goes on or a new target comes, they are back at once. 0 switches it off."])
 
 	-- Seite "Profile & Austausch" -----------------------------------------------
 	local prof = CreateFrame("Frame", nil, window)
