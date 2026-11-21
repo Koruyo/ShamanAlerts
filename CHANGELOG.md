@@ -4,9 +4,8 @@
 - Hotkeys, optional: an alert shows the key its spell is bound to, and the cooldown icons of the
   totem bar can show it too. The keys are read from your action bars, macros included. The key
   stands in the bottom right corner of the picture, or in any other corner, at a side or in the
-  centre (`/sha hotkeys topleft`). Checkbox "Show hotkeys at the graphics" and a button for the
-  place on the page "Help & diagnostics" (`/sha hotkeys on`), "Show hotkeys on the icons" on the
-  totem page (`/sha totem hotkeys on`)
+  centre (`/sha hotkeys topleft`). One switch for both: `/sha hotkeys on`, or the checkbox on the
+  page "Help & diagnostics" (with a button for the place) or on the totem page
 - New option for every alert, off by default: "Fainter while no target is in attack range". The
   graphic is then shown faintly while you have no attackable target within reach of your damage
   spell with the longest range, usually Lightning Bolt: ready, but too far away. Checkbox on the

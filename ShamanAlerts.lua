@@ -3837,6 +3837,11 @@ local function initDB()
 	if type(db.font.timerSize) ~= "number" then db.font.timerSize = 14 end
 	if type(db.hotkeys) ~= "boolean" then db.hotkeys = false end -- Taste an den Grafiken zeigen
 	if not ns.HOTKEY_PLACE_NAMES[db.hotkeyPlace] then db.hotkeyPlace = "BOTTOMRIGHT" end
+	-- Anfangs hatte die Abklingzeit-Reihe einen eigenen Schalter. Jetzt gilt einer für beides.
+	if type(db.totems) == "table" and db.totems.hotkeys ~= nil then
+		if db.totems.hotkeys == true then db.hotkeys = true end
+		db.totems.hotkeys = nil
+	end
 	-- Unvollständige Einträge würden den Aufbau stören.
 	for index = #db.custom, 1, -1 do
 		local spec = db.custom[index]
@@ -4556,7 +4561,7 @@ local function printHelp()
 	print(L["     Custom alerts: title, kind (active, missing, stacks, ready), unit (player, target), auratype (buff, debuff, mine), timer"])
 	print(L["  /sha scan - list your buffs and your debuffs on the target with their IDs"])
 	print(L["  /sha minimap [on|off] - show or hide the minimap button"])
-	print(L["  /sha hotkeys [on|off|bottomright|top|center ...] - show the key of the spell at the graphics; /sha totem hotkeys on for the cooldown icons"])
+	print(L["  /sha hotkeys [on|off|bottomright|top|center ...] - show the key of the spell at the graphics and on the cooldown icons"])
 	print(L["  /sha reach [on|off] - show all alerts fainter while no target is in attack range (per alert: reachdim)"])
 	print(L["  /sha spec [auto|elemental|enhancement|restoration] - show your specialization or set it by hand"])
 	print(L["  /sha profile - page for profiles and sharing; /sha profile save|load|delete <name>, /sha profile list"])
@@ -4746,7 +4751,7 @@ commands.hotkeys = function(rest)
 	if ns.Hotkeys then ns.Hotkeys.Invalidate() end
 	ns.refreshHotkeys()
 	state.hotkeysDirty = nil
-	msg(L["Hotkeys at the graphics: %s, place: %s."], db.hotkeys and L["visible"] or L["hidden"], ns.HOTKEY_PLACE_NAMES[db.hotkeyPlace])
+	msg(L["Hotkeys at the graphics and on the cooldown icons: %s, place at the graphics: %s."], db.hotkeys and L["visible"] or L["hidden"], ns.HOTKEY_PLACE_NAMES[db.hotkeyPlace])
 	if ns.RefreshOptions then ns.RefreshOptions() end
 end
 commands.tasten = commands.hotkeys
