@@ -438,6 +438,7 @@ local ALERT_DEFS = {
 			needUsable = true, -- nur warnen, wenn das Mana für Flammenschock reicht
 			needAggro = false,
 			noPlayer = true, -- gegen Spieler lohnt sich der Flammenschock nicht
+			needRange = true, -- nur wenn das Ziel in Reichweite ist
 			needReady = true, -- nicht warnen, solange die Schocks noch abklingen
 			lead = 1, leadRevision = 1, -- so viele Sekunden vor "bereit" schon anzeigen
 			behind = "interrupt,frostshock", -- Unterbrechen und (gegen Spieler) Frostschock gehen vor
@@ -871,6 +872,7 @@ local ALERT_DEFS = {
 			needUsable = true, -- nur warnen, wenn das Mana für Frostschock reicht
 			needAggro = false,
 			needPlayer = true, -- nur gegen Spieler: Die Verlangsamung lohnt sich im PvP
+			needRange = true, -- nur wenn das Ziel in Reichweite ist
 			behind = "interrupt", -- Unterbrechen geht vor
 			needReady = true, -- nicht warnen, solange die Schocks noch abklingen
 			lead = 1, leadRevision = 1,
@@ -1134,7 +1136,7 @@ local CUSTOM_DEFAULTS = {
 	needUsable = false,
 	needAggro = false,
 	needTarget = true, -- nur bei "Zauber bereit": angreifbares Ziel nötig
-	needRange = false, -- nur bei "Zauber bereit": Ziel muss in Reichweite sein
+	needRange = false, -- bei "Zauber bereit" und "fehlt" auf das Ziel: Ziel muss in Reichweite sein
 	needEnemies = false, minEnemies = 3, enemyRange = 10, -- nur bei so vielen Gegnern in diesem Umkreis (Namensplaketten)
 	needFireTotem = false, -- nur solange ein Feuertotem steht
 	needCasting = false, -- nur solange das Ziel etwas Unterbrechbares zaubert
@@ -3239,7 +3241,8 @@ function conditionMet(alert)
 	if alert.s.needPlayer and not targetIsPlayer() then return false end
 	-- Nicht gegen Spieler: für Zauber, die sich im PvP nicht lohnen (Flammenschock)
 	if alert.s.noPlayer and targetIsPlayer(false) then return false end
-	if ready and alert.s.needRange and spellInRange(alert) == false then return false end
+	-- Reichweite: bei "Zauber bereit" und bei Fehlt-Alarmen auf das Ziel (Flammenschock, Frostschock)
+	if (ready or (alert.def.kind == "missing" and alert.def.unit == "target")) and alert.s.needRange and spellInRange(alert) == false then return false end
 	if ready and alert.s.needEnemies then
 		local enemies = nearbyEnemies(alert.s.enemyRange)
 		if enemies ~= nil and enemies < (alert.s.minEnemies or 3) then return false end
@@ -4338,6 +4341,10 @@ local function printStatus(rest)
 				if (settings.maxMana or 0) > 0 then msg(L["  Only with at most %d %% mana: %s."], settings.maxMana, ns.manaCurve(alert) and L["supported by the game"] or L["not possible in this client"]) end
 			end
 			if alert.def.kind == "missing" then
+				if alert.def.unit == "target" then
+					local range = spellInRange(alert)
+					msg(L["  Only in range: %s (in range right now: %s)."], yesNo(settings.needRange), range == nil and L["unknown"] or yesNo(range))
+				end
 				local ready = spellReady(alert)
 				msg(L["  Not during the cooldown: %s (ready right now: %s), lead time %.1f s."],
 					yesNo(settings.needReady), ready == nil and L["unknown"] or yesNo(ready), settings.lead or 0)

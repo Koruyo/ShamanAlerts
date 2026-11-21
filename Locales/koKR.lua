@@ -776,3 +776,4 @@ L["  /sha hotkeys [on|off] - show the key of the spell under the graphics; /sha 
 L["Show hotkeys under the graphics"] = "그림 아래에 단축키 표시"
 L["Under an alert for a spell stands the key the spell is bound to, read from your action bars (macros included). Alerts without a spell of their own, like Maelstrom Weapon, show none."] = "주문 경보 아래에 그 주문이 지정된 단축키가 표시됩니다. 행동 단축바에서 읽으며 매크로도 포함합니다. 소용돌이치는 무기처럼 자체 주문이 없는 경보에는 표시되지 않습니다."
 L["Show hotkeys on the icons"] = "아이콘에 단축키 표시"
+L["  Only in range: %s (in range right now: %s)."] = "  사거리 안에서만: %s (지금 사거리 안: %s)."

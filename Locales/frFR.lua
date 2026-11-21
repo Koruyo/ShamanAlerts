@@ -760,3 +760,4 @@ L["  /sha hotkeys [on|off] - show the key of the spell under the graphics; /sha 
 L["Show hotkeys under the graphics"] = "Afficher les raccourcis sous les images"
 L["Under an alert for a spell stands the key the spell is bound to, read from your action bars (macros included). Alerts without a spell of their own, like Maelstrom Weapon, show none."] = "Sous une alerte de sort figure la touche à laquelle le sort est lié, lue sur vos barres d'action (macros comprises). Les alertes sans sort propre, comme Arme du Maelström, n'en affichent pas."
 L["Show hotkeys on the icons"] = "Afficher les raccourcis sur les icônes"
+L["  Only in range: %s (in range right now: %s)."] = "  Uniquement à portée : %s (à portée actuellement : %s)."

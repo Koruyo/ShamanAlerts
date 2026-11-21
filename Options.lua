@@ -1156,6 +1156,14 @@ local function createFrame()
 			cur().needRange = value
 			changed()
 		end, "ready"), L["The alert only appears if the target is close enough for this spell."])
+	tip(addCheck(rules, L["Only in range"], 0, -192,
+		function() return cur().needRange end,
+		function(value)
+			cur().needRange = value
+			changed()
+		end, "missing"), L["The alert only appears if the target is close enough for this spell."]).visibleIf = function()
+			return selected.def.unit == "target"
+		end
 	tip(addCheck(rules, L["Only while the target casts"], 0, -144,
 		function() return cur().needCasting end,
 		function(value)

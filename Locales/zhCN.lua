@@ -775,3 +775,4 @@ L["  /sha hotkeys [on|off] - show the key of the spell under the graphics; /sha 
 L["Show hotkeys under the graphics"] = "在图形下方显示快捷键"
 L["Under an alert for a spell stands the key the spell is bound to, read from your action bars (macros included). Alerts without a spell of their own, like Maelstrom Weapon, show none."] = "法术警报下方会显示该法术绑定的按键，从你的动作条读取（包括宏）。没有对应法术的警报（如漩涡武器）不显示。"
 L["Show hotkeys on the icons"] = "在图标上显示快捷键"
+L["  Only in range: %s (in range right now: %s)."] = "  仅在射程内：%s（当前在射程内：%s）。"

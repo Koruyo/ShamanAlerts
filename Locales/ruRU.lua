@@ -775,3 +775,4 @@ L["  /sha hotkeys [on|off] - show the key of the spell under the graphics; /sha 
 L["Show hotkeys under the graphics"] = "Показывать клавиши под изображениями"
 L["Under an alert for a spell stands the key the spell is bound to, read from your action bars (macros included). Alerts without a spell of their own, like Maelstrom Weapon, show none."] = "Под оповещением о заклинании стоит клавиша, на которую оно назначено; она читается с ваших панелей команд (включая макросы). Оповещения без собственного заклинания, например «Оружие Водоворота», её не показывают."
 L["Show hotkeys on the icons"] = "Показывать клавиши на значках"
+L["  Only in range: %s (in range right now: %s)."] = "  Только в пределах досягаемости: %s (сейчас в пределах: %s)."
