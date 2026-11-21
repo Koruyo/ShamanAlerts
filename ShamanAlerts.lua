@@ -1985,13 +1985,27 @@ local function refreshDue(alert)
 	return remaining ~= nil and remaining <= seconds and remaining > -1
 end
 
--- Taste unter der Grafik: Auf Wunsch steht unter jedem Alarm, auf welcher Taste
--- sein Zauber liegt. Der Text hängt an der Grafik und erscheint mit ihr.
-local HOTKEY_ROOM = 30
+-- Taste an der Grafik: Auf Wunsch steht bei jedem Alarm, auf welcher Taste sein
+-- Zauber liegt, in einer Ecke, an einer Seite oder in der Mitte des Bildes.
+-- Der Text hängt an der Grafik und erscheint mit ihr.
+ns.HOTKEY_PLACES = { "BOTTOMRIGHT", "BOTTOM", "BOTTOMLEFT", "LEFT", "TOPLEFT", "TOP", "TOPRIGHT", "RIGHT", "CENTER" }
+ns.HOTKEY_PLACE_NAMES = {
+	BOTTOMRIGHT = L["bottom right"], BOTTOM = L["bottom"], BOTTOMLEFT = L["bottom left"], LEFT = L["left"], TOPLEFT = L["top left"],
+	TOP = L["top"], TOPRIGHT = L["top right"], RIGHT = L["right"], CENTER = L["center"],
+}
+
+function ns.placeHotkey(text, visual)
+	local place = ns.HOTKEY_PLACE_NAMES[db.hotkeyPlace] and db.hotkeyPlace or "BOTTOMRIGHT"
+	local inset = 4
+	local x = place:find("LEFT", 1, true) and inset or (place:find("RIGHT", 1, true) and -inset or 0)
+	local y = place:find("TOP", 1, true) and -inset or (place:find("BOTTOM", 1, true) and inset or 0)
+	text:ClearAllPoints()
+	text:SetPoint(place, visual, place, x, y)
+end
 
 function ns.attachHotkey(visual)
 	local text = visual:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
-	text:SetPoint("TOP", visual, "BOTTOM", 0, -2)
+	ns.placeHotkey(text, visual)
 	text:SetText("")
 	visual.hotkey = text
 	state.hotkeysDirty = true
@@ -2033,6 +2047,8 @@ function ns.refreshHotkeys()
 			for _, visual in ipairs(ns.allVisuals(alert.current)) do
 				if visual.hotkey then
 					applyFont(visual.hotkey, db.font.timerSize)
+					if visual.hotkey.SetTextColor then visual.hotkey:SetTextColor(1, 1, 1) end
+					ns.placeHotkey(visual.hotkey, visual)
 					visual.hotkey:SetText(key)
 				end
 			end
@@ -2076,7 +2092,7 @@ local function buildPresence(alert)
 		container:SetPoint("TOPLEFT", host, "TOPLEFT", 0, 0)
 
 		clip:SetClipsChildren(true)
-		clip:SetSize(size, size + HOTKEY_ROOM) -- unter der Grafik bleibt Platz für die Taste
+		clip:SetSize(size, size)
 		clip:ClearAllPoints()
 		clip:SetPoint("TOPLEFT", container, "TOPRIGHT", active and -(size + 1) or -1, 0)
 
@@ -2132,7 +2148,7 @@ local function buildPresence(alert)
 			local clip = createLayoutFrame(UIParent)
 			table.insert(alert.current.frames, clip)
 			clip:SetClipsChildren(true)
-			clip:SetSize(size, size + HOTKEY_ROOM)
+			clip:SetSize(size, size)
 			clip:ClearAllPoints()
 			clip:SetPoint("TOPLEFT", alert.current.containers[index], "TOPRIGHT", -(size + 1), 0)
 			local content = createLayoutFrame(clip)
@@ -2387,7 +2403,7 @@ local function buildReady(alert)
 	local function clippedVisual(container, host, offset, spot)
 		local clip = createLayoutFrame(UIParent)
 		clip:SetClipsChildren(true)
-		clip:SetSize(size, size + HOTKEY_ROOM) -- unter der Grafik bleibt Platz für die Taste
+		clip:SetSize(size, size)
 		clip:ClearAllPoints()
 		clip:SetPoint("TOPLEFT", container, "TOPRIGHT", offset, 0)
 		local content = createLayoutFrame(clip)
@@ -3787,7 +3803,8 @@ local function initDB()
 	if type(db.font.face) ~= "string" or db.font.face == "" then db.font.face = "auto" end
 	if not OUTLINE_NAMES[db.font.outline] then db.font.outline = "outline" end
 	if type(db.font.timerSize) ~= "number" then db.font.timerSize = 14 end
-	if type(db.hotkeys) ~= "boolean" then db.hotkeys = false end -- Taste unter den Grafiken zeigen
+	if type(db.hotkeys) ~= "boolean" then db.hotkeys = false end -- Taste an den Grafiken zeigen
+	if not ns.HOTKEY_PLACE_NAMES[db.hotkeyPlace] then db.hotkeyPlace = "BOTTOMRIGHT" end
 	-- Unvollständige Einträge würden den Aufbau stören.
 	for index = #db.custom, 1, -1 do
 		local spec = db.custom[index]
@@ -4501,7 +4518,7 @@ local function printHelp()
 	print(L["     Custom alerts: title, kind (active, missing, stacks, ready), unit (player, target), auratype (buff, debuff, mine), timer"])
 	print(L["  /sha scan - list your buffs and your debuffs on the target with their IDs"])
 	print(L["  /sha minimap [on|off] - show or hide the minimap button"])
-	print(L["  /sha hotkeys [on|off] - show the key of the spell under the graphics; /sha totem hotkeys on for the cooldown icons"])
+	print(L["  /sha hotkeys [on|off|bottomright|top|center ...] - show the key of the spell at the graphics; /sha totem hotkeys on for the cooldown icons"])
 	print(L["  /sha reach [on|off] - show all alerts fainter while no target is in attack range (per alert: reachdim)"])
 	print(L["  /sha spec [auto|elemental|enhancement|restoration] - show your specialization or set it by hand"])
 	print(L["  /sha profile - page for profiles and sharing; /sha profile save|load|delete <name>, /sha profile list"])
@@ -4674,13 +4691,24 @@ commands.reach = function(rest)
 end
 commands.reichweite = commands.reach
 
--- /sha hotkeys [on|off]: die Taste des Zaubers unter den Grafiken zeigen
+-- /sha hotkeys [on|off|Lage]: die Taste des Zaubers an den Grafiken zeigen
+local HOTKEY_WORDS = {
+	bottomright = "BOTTOMRIGHT", untenrechts = "BOTTOMRIGHT", bottom = "BOTTOM", unten = "BOTTOM", bottomleft = "BOTTOMLEFT", untenlinks = "BOTTOMLEFT",
+	left = "LEFT", links = "LEFT", topleft = "TOPLEFT", obenlinks = "TOPLEFT", top = "TOP", oben = "TOP", topright = "TOPRIGHT", obenrechts = "TOPRIGHT",
+	right = "RIGHT", rechts = "RIGHT", center = "CENTER", mitte = "CENTER",
+}
 commands.hotkeys = function(rest)
-	db.hotkeys = toBoolean(rest, db.hotkeys)
+	local word = (rest or ""):lower():gsub("[%s%-_]", "")
+	if HOTKEY_WORDS[word] then
+		db.hotkeyPlace = HOTKEY_WORDS[word]
+		db.hotkeys = true
+	else
+		db.hotkeys = toBoolean(rest, db.hotkeys)
+	end
 	if ns.Hotkeys then ns.Hotkeys.Invalidate() end
 	ns.refreshHotkeys()
 	state.hotkeysDirty = nil
-	msg(L["Hotkeys under the graphics: %s."], db.hotkeys and L["visible"] or L["hidden"])
+	msg(L["Hotkeys at the graphics: %s, place: %s."], db.hotkeys and L["visible"] or L["hidden"], ns.HOTKEY_PLACE_NAMES[db.hotkeyPlace])
 	if ns.RefreshOptions then ns.RefreshOptions() end
 end
 commands.tasten = commands.hotkeys

@@ -317,7 +317,7 @@ local function createCooldownIcon(index)
 	icon.textLayer:SetAllPoints(icon)
 	icon.textLayer:EnableMouse(false)
 	if icon.textLayer.SetFrameLevel and icon.cooldown.GetFrameLevel then icon.textLayer:SetFrameLevel((icon.cooldown:GetFrameLevel() or 1) + 2) end
-	icon.hotkey = icon.textLayer:CreateFontString(nil, "OVERLAY", "NumberFontNormalSmallGray")
+	icon.hotkey = icon.textLayer:CreateFontString(nil, "OVERLAY", "NumberFontNormalSmall")
 	icon.hotkey:SetPoint("TOPRIGHT", icon, "TOPRIGHT", 1, -1)
 	cdIcons[index] = icon
 	return icon
@@ -354,6 +354,7 @@ local function layoutCooldowns()
 			local timer = countdownText(icon.cooldown)
 			if timer then ns.applyFont(timer, math.max(6, math.floor(settings.fontSize * size / settings.iconSize + 0.5))) end
 			ns.applyFont(icon.hotkey, math.max(6, math.floor(size * 0.4 + 0.5)))
+			if icon.hotkey.SetTextColor then icon.hotkey:SetTextColor(1, 1, 1) end -- weiß wie auf den Aktionsleisten
 			icon.hotkey:SetText(settings.hotkeys and not spell.sample and ns.Hotkeys and ns.Hotkeys.ForSpell(spell.id, spell.name) or "")
 			icon:Show()
 		end

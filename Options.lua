@@ -1525,10 +1525,22 @@ local function createFrame()
 		function(value)
 			if ns.Minimap then ns.Minimap.SetShown(value) end
 		end), L["A left click on the button opens this window, a right click the page of the totem bar. The addon is also listed in the addon menu of the minimap and under Options > AddOns."])
-	tip(addCheck(help, L["Show hotkeys under the graphics"], 0, -512,
+	tip(addCheck(help, L["Show hotkeys at the graphics"], 0, -512,
 		function() return ns.db.hotkeys == true end,
 		function(value) ns.commands.hotkeys(value and "on" or "off") end),
-		L["Under an alert for a spell stands the key the spell is bound to, read from your action bars (macros included). Alerts without a spell of their own, like Maelstrom Weapon, show none."])
+		L["An alert for a spell shows the key the spell is bound to, read from your action bars (macros included). Alerts without a spell of their own, like Maelstrom Weapon, show none."])
+	local placeButton = tip(addButton(help, "", 220, 300, -512, function()
+		local index = 1
+		for position, key in ipairs(ns.HOTKEY_PLACES) do
+			if key == ns.db.hotkeyPlace then index = position end
+		end
+		ns.db.hotkeyPlace = ns.HOTKEY_PLACES[index % #ns.HOTKEY_PLACES + 1]
+		ns.refreshHotkeys()
+		ns.RefreshOptions()
+	end), L["Where the key stands on the picture. Each click picks the next place."])
+	placeButton.Refresh = function(self) self:SetText(L["Key: "] .. ns.HOTKEY_PLACE_NAMES[ns.db.hotkeyPlace]) end
+	placeButton.hotkeyPlace = true
+	widgets[#widgets + 1] = placeButton
 
 	-- Seite "Profile & Austausch" -----------------------------------------------
 	local prof = CreateFrame("Frame", nil, window)
