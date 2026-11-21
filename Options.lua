@@ -1156,14 +1156,6 @@ local function createFrame()
 			cur().needRange = value
 			changed()
 		end, "ready"), L["The alert only appears if the target is close enough for this spell."])
-	tip(addCheck(rules, L["Only in range"], 0, -192,
-		function() return cur().needRange end,
-		function(value)
-			cur().needRange = value
-			changed()
-		end, "missing"), L["The alert only appears if the target is close enough for this spell."]).visibleIf = function()
-			return selected.def.unit == "target"
-		end
 	tip(addCheck(rules, L["Only while the target casts"], 0, -144,
 		function() return cur().needCasting end,
 		function(value)
@@ -1196,6 +1188,13 @@ local function createFrame()
 		check.hideFor = "stacks"
 		check.specKey = key
 	end
+	-- Angriffsreichweite: bei jedem Alarm, auch bei Stapel-Alarmen
+	tip(addCheck(rules, L["Fainter while no target is in attack range"], 0, -352,
+		function() return cur().reachDim end,
+		function(value)
+			cur().reachDim = value
+			ns.RefreshOptions() -- kein Neuaufbau nötig: die Deckkraft wird laufend nachgestellt
+		end), L["While you have no attackable target within reach of your damage spell with the longest range, usually Lightning Bolt, the graphic is shown faintly: ready, but too far away. /sha reach on switches this on for all alerts at once."])
 	local enemiesCheck = tip(addCheck(rules, "", 0, -192,
 		function() return cur().needEnemies end,
 		function(value)

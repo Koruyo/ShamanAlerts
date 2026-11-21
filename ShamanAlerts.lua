@@ -438,7 +438,6 @@ local ALERT_DEFS = {
 			needUsable = true, -- nur warnen, wenn das Mana für Flammenschock reicht
 			needAggro = false,
 			noPlayer = true, -- gegen Spieler lohnt sich der Flammenschock nicht
-			needRange = true, -- nur wenn das Ziel in Reichweite ist
 			needReady = true, -- nicht warnen, solange die Schocks noch abklingen
 			lead = 1, leadRevision = 1, -- so viele Sekunden vor "bereit" schon anzeigen
 			behind = "interrupt,frostshock", -- Unterbrechen und (gegen Spieler) Frostschock gehen vor
@@ -872,7 +871,6 @@ local ALERT_DEFS = {
 			needUsable = true, -- nur warnen, wenn das Mana für Frostschock reicht
 			needAggro = false,
 			needPlayer = true, -- nur gegen Spieler: Die Verlangsamung lohnt sich im PvP
-			needRange = true, -- nur wenn das Ziel in Reichweite ist
 			behind = "interrupt", -- Unterbrechen geht vor
 			needReady = true, -- nicht warnen, solange die Schocks noch abklingen
 			lead = 1, leadRevision = 1,
@@ -1136,7 +1134,8 @@ local CUSTOM_DEFAULTS = {
 	needUsable = false,
 	needAggro = false,
 	needTarget = true, -- nur bei "Zauber bereit": angreifbares Ziel nötig
-	needRange = false, -- bei "Zauber bereit" und "fehlt" auf das Ziel: Ziel muss in Reichweite sein
+	needRange = false, -- nur bei "Zauber bereit": Ziel muss in Reichweite sein
+	reachDim = false, -- blasser zeigen, solange kein angreifbares Ziel in Reichweite des weitesten Schadenszaubers steht
 	needEnemies = false, minEnemies = 3, enemyRange = 10, -- nur bei so vielen Gegnern in diesem Umkreis (Namensplaketten)
 	needFireTotem = false, -- nur solange ein Feuertotem steht
 	needCasting = false, -- nur solange das Ziel etwas Unterbrechbares zaubert
@@ -1187,9 +1186,11 @@ local function customDef(spec)
 	}
 end
 
--- Jeder Alarm lässt sich auf Spezialisierungen beschränken ("" = in jeder).
+-- Jeder Alarm lässt sich auf Spezialisierungen beschränken ("" = in jeder)
+-- und außer Angriffsreichweite blasser zeigen.
 for _, def in ipairs(ALERT_DEFS) do
 	if def.defaults.specs == nil then def.defaults.specs = "" end
+	if def.defaults.reachDim == nil then def.defaults.reachDim = false end
 end
 
 local db
@@ -2008,6 +2009,17 @@ function ns.hotkeySpells(alert)
 	return auraNames(alert), alert.s.spellIDs
 end
 
+-- Alle Grafiken eines Alarms, auch die Kopien, die hinter einem anderen Alarm zurückstehen.
+function ns.allVisuals(current)
+	local list = {}
+	for _, visual in ipairs(current.visuals or {}) do list[#list + 1] = visual end
+	if current.gated then
+		for _, visual in ipairs(current.gated.present or {}) do list[#list + 1] = visual end
+		for _, visual in ipairs(current.gated.low or {}) do list[#list + 1] = visual end
+	end
+	return list
+end
+
 -- Schreibt die Tasten unter die Grafiken (oder leert sie, wenn ausgeschaltet).
 function ns.refreshHotkeys()
 	for _, alert in ipairs(alerts) do
@@ -2018,7 +2030,7 @@ function ns.refreshHotkeys()
 				if names or ids then key = ns.Hotkeys.ForSpells(names, ids) or "" end
 			end
 			alert.hotkey = key
-			for _, visual in ipairs(alert.current.visuals) do
+			for _, visual in ipairs(ns.allVisuals(alert.current)) do
 				if visual.hotkey then
 					applyFont(visual.hotkey, db.font.timerSize)
 					visual.hotkey:SetText(key)
@@ -2075,7 +2087,9 @@ local function buildPresence(alert)
 		table.insert(alert.current.leads, content) -- trägt die Deckkraft der Vorlaufzeit
 
 		-- Diesen Rahmen blendet das Addon selbst ein und aus (Kampf, Ziel).
-		local visual = createLayoutFrame(content)
+		local wrap = ns.reachWrap(content, true)
+		local visual = createLayoutFrame(wrap)
+		visual.reachWrap = wrap
 		visual:SetAllPoints(content)
 		visual:Hide()
 		local graphic = newGraphic(visual)
@@ -2125,7 +2139,9 @@ local function buildPresence(alert)
 			content:SetPoint("TOPLEFT", host, "TOPLEFT", 0, 0)
 			content:SetSize(size, size)
 			table.insert(alert.current.leads, content)
-			local visual = createLayoutFrame(content)
+			local wrap = ns.reachWrap(content, true)
+			local visual = createLayoutFrame(wrap)
+			visual.reachWrap = wrap
 			visual:SetAllPoints(content)
 			visual:Hide()
 			local graphic = newGraphic(visual)
@@ -2179,7 +2195,9 @@ local function buildPlain(alert)
 		lead:SetSize(settings.size, settings.size)
 		lead:SetPoint("CENTER", UIParent, "CENTER", settings.x + spot.x, settings.y + spot.y)
 		lead:EnableMouse(false)
-		local visual = CreateFrame("Frame", nil, lead)
+		local wrap = ns.reachWrap(lead)
+		local visual = CreateFrame("Frame", nil, wrap)
+		visual.reachWrap = wrap
 		visual:SetAllPoints(lead)
 		visual:EnableMouse(false)
 		visual:Hide()
@@ -2369,19 +2387,22 @@ local function buildReady(alert)
 	local function clippedVisual(container, host, offset, spot)
 		local clip = createLayoutFrame(UIParent)
 		clip:SetClipsChildren(true)
-		clip:SetSize(size, size)
+		clip:SetSize(size, size + HOTKEY_ROOM) -- unter der Grafik bleibt Platz für die Taste
 		clip:ClearAllPoints()
 		clip:SetPoint("TOPLEFT", container, "TOPRIGHT", offset, 0)
 		local content = createLayoutFrame(clip)
 		content:SetPoint("TOPLEFT", host, "TOPLEFT", 0, 0)
 		content:SetSize(size, size)
 		table.insert(alert.current.leads, content) -- trägt die Deckkraft der Vorlaufzeit
-		local visual = createLayoutFrame(content)
+		local wrap = ns.reachWrap(content, true)
+		local visual = createLayoutFrame(wrap)
+		visual.reachWrap = wrap
 		visual:SetAllPoints(content)
 		visual:Hide()
 		local graphic = newGraphic(visual)
 		graphic.back:SetAllPoints(visual)
 		styleGraphic(graphic, alert, spot, true)
+		ns.attachHotkey(visual)
 		table.insert(alert.current.frames, clip)
 		return visual
 	end
@@ -2397,13 +2418,16 @@ local function buildReady(alert)
 		plainLead:SetSize(size, size)
 		plainLead:SetPoint("CENTER", UIParent, "CENTER", settings.x + spot.x, settings.y + spot.y)
 		plainLead:EnableMouse(false)
-		local plainVisual = CreateFrame("Frame", nil, plainLead)
+		local plainWrap = ns.reachWrap(plainLead)
+		local plainVisual = CreateFrame("Frame", nil, plainWrap)
+		plainVisual.reachWrap = plainWrap
 		plainVisual:SetAllPoints(plainLead)
 		plainVisual:EnableMouse(false)
 		plainVisual:Hide()
 		local graphic = newGraphic(plainVisual)
 		graphic.back:SetAllPoints(plainVisual)
 		styleGraphic(graphic, alert, spot, true)
+		ns.attachHotkey(plainVisual)
 		table.insert(alert.current.frames, plainLead)
 		table.insert(alert.current.leads, plainLead)
 		table.insert(alert.current.visuals, plainVisual)
@@ -2935,6 +2959,94 @@ function ns.currentSpec()
 	return state.spec or nil
 end
 
+-- Angriffsreichweite: Auf Wunsch zeigt ein Alarm seine Grafik blasser, solange
+-- kein angreifbares Ziel in Reichweite des Schadenszaubers steht, der am
+-- weitesten reicht (meist der Blitzschlag). So sieht man: bereit, aber zu weit
+-- weg. Das geht bei jedem Alarm, auch bei denen ohne eigenen Zauber auf das Ziel.
+ns.REACH_ALPHA = 0.35
+
+-- Rahmen zwischen Alarm und Grafik, der nur diese Deckkraft trägt. Die übrigen
+-- Deckkräfte (Vorlaufzeit, Lebens-Schwelle) liegen auf eigenen Rahmen, weil
+-- das Spiel sie im Kampf als geheime Zahl liefert.
+function ns.reachWrap(parent, layout)
+	-- An einem Rahmen, der an einem Aura-Container hängt, darf nur ein Rahmen derselben Art hängen.
+	local wrap = layout and createLayoutFrame(parent) or CreateFrame("Frame", nil, parent)
+	wrap:SetAllPoints(parent)
+	if wrap.EnableMouse then wrap:EnableMouse(false) end
+	return wrap
+end
+
+-- Stellt die Deckkraft nach, sobald sich "in Reichweite" ändert oder der Alarm neu aufgebaut ist.
+function ns.applyReach(alert)
+	local current = alert.current
+	if not current then return end
+	local dim = alert.s.reachDim == true and ns.inReach() == false
+	if (current.reachDim or false) == dim then return end
+	current.reachDim = dim
+	local alpha = dim and ns.REACH_ALPHA or 1
+	if alert.def.kind == "stacks" then
+		-- Stapel-Alarme zeichnet das Spiel selbst: hier trägt der ganze Container die Deckkraft.
+		if current.container then pcall(current.container.SetAlpha, current.container, alpha) end
+	else
+		for _, visual in ipairs(ns.allVisuals(current)) do
+			if visual.reachWrap then pcall(visual.reachWrap.SetAlpha, visual.reachWrap, alpha) end
+		end
+	end
+end
+ns.REACH_SPELLS = {
+	{ 403, "Lightning Bolt", "Blitzschlag" }, { 421, "Chain Lightning", "Kettenblitzschlag" }, { 8042, "Earth Shock", "Erdschock" },
+	{ 8050, "Flame Shock", "Flammenschock" }, { 8056, "Frost Shock", "Frostschock" }, { 17364, "Stormstrike", "Sturmschlag" },
+}
+
+-- Der bekannte Schadenszauber mit der größten Reichweite: ID und Name, oder nil.
+function ns.reachSpell()
+	if state.reachSpell == nil then
+		local best, bestRange, bestName = false, -1, nil
+		local lookup = C_Spell and C_Spell.GetSpellInfo
+		for _, candidate in ipairs(ns.REACH_SPELLS) do
+			local names = { candidate[2], candidate[3] }
+			if C_Spell and C_Spell.GetSpellName then
+				local ok, name = pcall(C_Spell.GetSpellName, candidate[1])
+				if ok and type(name) == "string" and not isSecret(name) then table.insert(names, 1, name) end
+			end
+			for _, name in ipairs(names) do
+				local ok, info = false, nil
+				if lookup then ok, info = pcall(lookup, name) end
+				if ok and type(info) == "table" and type(info.spellID) == "number" and not isSecret(info.spellID) then
+					-- Ohne Angabe zur Reichweite zählt die Reihenfolge der Liste.
+					local range = type(info.maxRange) == "number" and not isSecret(info.maxRange) and info.maxRange or 0
+					if range > bestRange then best, bestRange, bestName = info.spellID, range, name end
+					break
+				end
+			end
+		end
+		state.reachSpell, state.reachName = best, bestName
+	end
+	return state.reachSpell or nil, state.reachName
+end
+
+-- Steht ein angreifbares Ziel in Angriffsreichweite? Ohne Ziel: false.
+-- nil heißt: Das verrät das Spiel gerade nicht.
+function ns.inReach()
+	local now = GetTime and GetTime() or 0
+	if state.reachAt == now then return state.reachValue end
+	local value
+	if not plain(UnitExists("target"), false) then
+		value = false
+	elseif type(UnitCanAttack) == "function" and not plain(UnitCanAttack("player", "target"), true) then
+		value = false
+	else
+		local id = ns.reachSpell()
+		local check = C_Spell and C_Spell.IsSpellInRange
+		if id and check then
+			local ok, result = pcall(check, id, "target")
+			if ok and result ~= nil and not isSecret(result) then value = (result == true or result == 1) end
+		end
+	end
+	state.reachAt, state.reachValue = now, value
+	return value
+end
+
 -- Rang eines Talents. Auf WoW Forever sind Talente Knoten eines Baums; der
 -- Knoten zählt nur, wenn er auch diesen Zauber trägt (ein Hotfix kann Knoten neu
 -- belegen), sonst wird der Baum nach dem Zauber abgesucht. nil = nicht lesbar.
@@ -3241,8 +3353,7 @@ function conditionMet(alert)
 	if alert.s.needPlayer and not targetIsPlayer() then return false end
 	-- Nicht gegen Spieler: für Zauber, die sich im PvP nicht lohnen (Flammenschock)
 	if alert.s.noPlayer and targetIsPlayer(false) then return false end
-	-- Reichweite: bei "Zauber bereit" und bei Fehlt-Alarmen auf das Ziel (Flammenschock, Frostschock)
-	if (ready or (alert.def.kind == "missing" and alert.def.unit == "target")) and alert.s.needRange and spellInRange(alert) == false then return false end
+	if ready and alert.s.needRange and spellInRange(alert) == false then return false end
 	if ready and alert.s.needEnemies then
 		local enemies = nearbyEnemies(alert.s.enemyRange)
 		if enemies ~= nil and enemies < (alert.s.minEnemies or 3) then return false end
@@ -3346,6 +3457,7 @@ local function updateConditions()
 	updateWeaponState()
 	for _, alert in ipairs(alerts) do
 		local ok, err = pcall(updateAlert, alert)
+		pcall(ns.applyReach, alert)
 		if not ok and alert.runError == nil then
 			alert.runError = tostring(err)
 			msg(L["Error in \"%s\". Please record /sha debug. Reason: %s"], alert.def.title, alert.runError:sub(1, 200))
@@ -3776,6 +3888,7 @@ events:SetScript("OnEvent", function(self, event, arg1, _, arg3)
 		-- Neuer Zauber oder Rang gelernt: "bekannt" neu prüfen und die ID nachtragen
 		for _, alert in ipairs(alerts) do alert.known, alert.readySpell = nil, nil end
 		state.rangeSpells = nil
+		state.reachSpell = nil
 		state.spec = nil
 		pcall(ns.applyTalentDurations)
 		state.lastScan = 0
@@ -3923,6 +4036,7 @@ local FIELDS = {
 	end,
 	needtarget = booleanField("needTarget"),
 	needrange = booleanField("needRange"),
+	reachdim = booleanField("reachDim"),
 	needenemies = function(alert, text)
 		if alert.def.kind ~= "ready" then return false, L["This exists for \"spell ready\" alerts only."] end
 		alert.s.needEnemies = toBoolean(text, alert.s.needEnemies)
@@ -4307,6 +4421,10 @@ local function printStatus(rest)
 				msg(L["  Stands behind \"%s\" (wants to show right now: %s)."], partner.def.title, yesNo(partnerWants(partner)))
 			end
 		end
+		if settings.reachDim then
+			local reach, _, name = ns.inReach(), ns.reachSpell()
+			msg(L["  Fainter out of attack range: yes (target in range right now: %s, measured by %s)."], reach == nil and L["unknown"] or yesNo(reach), tostring(name or L["unknown"]))
+		end
 		if (settings.specs or "") ~= "" then
 			local spec = ns.currentSpec()
 			msg(L["  Only as: %s (your specialization right now: %s)."], ns.specText(alert), spec and ns.SPEC_NAMES[spec] or L["unknown"])
@@ -4341,10 +4459,6 @@ local function printStatus(rest)
 				if (settings.maxMana or 0) > 0 then msg(L["  Only with at most %d %% mana: %s."], settings.maxMana, ns.manaCurve(alert) and L["supported by the game"] or L["not possible in this client"]) end
 			end
 			if alert.def.kind == "missing" then
-				if alert.def.unit == "target" then
-					local range = spellInRange(alert)
-					msg(L["  Only in range: %s (in range right now: %s)."], yesNo(settings.needRange), range == nil and L["unknown"] or yesNo(range))
-				end
 				local ready = spellReady(alert)
 				msg(L["  Not during the cooldown: %s (ready right now: %s), lead time %.1f s."],
 					yesNo(settings.needReady), ready == nil and L["unknown"] or yesNo(ready), settings.lead or 0)
@@ -4379,7 +4493,7 @@ local function printHelp()
 	print(L["  /sha - open or close the options window"])
 	print(L["  /sha test [alert] - preview for 3 seconds, with the sound"])
 	print(L["  /sha set <alert> <field> <value> - e.g. /sha set maelstrom threshold 4"])
-	print(L["     Fields: enabled, threshold, size, alpha, texture, color, additive, pulse, icon, combatonly, needusable, needaggro, needplayer, noplayer, needtarget, needrange, needenemies, minenemies, enemyrange, needfiretotem, needcasting, castfirst, needready, lead, refresh, duration, yieldto, behind, placelike, minhealth, maxmana, bossalways, specs, offhand, mainimbue, offimbue, sound, soundfile, name"])
+	print(L["     Fields: enabled, threshold, size, alpha, texture, color, additive, pulse, icon, combatonly, needusable, needaggro, needplayer, noplayer, needtarget, needrange, needenemies, minenemies, enemyrange, needfiretotem, needcasting, castfirst, needready, lead, refresh, duration, yieldto, behind, placelike, minhealth, maxmana, bossalways, specs, reachdim, offhand, mainimbue, offimbue, sound, soundfile, name"])
 	print(L["     Display: display (icon, texture), iconzoom, iconborder, bordercolor, iconspell (spell ID, name, path or auto)"])
 	print(L["     Layout: layout (center, bottom, top, left, right, sides, topbottom, around), count, distance, spread, rotate, angle, flip, perstack, x, y"])
 	print(L["  /sha id <alert> <aura ID|reset> - add an aura ID or reset the IDs"])
@@ -4388,6 +4502,7 @@ local function printHelp()
 	print(L["  /sha scan - list your buffs and your debuffs on the target with their IDs"])
 	print(L["  /sha minimap [on|off] - show or hide the minimap button"])
 	print(L["  /sha hotkeys [on|off] - show the key of the spell under the graphics; /sha totem hotkeys on for the cooldown icons"])
+	print(L["  /sha reach [on|off] - show all alerts fainter while no target is in attack range (per alert: reachdim)"])
 	print(L["  /sha spec [auto|elemental|enhancement|restoration] - show your specialization or set it by hand"])
 	print(L["  /sha profile - page for profiles and sharing; /sha profile save|load|delete <name>, /sha profile list"])
 	print(L["  /sha export - the settings as text to pass on"])
@@ -4538,6 +4653,26 @@ commands.options = function()
 	if ns.ToggleOptions then ns.ToggleOptions() else printHelp() end
 end
 commands.config = commands.options
+
+-- /sha reach <on|off>: "außer Angriffsreichweite blasser" bei allen Alarmen auf einmal ein- oder ausschalten
+commands.reach = function(rest)
+	local word = (rest or ""):lower():match("^%s*(%S*)")
+	if word ~= "" then
+		local on, off = toBoolean(word, false), toBoolean(word, true)
+		if on ~= off then return msg(L["Please enter on or off."]) end -- ein unbekanntes Wort würde nur umschalten
+		local value = on
+		for _, alert in ipairs(alerts) do alert.s.reachDim = value end
+		updateConditions()
+		if ns.RefreshOptions then ns.RefreshOptions() end
+	end
+	local count = 0
+	for _, alert in ipairs(alerts) do
+		if alert.s.reachDim then count = count + 1 end
+	end
+	local reach, _, name = ns.inReach(), ns.reachSpell()
+	msg(L["Fainter out of attack range: switched on for %d of %d alerts. Measured by %s, target in range right now: %s."], count, #alerts, tostring(name or L["unknown"]), reach == nil and L["unknown"] or yesNo(reach))
+end
+commands.reichweite = commands.reach
 
 -- /sha hotkeys [on|off]: die Taste des Zaubers unter den Grafiken zeigen
 commands.hotkeys = function(rest)

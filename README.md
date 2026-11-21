@@ -40,6 +40,7 @@ ready, Lightning Shield is gone. You keep your eyes on the fight instead of on t
 - **Conditions** per alert: in combat only, enough mana, own mana below a threshold, in range,
   target is casting, number of enemies nearby, target health, only against players or never
   against players, only in certain specializations (Elemental, Enhancement, Restoration).
+  Optionally an alert is shown fainter while no target is in attack range.
 - **Your own alerts** for any buff, debuff or spell: "is active", "is missing", "from X stacks"
   or "spell ready".
 - **Profiles and sharing**: save your setup as a profile, or export it as a short text and send

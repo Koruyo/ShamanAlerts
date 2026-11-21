@@ -5,9 +5,10 @@
   of the totem bar can show it too. The keys are read from your action bars, macros included.
   Checkbox "Show hotkeys under the graphics" on the page "Help & diagnostics" (`/sha hotkeys on`)
   and "Show hotkeys on the icons" on the totem page (`/sha totem hotkeys on`)
-- "Flame Shock missing" and "Frost Shock missing" now only show while the target is in range of
-  the spell, like the spell-ready alerts. New checkbox "Only in range" on their conditions tab
-  (`/sha set flameshock needrange off` switches it off)
+- New option for every alert, off by default: "Fainter while no target is in attack range". The
+  graphic is then shown faintly while you have no attackable target within reach of your damage
+  spell with the longest range, usually Lightning Bolt: ready, but too far away. Checkbox on the
+  conditions tab, or `/sha reach on` for all alerts at once (`/sha set shield reachdim on` for one)
 - Loading a profile no longer switches options of the totem bar back on that were switched off
 
 ## 2.51.0
