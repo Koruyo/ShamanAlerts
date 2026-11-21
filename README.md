@@ -36,6 +36,7 @@ ready, Lightning Shield is gone. You keep your eyes on the fight instead of on t
   every alert in the center, as an arc, on both sides or all around your character, and set
   size, color, glow, pulse, rotation and mirroring per alert.
 - **Sounds** per alert, with your LibSharedMedia sounds if you have them.
+- **Hotkeys**, optional: the key of the spell under the alert and on the cooldown icons.
 - **Conditions** per alert: in combat only, enough mana, own mana below a threshold, in range,
   target is casting, number of enemies nearby, target health, only against players or never
   against players, only in certain specializations (Elemental, Enhancement, Restoration).

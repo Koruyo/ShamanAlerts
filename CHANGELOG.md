@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.52.0
+- Hotkeys, optional: under an alert stands the key its spell is bound to, and the cooldown icons
+  of the totem bar can show it too. The keys are read from your action bars, macros included.
+  Checkbox "Show hotkeys under the graphics" on the page "Help & diagnostics" (`/sha hotkeys on`)
+  and "Show hotkeys on the icons" on the totem page (`/sha totem hotkeys on`)
+- Loading a profile no longer switches options of the totem bar back on that were switched off
+
 ## 2.51.0
 - Six more Maelstrom Weapon pictures that build up in five parts, in the form many players know
   from other addons: a winged lightning emblem with a middle piece and two wings on each side

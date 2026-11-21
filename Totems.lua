@@ -46,6 +46,7 @@ local DEFAULTS = {
 	cdSide = "TOP", -- wo die Symbole an der Leiste hängen: BOTTOM, TOP, LEFT, RIGHT
 	-- Namen aus dem Zauberbuch, durch Komma getrennt. Unbekannte Zauber bleiben weg.
 	cdSpells = L["Grounding Totem, Earthbind Totem, Mana Tide Totem"],
+	hotkeys = false, -- die Taste des Zaubers auf den Symbolen der Abklingzeit-Reihe zeigen
 }
 
 -- In anderen Sprachen als Deutsch und Englisch kommen die Namen der drei
@@ -311,6 +312,13 @@ local function createCooldownIcon(index)
 	icon.cooldown:SetHideCountdownNumbers(false)
 	-- Läuft die Abklingzeit ab, wird das Symbol wieder hell.
 	icon.cooldown:SetScript("OnCooldownDone", function() Totems.UpdateCooldowns() end)
+	-- Die Taste des Zaubers steht oben rechts, über der Abklingzeit-Anzeige.
+	icon.textLayer = CreateFrame("Frame", nil, icon)
+	icon.textLayer:SetAllPoints(icon)
+	icon.textLayer:EnableMouse(false)
+	if icon.textLayer.SetFrameLevel and icon.cooldown.GetFrameLevel then icon.textLayer:SetFrameLevel((icon.cooldown:GetFrameLevel() or 1) + 2) end
+	icon.hotkey = icon.textLayer:CreateFontString(nil, "OVERLAY", "NumberFontNormalSmallGray")
+	icon.hotkey:SetPoint("TOPRIGHT", icon, "TOPRIGHT", 1, -1)
 	cdIcons[index] = icon
 	return icon
 end
@@ -345,6 +353,8 @@ local function layoutCooldowns()
 			icon.border:SetShown(not spell.sample)
 			local timer = countdownText(icon.cooldown)
 			if timer then ns.applyFont(timer, math.max(6, math.floor(settings.fontSize * size / settings.iconSize + 0.5))) end
+			ns.applyFont(icon.hotkey, math.max(6, math.floor(size * 0.4 + 0.5)))
+			icon.hotkey:SetText(settings.hotkeys and not spell.sample and ns.Hotkeys and ns.Hotkeys.ForSpell(spell.id, spell.name) or "")
 			icon:Show()
 		end
 	end
@@ -518,6 +528,11 @@ function Totems.Apply()
 	Totems.Update()
 end
 
+-- Tastenbelegung oder Aktionsleisten haben sich geändert.
+function Totems.RefreshHotkeys()
+	if frame and settings and settings.hotkeys then layoutCooldowns() end
+end
+
 -------------------------------------------------------------------------------
 -- Verschieben
 -------------------------------------------------------------------------------
@@ -608,7 +623,8 @@ function Totems.Load(values)
 	if not settings then return end
 	for key in pairs(settings) do settings[key] = nil end
 	for key, value in pairs(DEFAULTS) do
-		local wanted = type(values) == "table" and values[key] or nil
+		local wanted
+		if type(values) == "table" then wanted = values[key] end
 		if wanted ~= nil and type(wanted) == type(value) then settings[key] = wanted else settings[key] = value end
 	end
 	if not GROWTH_NAMES[settings.growth] then settings.growth = DEFAULTS.growth end
@@ -644,7 +660,7 @@ local NUMBER_FIELDS = {
 	alpha = { "alpha", 0.1, 1 },
 	cdsize = { "cdSize", 12, 60 },
 }
-local BOOLEAN_FIELDS = { enabled = "enabled", names = "showNames", empty = "showEmpty", cooldowns = "cooldowns" }
+local BOOLEAN_FIELDS = { enabled = "enabled", names = "showNames", empty = "showEmpty", cooldowns = "cooldowns", hotkeys = "hotkeys" }
 local CD_SIDE_WORDS = { bottom = "BOTTOM", unten = "BOTTOM", top = "TOP", oben = "TOP", left = "LEFT", links = "LEFT", right = "RIGHT", rechts = "RIGHT" }
 
 -- Setzt ein Feld aus dem Befehl /sha totem <Feld> <Wert>. Liefert false und einen Hinweis bei Fehlern.
@@ -677,7 +693,7 @@ function Totems.SetField(field, value)
 		local list = (value or ""):match("^%s*(.-)%s*$")
 		settings.cdSpells = list ~= "" and list or DEFAULTS.cdSpells
 	else
-		return false, L["Fields: enabled, style, growth, size, fontsize, spacing, barwidth, names, empty, alpha, x, y, cooldowns, cdsize, cdside, cdspells."]
+		return false, L["Fields: enabled, style, growth, size, fontsize, spacing, barwidth, names, empty, alpha, x, y, cooldowns, cdsize, cdside, cdspells, hotkeys."]
 	end
 	Totems.Apply()
 	if ns.RefreshTotemOptions then ns.RefreshTotemOptions() end

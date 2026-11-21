@@ -1518,6 +1518,10 @@ local function createFrame()
 		function(value)
 			if ns.Minimap then ns.Minimap.SetShown(value) end
 		end), L["A left click on the button opens this window, a right click the page of the totem bar. The addon is also listed in the addon menu of the minimap and under Options > AddOns."])
+	tip(addCheck(help, L["Show hotkeys under the graphics"], 0, -512,
+		function() return ns.db.hotkeys == true end,
+		function(value) ns.commands.hotkeys(value and "on" or "off") end),
+		L["Under an alert for a spell stands the key the spell is bound to, read from your action bars (macros included). Alerts without a spell of their own, like Maelstrom Weapon, show none."])
 
 	-- Seite "Profile & Austausch" -----------------------------------------------
 	local prof = CreateFrame("Frame", nil, window)
@@ -1883,6 +1887,14 @@ function createTotemFrame(parent)
 	known.Refresh = function(self) self:SetText(L["Found in your spellbook: "] .. totems.CooldownSummary() .. ".") end
 	totemWidgets[#totemWidgets + 1] = known
 	addText(window, L["Only spells your character knows are shown. A bright icon means ready, a gray one with a number is still cooling down. The row hangs on the totem bar and moves with it."], nil, COLUMN + 2, -272, 316)
+
+	addCheck(window, L["Show hotkeys on the icons"], COLUMN, -330,
+		function() return t().hotkeys end,
+		function(value)
+			t().hotkeys = value
+			totems.Apply()
+			ns.RefreshTotemOptions()
+		end)
 
 	sink = previous
 	window:SetScript("OnShow", function()

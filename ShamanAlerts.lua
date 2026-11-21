@@ -1982,6 +1982,51 @@ local function refreshDue(alert)
 	return remaining ~= nil and remaining <= seconds and remaining > -1
 end
 
+-- Taste unter der Grafik: Auf Wunsch steht unter jedem Alarm, auf welcher Taste
+-- sein Zauber liegt. Der Text hängt an der Grafik und erscheint mit ihr.
+local HOTKEY_ROOM = 30
+
+function ns.attachHotkey(visual)
+	local text = visual:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
+	text:SetPoint("TOP", visual, "BOTTOM", 0, -2)
+	text:SetText("")
+	visual.hotkey = text
+	state.hotkeysDirty = true
+end
+
+-- Die Zauber, die ein Alarm zum Wirken nahelegt: Namen und IDs, oder nil.
+function ns.hotkeySpells(alert)
+	local kind = alert.def.kind
+	if kind == "weapon" then
+		local id = ns.IMBUE_SPELLS[alert.s.mainImbue or ""]
+		if not id then return nil end
+		return nil, { [id] = true }
+	end
+	if kind ~= "ready" and kind ~= "missing" then return nil end
+	return auraNames(alert), alert.s.spellIDs
+end
+
+-- Schreibt die Tasten unter die Grafiken (oder leert sie, wenn ausgeschaltet).
+function ns.refreshHotkeys()
+	for _, alert in ipairs(alerts) do
+		if alert.current and alert.current.visuals then
+			local key = ""
+			if db.hotkeys and ns.Hotkeys then
+				local names, ids = ns.hotkeySpells(alert)
+				if names or ids then key = ns.Hotkeys.ForSpells(names, ids) or "" end
+			end
+			alert.hotkey = key
+			for _, visual in ipairs(alert.current.visuals) do
+				if visual.hotkey then
+					applyFont(visual.hotkey, db.font.timerSize)
+					visual.hotkey:SetText(key)
+				end
+			end
+		end
+	end
+	if ns.Totems and ns.Totems.RefreshHotkeys then ns.Totems.RefreshHotkeys() end
+end
+
 -- Alarme "fehlt" und "ist aktiv". Der Container enthält höchstens ein Element,
 -- das so breit ist wie die Grafik, und passt seine Breite dem Inhalt an. Der
 -- sichtbare Ausschnitt hängt an seiner rechten Kante:
@@ -2017,7 +2062,7 @@ local function buildPresence(alert)
 		container:SetPoint("TOPLEFT", host, "TOPLEFT", 0, 0)
 
 		clip:SetClipsChildren(true)
-		clip:SetSize(size, size)
+		clip:SetSize(size, size + HOTKEY_ROOM) -- unter der Grafik bleibt Platz für die Taste
 		clip:ClearAllPoints()
 		clip:SetPoint("TOPLEFT", container, "TOPRIGHT", active and -(size + 1) or -1, 0)
 
@@ -2035,6 +2080,7 @@ local function buildPresence(alert)
 		graphic.back:SetAllPoints(visual)
 		styleGraphic(graphic, alert, spot, true)
 		table.insert(alert.current.visuals, visual)
+		ns.attachHotkey(visual)
 
 		container:SetFlowLayoutAxis(axis)
 		container:SetFlowLayoutAnchorPoint("TOPLEFT")
@@ -2070,7 +2116,7 @@ local function buildPresence(alert)
 			local clip = createLayoutFrame(UIParent)
 			table.insert(alert.current.frames, clip)
 			clip:SetClipsChildren(true)
-			clip:SetSize(size, size)
+			clip:SetSize(size, size + HOTKEY_ROOM)
 			clip:ClearAllPoints()
 			clip:SetPoint("TOPLEFT", alert.current.containers[index], "TOPRIGHT", -(size + 1), 0)
 			local content = createLayoutFrame(clip)
@@ -2085,6 +2131,7 @@ local function buildPresence(alert)
 			styleGraphic(graphic, alert, spots[index], true)
 			table.insert(alert.current.visuals, visual)
 			alert.current.early[visual] = true
+			ns.attachHotkey(visual)
 		end
 	end
 
@@ -2140,6 +2187,7 @@ local function buildPlain(alert)
 		table.insert(alert.current.frames, lead)
 		table.insert(alert.current.leads, lead)
 		table.insert(alert.current.visuals, visual)
+		ns.attachHotkey(visual)
 	end
 	alert.current.visual = alert.current.visuals[1]
 end
@@ -2148,6 +2196,8 @@ end
 -- die Kennung der Verzauberung (alle Ränge, dazu die Kennungen von WoW Forever).
 ns.IMBUES = { "windfury", "flametongue", "rockbiter", "frostbrand" }
 ns.IMBUE_NAMES = { windfury = L["Windfury Weapon"], flametongue = L["Flametongue Weapon"], rockbiter = L["Rockbiter Weapon"], frostbrand = L["Frostbrand Weapon"] }
+-- der erste Rang des Zaubers, für den Namen und die Taste
+ns.IMBUE_SPELLS = { windfury = 8232, flametongue = 8024, rockbiter = 8017, frostbrand = 8033 }
 ns.IMBUE_IDS = {}
 for family, ids in pairs({
 	windfury = { 283, 284, 525, 1669, 7569 },
@@ -3286,6 +3336,10 @@ end
 -- Jeder Alarm für sich: Ein Fehler bei einem darf die übrigen nicht anhalten.
 -- Er wird einmal gemeldet und steht danach in /sha status und /sha debug.
 local function updateConditions()
+	if state.hotkeysDirty then
+		state.hotkeysDirty = nil
+		pcall(ns.refreshHotkeys)
+	end
 	updateWeaponState()
 	for _, alert in ipairs(alerts) do
 		local ok, err = pcall(updateAlert, alert)
@@ -3618,6 +3672,7 @@ local function initDB()
 	if type(db.font.face) ~= "string" or db.font.face == "" then db.font.face = "auto" end
 	if not OUTLINE_NAMES[db.font.outline] then db.font.outline = "outline" end
 	if type(db.font.timerSize) ~= "number" then db.font.timerSize = 14 end
+	if type(db.hotkeys) ~= "boolean" then db.hotkeys = false end -- Taste unter den Grafiken zeigen
 	-- Unvollständige Einträge würden den Aufbau stören.
 	for index = #db.custom, 1, -1 do
 		local spec = db.custom[index]
@@ -4325,6 +4380,7 @@ local function printHelp()
 	print(L["     Custom alerts: title, kind (active, missing, stacks, ready), unit (player, target), auratype (buff, debuff, mine), timer"])
 	print(L["  /sha scan - list your buffs and your debuffs on the target with their IDs"])
 	print(L["  /sha minimap [on|off] - show or hide the minimap button"])
+	print(L["  /sha hotkeys [on|off] - show the key of the spell under the graphics; /sha totem hotkeys on for the cooldown icons"])
 	print(L["  /sha spec [auto|elemental|enhancement|restoration] - show your specialization or set it by hand"])
 	print(L["  /sha profile - page for profiles and sharing; /sha profile save|load|delete <name>, /sha profile list"])
 	print(L["  /sha export - the settings as text to pass on"])
@@ -4445,6 +4501,7 @@ local function refreshTexts()
 	end
 	if ns.Totems then ns.Totems.Apply() end
 	if ns.RefreshTotemOptions then ns.RefreshTotemOptions() end
+	state.hotkeysDirty = true
 end
 
 -- /sha font <auto|Schriftname>, /sha font outline <auto|none|outline|thick>, /sha font timersize <Zahl>
@@ -4474,6 +4531,17 @@ commands.options = function()
 	if ns.ToggleOptions then ns.ToggleOptions() else printHelp() end
 end
 commands.config = commands.options
+
+-- /sha hotkeys [on|off]: die Taste des Zaubers unter den Grafiken zeigen
+commands.hotkeys = function(rest)
+	db.hotkeys = toBoolean(rest, db.hotkeys)
+	if ns.Hotkeys then ns.Hotkeys.Invalidate() end
+	ns.refreshHotkeys()
+	state.hotkeysDirty = nil
+	msg(L["Hotkeys under the graphics: %s."], db.hotkeys and L["visible"] or L["hidden"])
+	if ns.RefreshOptions then ns.RefreshOptions() end
+end
+commands.tasten = commands.hotkeys
 
 -- /sha minimap [on|off]: Knopf an der Minimap zeigen oder verbergen
 commands.minimap = function(rest)
