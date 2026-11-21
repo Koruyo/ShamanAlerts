@@ -31,7 +31,7 @@ local ELEMENTS = {
 
 local DEFAULTS = {
 	enabled = true,
-	x = 4, y = -361, -- Mitte der Leiste, Abstand von der Bildschirmmitte
+	x = 0, y = -364, -- Mitte der Leiste, Abstand von der Bildschirmmitte
 	style = "icons", -- "icons" = Symbole in einer Reihe, "bars" = Balken untereinander
 	growth = "RIGHT", -- Reihenfolge der Plätze: RIGHT, LEFT, DOWN, UP
 	iconSize = 36,
@@ -42,11 +42,11 @@ local DEFAULTS = {
 	showEmpty = false, -- leere Plätze als blasses, graues Totem des Elements zeigen
 	alpha = 1,
 	cooldowns = true, -- Abklingzeiten wichtiger Totems als kleine Symbole an der Leiste
-	cdSize = 26,
+	cdSize = 32,
 	cdSide = "TOP", -- wo die Symbole an der Leiste hängen: BOTTOM, TOP, LEFT, RIGHT
 	-- Namen aus dem Zauberbuch, durch Komma getrennt. Unbekannte Zauber bleiben weg.
 	cdSpells = L["Grounding Totem, Earthbind Totem, Mana Tide Totem"],
-	hotkeys = false, -- die Taste des Zaubers auf den Symbolen der Abklingzeit-Reihe zeigen
+	hotkeys = true, -- die Taste des Zaubers auf den Symbolen der Abklingzeit-Reihe zeigen
 }
 
 -- In anderen Sprachen als Deutsch und Englisch kommen die Namen der drei
@@ -531,7 +531,7 @@ end
 
 -- Tastenbelegung oder Aktionsleisten haben sich geändert.
 function Totems.RefreshHotkeys()
-	if frame and settings and settings.hotkeys then layoutCooldowns() end
+	if frame and settings then layoutCooldowns() end
 end
 
 -------------------------------------------------------------------------------

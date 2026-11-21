@@ -444,7 +444,7 @@ local ALERT_DEFS = {
 			refresh = 2, -- schon warnen, wenn der Debuff nur noch so viele Sekunden läuft
 			auraDuration = 12, -- so lange läuft der Debuff; daran misst die eigene Uhr
 			talentDuration = 0, -- die Laufzeit, die zuletzt aus den Talenten gelesen wurde (0 = noch nie)
-			minHealth = 35, -- nur warnen, wenn das Ziel noch so viel Prozent Leben hat
+			minHealth = 50, -- nur warnen, wenn das Ziel noch so viel Prozent Leben hat
 			bossAlways = true, -- bei einem Boss gilt diese Schwelle nicht: Fehlt der Flammenschock, wird er immer vorgeschlagen
 			auraName = L["Flame Shock"],
 			-- Alle Ränge auf Forever, dazu die Retail-ID
@@ -466,7 +466,7 @@ local ALERT_DEFS = {
 		defaults = {
 			enabled = true,
 			threshold = 1,
-			size = 104, x = 0, y = 0, alpha = 1,
+			size = 120, x = 0, y = 0, alpha = 1,
 			layout = "top", count = 1, distance = 285, spread = 20, rotate = false, angle = 0, flip = false, perStack = false,
 			display = "texture", iconZoom = 8, iconBorder = 1, iconBorderColor = { 0, 0, 0 }, iconSpell = "",
 			texture = "wow_shield_lightning",
@@ -623,8 +623,8 @@ local ALERT_DEFS = {
 			threshold = 1,
 			-- Dicht über dem Charakter und für sich: Das Ziel zaubert und der Erdschock
 			-- ist bereit. Lage und Größe teilt er nicht mit den Schocks.
-			size = 132, x = 0, y = 0, alpha = 1,
-			layout = "top", count = 1, distance = 150, spread = 26, rotate = false, angle = 0, flip = true, perStack = false,
+			size = 120, x = 0, y = 0, alpha = 1,
+			layout = "top", count = 1, distance = 195, spread = 26, rotate = false, angle = 0, flip = true, perStack = false,
 			placeRevision = 1,
 			display = "texture", iconZoom = 8, iconBorder = 1, iconBorderColor = { 0, 0, 0 }, iconSpell = "",
 			texture = "wow_interrupt_fist",
@@ -666,7 +666,7 @@ local ALERT_DEFS = {
 			threshold = 1,
 			-- Groß über dem Charakter, über dem Schild
 			size = 120, x = 0, y = 0, alpha = 1,
-			layout = "top", count = 1, distance = 285, spread = 26, rotate = false, angle = 0, flip = false, perStack = false,
+			layout = "bottom", count = 1, distance = 230, spread = 26, rotate = false, angle = 0, flip = false, perStack = false,
 			display = "texture", iconZoom = 8, iconBorder = 1, iconBorderColor = { 0, 0, 0 }, iconSpell = "",
 			texture = "wow_firenova_totem",
 			textureRevision = 2,
@@ -682,7 +682,7 @@ local ALERT_DEFS = {
 			needTarget = true, -- nur mit einem angreifbaren Ziel
 			needRange = true,
 			needEnemies = true, minEnemies = 4, enemyRange = 10, -- nur bei so vielen Gegnern in diesem Umkreis (Namensplaketten)
-			needFireTotem = false, -- nur solange ein Feuertotem steht
+			needFireTotem = true, -- nur solange ein Feuertotem steht
 			totemHint = true, -- ohne Feuertotem statt der Grafik das Bild eines Feuertotems zeigen: erst stellen, dann Feuernova
 			needCasting = false, -- nur solange das Ziel etwas Unterbrechbares zaubert
 			yieldTo = "",
@@ -706,7 +706,7 @@ local ALERT_DEFS = {
 			threshold = 1,
 			-- Proc aus dem Talent Elementarfokus: unter dem Sturmschlag-Alarm
 			size = 120, x = 0, y = 0, alpha = 1,
-			layout = "bottom", count = 1, distance = 210, spread = 26, rotate = false, angle = 0, flip = false, perStack = false,
+			layout = "bottom", count = 1, distance = 230, spread = 26, rotate = false, angle = 0, flip = false, perStack = false,
 			display = "texture", iconZoom = 8, iconBorder = 1, iconBorderColor = { 0, 0, 0 }, iconSpell = "",
 			texture = "wow_clearcast_crystal",
 			textureRevision = 2,
@@ -740,8 +740,8 @@ local ALERT_DEFS = {
 			threshold = 1,
 			-- Proc nach einem kritischen Nahkampftreffer. Von Haus aus abgeschaltet, er
 			-- teilt sich den Platz mit dem Freizaubern-Alarm.
-			size = 100, x = 0, y = 0, alpha = 1,
-			layout = "bottom", count = 1, distance = 210, spread = 27, rotate = false, angle = 0, flip = false, perStack = false,
+			size = 120, x = 0, y = 0, alpha = 1,
+			layout = "bottom", count = 1, distance = 230, spread = 27, rotate = false, angle = 0, flip = false, perStack = false,
 			display = "texture", iconZoom = 8, iconBorder = 1, iconBorderColor = { 0, 0, 0 }, iconSpell = "",
 			texture = "wow_flurry_blades",
 			textureRevision = 1,
@@ -896,8 +896,8 @@ local ALERT_DEFS = {
 			enabled = true,
 			threshold = 1,
 			-- Talent auf Forever: 30 % Angriffstempo für 25 Sekunden. Links und rechts außen neben den Schocks.
-			size = 110, x = 0, y = 0, alpha = 1,
-			layout = "sides", count = 1, distance = 190, spread = 26, rotate = false, angle = 0, flip = false, perStack = false,
+			size = 120, x = 0, y = 0, alpha = 1,
+			layout = "bottom", count = 1, distance = 230, spread = 26, rotate = false, angle = 0, flip = false, perStack = false,
 			display = "texture", iconZoom = 8, iconBorder = 1, iconBorderColor = { 0, 0, 0 }, iconSpell = "",
 			texture = "wow_farseer_wolf",
 			textureRevision = 1,
@@ -936,8 +936,8 @@ local ALERT_DEFS = {
 			enabled = true,
 			threshold = 1,
 			-- Der nächste Naturzauber ist ein Spontanzauber. Unter den anderen Alarmen am unteren Rand.
-			size = 100, x = 0, y = 0, alpha = 1,
-			layout = "bottom", count = 1, distance = 300, spread = 26, rotate = false, angle = 0, flip = false, perStack = false,
+			size = 120, x = 0, y = 0, alpha = 1,
+			layout = "bottom", count = 1, distance = 230, spread = 26, rotate = false, angle = 0, flip = false, perStack = false,
 			display = "texture", iconZoom = 8, iconBorder = 1, iconBorderColor = { 0, 0, 0 }, iconSpell = "",
 			texture = "wow_swiftness_leaf",
 			textureRevision = 1,
@@ -976,8 +976,8 @@ local ALERT_DEFS = {
 			enabled = true,
 			threshold = 1,
 			-- Lange Abklingzeit, lohnt sich erst bei wenig Mana: deshalb die Mana-Schwelle.
-			size = 100, x = 0, y = 0, alpha = 1,
-			layout = "bottom", count = 1, distance = 360, spread = 26, rotate = false, angle = 0, flip = false, perStack = false,
+			size = 140, x = 0, y = 0, alpha = 1,
+			layout = "bottom", count = 1, distance = 230, spread = 26, rotate = false, angle = 0, flip = false, perStack = false,
 			display = "texture", iconZoom = 8, iconBorder = 1, iconBorderColor = { 0, 0, 0 }, iconSpell = "",
 			texture = "wow_manatide_totem",
 			textureRevision = 1,
@@ -1055,8 +1055,8 @@ local ALERT_DEFS = {
 			enabled = false, -- kurze Abklingzeit: stünde sonst fast immer da,
 			threshold = 1,
 			-- Heilzauber mit kurzer Abklingzeit, links und rechts weit außen.
-			size = 100, x = 0, y = 0, alpha = 1,
-			layout = "sides", count = 1, distance = 250, spread = 26, rotate = false, angle = 0, flip = false, perStack = false,
+			size = 120, x = 0, y = 0, alpha = 1,
+			layout = "bottom", count = 1, distance = 230, spread = 26, rotate = false, angle = 0, flip = false, perStack = false,
 			display = "texture", iconZoom = 8, iconBorder = 1, iconBorderColor = { 0, 0, 0 }, iconSpell = "",
 			texture = "wow_riptide_wave",
 			textureRevision = 1,
@@ -3837,6 +3837,12 @@ local function initDB()
 	if type(db.font.timerSize) ~= "number" then db.font.timerSize = 14 end
 	if type(db.hotkeys) ~= "boolean" then db.hotkeys = false end -- Taste an den Grafiken zeigen
 	if not ns.HOTKEY_PLACE_NAMES[db.hotkeyPlace] then db.hotkeyPlace = "BOTTOMRIGHT" end
+	-- Ein Zwischenstand von 2.52 hatte einen gemeinsamen Schalter für Grafiken und
+	-- Abklingzeit-Reihe und übernahm dabei den der Reihe. Das wird zurückgestellt.
+	if db.hotkeys == true and type(db.totems) == "table" and db.totems.hotkeys == nil and db.totems.enabled ~= nil then
+		db.totems.hotkeys = true
+		db.hotkeys = false
+	end
 	-- Unvollständige Einträge würden den Aufbau stören.
 	for index = #db.custom, 1, -1 do
 		local spec = db.custom[index]

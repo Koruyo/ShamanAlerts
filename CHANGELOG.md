@@ -14,6 +14,9 @@
 - Fire Nova: while none of your fire totems stands, the alert shows a fire totem in place of its
   own picture, so you know to place the totem first. Checkbox "Without a fire totem show a totem
   instead" on the conditions tab (`/sha set firenova totemhint off`)
+- New defaults for new installations and after "Reset": several alerts sit below the character
+  at one place and size, Flame Shock is suggested down to 50 % target health, the cooldown icons
+  are larger and show their hotkeys
 - Loading a profile no longer switches options of the totem bar back on that were switched off
 
 ## 2.51.0
