@@ -1531,11 +1531,11 @@ local function createFrame()
 		function(value)
 			if ns.Minimap then ns.Minimap.SetShown(value) end
 		end), L["A left click on the button opens this window, a right click the page of the totem bar. The addon is also listed in the addon menu of the minimap and under Options > AddOns."])
-	tip(addCheck(help, L["Show hotkeys at the graphics and on the cooldown icons"], 0, -512,
+	tip(addCheck(help, L["Show hotkeys at the graphics"], 0, -512,
 		function() return ns.db.hotkeys == true end,
 		function(value) ns.commands.hotkeys(value and "on" or "off") end),
 		L["An alert for a spell shows the key the spell is bound to, read from your action bars (macros included). Alerts without a spell of their own, like Maelstrom Weapon, show none."])
-	local placeButton = tip(addButton(help, "", 220, 380, -512, function()
+	local placeButton = tip(addButton(help, "", 220, 300, -512, function()
 		local index = 1
 		for position, key in ipairs(ns.HOTKEY_PLACES) do
 			if key == ns.db.hotkeyPlace then index = position end
@@ -1913,11 +1913,11 @@ function createTotemFrame(parent)
 	totemWidgets[#totemWidgets + 1] = known
 	addText(window, L["Only spells your character knows are shown. A bright icon means ready, a gray one with a number is still cooling down. The row hangs on the totem bar and moves with it."], nil, COLUMN + 2, -272, 316)
 
-	-- derselbe Schalter wie auf der Seite "Hilfe & Diagnose": Er gilt auch für die Alarm-Grafiken
-	addCheck(window, L["Show hotkeys (here and at the alert graphics)"], COLUMN, -330,
-		function() return ns.db.hotkeys == true end,
+	addCheck(window, L["Show hotkeys on the icons"], COLUMN, -330,
+		function() return t().hotkeys end,
 		function(value)
-			ns.commands.hotkeys(value and "on" or "off")
+			t().hotkeys = value
+			totems.Apply()
 			ns.RefreshTotemOptions()
 		end)
 

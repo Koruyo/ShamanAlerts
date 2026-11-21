@@ -46,6 +46,7 @@ local DEFAULTS = {
 	cdSide = "TOP", -- wo die Symbole an der Leiste hängen: BOTTOM, TOP, LEFT, RIGHT
 	-- Namen aus dem Zauberbuch, durch Komma getrennt. Unbekannte Zauber bleiben weg.
 	cdSpells = L["Grounding Totem, Earthbind Totem, Mana Tide Totem"],
+	hotkeys = false, -- die Taste des Zaubers auf den Symbolen der Abklingzeit-Reihe zeigen
 }
 
 -- In anderen Sprachen als Deutsch und Englisch kommen die Namen der drei
@@ -354,7 +355,7 @@ local function layoutCooldowns()
 			if timer then ns.applyFont(timer, math.max(6, math.floor(settings.fontSize * size / settings.iconSize + 0.5))) end
 			ns.applyFont(icon.hotkey, math.max(6, math.floor(size * 0.4 + 0.5)))
 			if icon.hotkey.SetTextColor then icon.hotkey:SetTextColor(1, 1, 1) end -- weiß wie auf den Aktionsleisten
-			icon.hotkey:SetText(ns.db and ns.db.hotkeys and not spell.sample and ns.Hotkeys and ns.Hotkeys.ForSpell(spell.id, spell.name) or "")
+			icon.hotkey:SetText(settings.hotkeys and not spell.sample and ns.Hotkeys and ns.Hotkeys.ForSpell(spell.id, spell.name) or "")
 			icon:Show()
 		end
 	end
@@ -530,7 +531,7 @@ end
 
 -- Tastenbelegung oder Aktionsleisten haben sich geändert.
 function Totems.RefreshHotkeys()
-	if frame and settings then layoutCooldowns() end
+	if frame and settings and settings.hotkeys then layoutCooldowns() end
 end
 
 -------------------------------------------------------------------------------
@@ -660,7 +661,7 @@ local NUMBER_FIELDS = {
 	alpha = { "alpha", 0.1, 1 },
 	cdsize = { "cdSize", 12, 60 },
 }
-local BOOLEAN_FIELDS = { enabled = "enabled", names = "showNames", empty = "showEmpty", cooldowns = "cooldowns" }
+local BOOLEAN_FIELDS = { enabled = "enabled", names = "showNames", empty = "showEmpty", cooldowns = "cooldowns", hotkeys = "hotkeys" }
 local CD_SIDE_WORDS = { bottom = "BOTTOM", unten = "BOTTOM", top = "TOP", oben = "TOP", left = "LEFT", links = "LEFT", right = "RIGHT", rechts = "RIGHT" }
 
 -- Setzt ein Feld aus dem Befehl /sha totem <Feld> <Wert>. Liefert false und einen Hinweis bei Fehlern.
@@ -673,10 +674,6 @@ function Totems.SetField(field, value)
 			return false, (L["Please enter a number from %s to %s."]):format(minimum, maximum)
 		end
 		settings[key] = key == "alpha" and number or math.floor(number + 0.5)
-	elseif field == "hotkeys" then
-		-- ein Schalter für die Alarm-Grafiken und diese Symbole zusammen
-		ns.commands.hotkeys(value)
-		return true
 	elseif BOOLEAN_FIELDS[field] then
 		settings[BOOLEAN_FIELDS[field]] = toBoolean(value, settings[BOOLEAN_FIELDS[field]])
 	elseif field == "style" then
