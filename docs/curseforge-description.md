@@ -22,8 +22,8 @@ ready, Lightning Shield is gone. You keep your eyes on the fight instead of on t
 - **One place for the shocks**: they follow an order (Interrupt, Frost Shock against players,
   Flame Shock, general shock), so only the most important one is shown and only the picture
   changes.
-- **241 graphics** made for this addon: 68 in the style of WoW ability icons, 24 plain ones and
-  28 Maelstrom Weapon pictures that build up piece by piece with every stack. Place
+- **247 graphics** made for this addon: 68 in the style of WoW ability icons, 24 plain ones and
+  34 Maelstrom Weapon pictures that build up piece by piece with every stack. Place
   every alert in the center, as an arc, on both sides or all around your character, and set
   size, color, glow, pulse, rotation and mirroring per alert.
 - **Sounds** per alert, with your LibSharedMedia sounds if you have them.

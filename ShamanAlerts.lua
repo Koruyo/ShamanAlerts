@@ -326,6 +326,13 @@ registerTextures(TEXTURE_CATEGORIES[4], "Parts", "parts_", {
 	{ "frame", L["Frame"], 5 },
 	{ "vee", L["V shape"], 5 },
 	{ "roots", L["Roots"], 5 },
+	-- die Form, die andere Addons für die fünf Stapel zeigen: ein Mittelstück und je zwei Schwingen
+	{ "stormwing", L["Storm wing"], 5 },
+	{ "widewing", L["Wide wing"], 5 },
+	{ "thunderbird", L["Thunderbird"], 5 },
+	{ "wingarc", L["Raised wings"], 5 },
+	{ "stormcrest", L["Storm crest"], 5 },
+	{ "sockets", L["Storm sockets"], 5 },
 }, true, "BLEND")
 
 local DEFAULT_SOUND = MEDIA .. "alert.ogg"

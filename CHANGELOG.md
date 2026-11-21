@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.51.0
+- Six more Maelstrom Weapon pictures that build up in five parts, in the form many players know
+  from other addons: a winged lightning emblem with a middle piece and two wings on each side
+  (storm wing, wide wing, thunderbird, raised wings, storm crest), and a row of five ringed
+  storm orbs. They are in the picture category "In parts"
+
 ## 2.50.0
 - Flame Shock: the alert reads the talent Call of Flame, which extends Flame Shock by 3 seconds
   per rank, and sets the aura duration for the early warning by itself whenever the rank
