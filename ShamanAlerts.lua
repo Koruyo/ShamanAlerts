@@ -4480,7 +4480,7 @@ local function printStatus(rest)
 		if not state.isShaman then msg(L["This character is not a shaman: the built-in alerts and the totem bar stay silent, your own alerts work."]) end
 		if ns.Totems then ns.Totems.Status() end
 	end
-	for _, alert in ipairs(only and { only } or alerts) do
+	for _, alert in ipairs(only and { only } or ns.sortedAlerts()) do
 		local settings = alert.s
 		msg(L["%s (%s): enabled %s, display built %s, size %d, %s, sound %s."],
 			alert.def.title, alert.key, yesNo(settings.enabled), yesNo(alert.current ~= nil), settings.size,
@@ -4740,6 +4740,7 @@ local function refreshTexts()
 	end
 	if ns.Totems then ns.Totems.Apply() end
 	if ns.RefreshTotemOptions then ns.RefreshTotemOptions() end
+	if ns.RefreshOptions then ns.RefreshOptions() end -- die Schrift steht auf der Seite "Allgemein"
 	state.hotkeysDirty = true
 end
 
@@ -4985,6 +4986,48 @@ ns.TEXTURE_CATEGORIES = TEXTURE_CATEGORIES
 ns.LAYOUTS = LAYOUTS
 -- für Debug.lua
 ns.ALERT_DEFS = ALERT_DEFS
+
+-- Reihenfolge im Fenster und bei /sha status: nach Themen, die Schocks
+-- untereinander. Die letzte Gruppe ohne Schlüssel nimmt den Rest auf, also die
+-- eigenen Alarme.
+ns.ALERT_GROUPS = {
+	{ name = L["Attacks & procs"], keys = { "maelstrom", "stormstrike", "firenova", "clearcast", "flurry" } },
+	{ name = L["Shocks"], keys = { "earthshock", "flameshock", "frostshock", "interrupt" } },
+	{ name = L["Shields & weapons"], keys = { "shield", "watershield", "weapon", "flametongue" } },
+	{ name = L["Cooldowns"], keys = { "farseer", "swiftness", "manatide", "riptide", "bloodfury", "berserking" } },
+	{ name = L["Custom alerts"] },
+}
+
+-- Die Alarme nach Gruppen: { { name = ..., alerts = { ... } }, ... }. Leere Gruppen fehlen.
+function ns.groupedAlerts()
+	local placed, result = {}, {}
+	for _, group in ipairs(ns.ALERT_GROUPS) do
+		local entry = { name = group.name, alerts = {} }
+		for _, key in ipairs(group.keys or {}) do
+			local alert = alerts[key]
+			if alert and not placed[alert] then
+				entry.alerts[#entry.alerts + 1] = alert
+				placed[alert] = true
+			end
+		end
+		if not group.keys then
+			for _, alert in ipairs(alerts) do
+				if not placed[alert] then entry.alerts[#entry.alerts + 1] = alert end
+			end
+		end
+		if #entry.alerts > 0 then result[#result + 1] = entry end
+	end
+	return result
+end
+
+-- Dieselbe Reihenfolge als einfache Liste
+function ns.sortedAlerts()
+	local list = {}
+	for _, group in ipairs(ns.groupedAlerts()) do
+		for _, alert in ipairs(group.alerts) do list[#list + 1] = alert end
+	end
+	return list
+end
 ns.internals = {
 	conditionMet = conditionMet, spellKnown = spellKnown, spellUsable = spellUsable, hasAggro = hasAggro,
 	readySpell = readySpell, spellReady = spellReady, spellInRange = spellInRange, nearbyEnemies = nearbyEnemies, enemyReport = enemyReport, targetCasting = targetCasting, castReport = castReport,

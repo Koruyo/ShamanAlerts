@@ -36,7 +36,7 @@ local function fillTooltip(tooltip, ownButton)
 	local number = version()
 	tooltip:AddLine(NAME .. (number and (" |cff999999" .. number .. "|r") or ""), 1, 0.82, 0)
 	tooltip:AddLine(L["Left click: open the options"], 1, 1, 1)
-	tooltip:AddLine(L["Right click: totem bar and font"], 1, 1, 1)
+	tooltip:AddLine(L["Right click: totem bar"], 1, 1, 1)
 	if ownButton == true then tooltip:AddLine(L["Drag: move the button"], 0.7, 0.7, 0.7) end
 end
 

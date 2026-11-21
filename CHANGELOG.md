@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.54.0
+- Options window tidied up. The list of alerts is sorted by groups with a heading each: attacks
+  and procs, the shocks below each other, shields and weapons, cooldowns, your own alerts.
+  `/sha status` and the priority button follow the same order
+- New page "General" for what applies to everything: hotkeys at the graphics, fade out after
+  combat, font and the minimap button. These moved there from "Help & diagnostics" and from the
+  page of the totem bar, which is now called "Totem bar"
+- Tab "Conditions": the conditions stand in groups (when the alert appears, target,
+  specialization) and move up without gaps, whatever kind the alert is
+- The version number stands in the title bar of the window
+
 ## 2.53.0
 - Fade out, optional: when the fight ends or your target is gone, the graphics that were just
   visible fade out over a time you set instead of vanishing at once. If the fight goes on or a
