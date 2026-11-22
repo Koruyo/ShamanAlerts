@@ -3008,6 +3008,8 @@ ns.REACH_ALPHA = 0.35
 -- "db.fadeOut" Sekunden. Geht der Kampf weiter oder kommt ein neues Ziel, sind
 -- sie sofort wieder voll da. Verschwindet eine Grafik aus einem anderen Grund
 -- (Zauber gewirkt, Ziel zaubert nicht mehr), bleibt es beim sofortigen Ausblenden.
+-- Nachblenden darf nur, was wirklich zu sehen war: nichts, dessen Zauber gerade
+-- abklingt, und kein Fehlt-Alarm, dessen Aura auf dem Ziel lag.
 
 -- Ist gerade Kampfende oder kein angreifbares Ziel da?
 function ns.fadeCause()
@@ -3018,9 +3020,27 @@ function ns.fadeCause()
 	return false
 end
 
+-- Fehlt-Alarm auf das Ziel: Ob seine Grafik zu sehen war, entscheidet das Spiel
+-- (Aura da oder nicht) und verrät es nicht. Ist das Ziel weg, gibt es keine Aura
+-- mehr, und der Ausschnitt gäbe die Grafik in jedem Fall frei. Deshalb zählt hier
+-- die eigene Uhr: Nachblenden nur, wenn die Aura nach ihr nicht auf dem Ziel lag.
+function ns.fadeHonest(alert)
+	if alert.def.kind ~= "missing" or alert.def.unit ~= "target" then return true end
+	-- Das Ziel steht noch (nur der Kampf ist vorbei): Der Ausschnitt stimmt weiter.
+	if plain(UnitExists("target"), false) and not plain(UnitIsDeadOrGhost("target"), false) then return true end
+	local duration = alert.s.auraDuration or 0
+	if duration <= 0 then return false end -- ohne bekannte Laufzeit läuft keine Uhr
+	local castAt = alert.castAt
+	if not castAt then return true end
+	local guid = alert.lastTarget
+	if alert.castTarget and guid and guid ~= alert.castTarget then return true end
+	return castAt + duration - (GetTime and GetTime() or 0) <= 0
+end
+
 -- Läuft nach dem gewöhnlichen Ein- und Ausblenden eines Alarms. "met" sagt, ob
--- seine Bedingungen erfüllt sind.
-function ns.applyFade(alert, met)
+-- seine Bedingungen erfüllt sind, "own", ob er davon abgesehen etwas zu zeigen
+-- hätte (Zauber bereit oder in der Vorlaufzeit, Waffe unverzaubert).
+function ns.applyFade(alert, met, own)
 	local current = alert.current
 	local list = ns.allVisuals(current)
 	for _, hint in ipairs(current.hints or {}) do list[#list + 1] = hint end
@@ -3035,19 +3055,22 @@ function ns.applyFade(alert, met)
 		-- gewöhnlich sichtbar: merken, was steht, und ein laufendes Ausblenden beenden
 		alert.fade, alert.fadeFactor = nil, nil
 		alert.lastShown, alert.lastShownIn = shown, current
+		if alert.def.unit == "target" then alert.lastTarget = targetGUID() end
 		return
 	end
 	local duration = tonumber(db.fadeOut) or 0
 	local now = GetTime and GetTime() or 0
 	local fade = alert.fade
-	if not fade and duration > 0 and alert.lastShown and alert.lastShownIn == current and met == false and ns.fadeCause() then
+	-- Nur solange der Grund anhält und der Alarm sonst etwas zu zeigen hätte.
+	local allowed = duration > 0 and met == false and own == true and ns.fadeCause()
+	if not fade and allowed and alert.lastShown and alert.lastShownIn == current and ns.fadeHonest(alert) then
 		fade = { visuals = alert.lastShown, ends = now + duration, duration = duration, current = current }
 		alert.fade = fade
 	end
 	alert.lastShown = nil
 	if not fade then return end
 	local left = fade.ends - now
-	if left <= 0 or duration <= 0 or fade.current ~= current then
+	if left <= 0 or not allowed or fade.current ~= current then
 		alert.fade, alert.fadeFactor = nil, nil
 		return
 	end
@@ -3480,13 +3503,15 @@ local function updateAlert(alert)
 		-- "eingeblendet"; sichtbar macht sie dann erst die Deckkraft.
 		local cooling = timed and ready == false and (alert.s.lead or 0) > 0
 		local met = conditionMet(alert)
-		local show = met and (kind ~= "weapon" or (alert.weaponMissing == true and not ns.weaponCovered(alert)))
+		-- Was außer den Bedingungen gelten muss: Waffe unverzaubert, Zauber bereit oder in der Vorlaufzeit.
+		local own = kind ~= "weapon" or (alert.weaponMissing == true and not ns.weaponCovered(alert))
 		if kind == "ready" then
-			show = show and (ready == true or cooling)
+			own = own and (ready == true or cooling)
 		elseif timed then
 			-- Verrät das Spiel die Abklingzeit nicht, warnt der Alarm wie bisher.
-			show = show and (ready ~= false or cooling)
+			own = own and (ready ~= false or cooling)
 		end
+		local show = met and own
 		-- Vorrang beim Unterbrechen: Dann gilt für diesen Alarm keine Rangfolge,
 		-- außer hinter einem Alarm, der selbst auf den Zauber des Ziels wartet
 		-- (dem eigenen Unterbrechen-Alarm, falls er eingeschaltet ist).
@@ -3525,8 +3550,6 @@ local function updateAlert(alert)
 			for _, visual in ipairs(gated.low) do visual:SetShown(show and wants) end
 			if show and wants then applyLowGate(alert) end
 		end
-		setLeadAlpha(alert, show and cooling)
-		alert.cooling = show and cooling
 		if kind == "ready" then
 			-- Sound in dem Moment, in dem der Zauber wirklich bereit ist
 			local isReady = met and ready == true
@@ -3538,7 +3561,11 @@ local function updateAlert(alert)
 			alert.readyShown = isReady
 		end
 		if show then applyHealthGate(alert) end
-		ns.applyFade(alert, met)
+		ns.applyFade(alert, met, own)
+		-- Auch beim Nachblenden entscheidet die Vorlaufzeit, ob die Grafik zu sehen ist.
+		local leading = (show or alert.fade ~= nil) and cooling
+		setLeadAlpha(alert, leading)
+		alert.cooling = leading
 		-- Die Restzeit folgt derselben Bedingung wie die Grafik.
 		local timers = alert.current.timers
 		if timers and alert.current.timersShown ~= show then

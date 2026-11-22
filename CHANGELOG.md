@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.54.1
+- Fade out: only graphics that were really to be seen fade. Fixed: a spell that had just been
+  cast (the strike that killed the target) stayed and faded although it was on cooldown; an
+  alert with a lead time showed up during its cooldown; Flame Shock appeared after the target
+  died although the shock was on it. A fade also ends at once when the spell is cast meanwhile
+  or a new target comes for which the alert does not apply
+
 ## 2.54.0
 - Options window tidied up. The list of alerts is sorted by groups with a heading each: attacks
   and procs, the shocks below each other, shields and weapons, cooldowns, your own alerts.
