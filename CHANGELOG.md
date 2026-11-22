@@ -1,5 +1,17 @@
 # Changelog
 
+## 2.55.0
+- New defaults for new installations and for "Reset" (existing settings stay as they are):
+  - Flame Shock, Earth Shock, Frost Shock, Stormstrike and Water Shield also show out of combat
+  - Only Fire Nova pulses; the other graphics stand still
+  - Weapon enchant, Blood Fury, Berserking and Rage of the Farseer only as Elemental or
+    Enhancement; Mana Tide Totem and Riptide only as Restoration
+  - Riptide is switched on, Nature's Swiftness is switched off
+  - Flametongue for healers also watches the off hand
+  - Fade out after combat or without a target: 5 seconds
+  - Hotkeys at the graphics are shown
+  - German client: Blood Fury joins the cooldown row at the totem bar
+
 ## 2.54.1
 - Fade out: only graphics that were really to be seen fade. Fixed: a spell that had just been
   cast (the strike that killed the target) stayed and faded although it was on cooldown; an

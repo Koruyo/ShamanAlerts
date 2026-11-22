@@ -392,7 +392,7 @@ local ALERT_DEFS = {
 			textureRevision = 1,
 			color = { 0.45, 0.8, 1 },
 			additive = true,
-			pulse = true,
+			pulse = false,
 			sound = "off", -- "off" | "threshold" | "stack"
 			soundFile = MEDIA .. "zap2.ogg",
 			icon = false,
@@ -430,11 +430,11 @@ local ALERT_DEFS = {
 			textureRevision = 3,
 			color = { 1, 1, 1 },
 			additive = true,
-			pulse = true,
+			pulse = false,
 			sound = "off", -- "off" | "removed"
 			soundFile = MEDIA .. "fire_whoosh.ogg",
 			icon = false,
-			combatOnly = true,
+			combatOnly = false,
 			needUsable = true, -- nur warnen, wenn das Mana für Flammenschock reicht
 			needAggro = false,
 			noPlayer = true, -- gegen Spieler lohnt sich der Flammenschock nicht
@@ -473,7 +473,7 @@ local ALERT_DEFS = {
 			textureRevision = 1,
 			color = { 0.45, 0.8, 1 },
 			additive = true,
-			pulse = true,
+			pulse = false,
 			sound = "off", -- "off" | "removed"
 			soundFile = MEDIA .. "shield_chime.ogg",
 			icon = false,
@@ -504,6 +504,7 @@ local ALERT_DEFS = {
 		defaultIcon = "Interface\\Icons\\Spell_Nature_Cyclone", -- Symbol von Waffe des Windzorns
 		defaults = {
 			enabled = true,
+			specs = "elemental,enhancement",
 			threshold = 1,
 			size = 140, x = 0, y = 0, alpha = 1,
 			layout = "top", count = 1, distance = 220, spread = 20, rotate = false, angle = 0, flip = false, perStack = false,
@@ -550,7 +551,7 @@ local ALERT_DEFS = {
 			sound = "off", -- "off" | "added"
 			soundFile = MEDIA .. "zap2.ogg",
 			icon = false,
-			combatOnly = true,
+			combatOnly = false,
 			needUsable = true,
 			needAggro = false,
 			needTarget = true, -- nur mit einem angreifbaren Ziel
@@ -591,7 +592,7 @@ local ALERT_DEFS = {
 			sound = "off", -- "off" | "added"
 			soundFile = MEDIA .. "earth_thud.ogg",
 			icon = false,
-			combatOnly = true,
+			combatOnly = false,
 			needUsable = true,
 			needAggro = false,
 			needTarget = true,
@@ -672,7 +673,7 @@ local ALERT_DEFS = {
 			textureRevision = 2,
 			color = { 1, 1, 1 },
 			additive = true,
-			pulse = false,
+			pulse = true,
 			sound = "off", -- "off" | "added"
 			soundFile = MEDIA .. "flame_ignite.ogg",
 			icon = false,
@@ -772,6 +773,7 @@ local ALERT_DEFS = {
 		defaultIcon = "Interface\\Icons\\Racial_Orc_BerserkerStrength",
 		defaults = {
 			enabled = true,
+			specs = "elemental,enhancement",
 			threshold = 1,
 			-- Lange Abklingzeit: unter dem Sturmschlag-Alarm
 			size = 120, x = 0, y = 0, alpha = 1,
@@ -781,7 +783,7 @@ local ALERT_DEFS = {
 			textureRevision = 1,
 			color = { 1, 1, 1 },
 			additive = true,
-			pulse = true,
+			pulse = false,
 			sound = "off", -- "off" | "added"
 			soundFile = MEDIA .. "war_horn.ogg",
 			icon = false,
@@ -813,6 +815,7 @@ local ALERT_DEFS = {
 		defaultIcon = "Interface\\Icons\\Racial_Troll_Berserk",
 		defaults = {
 			enabled = false,
+			specs = "elemental,enhancement",
 			threshold = 1,
 			-- Derselbe Platz wie Kochendes Blut: Ein Charakter hat nur eine der beiden Fähigkeiten.
 			size = 120, x = 0, y = 0, alpha = 1,
@@ -822,7 +825,7 @@ local ALERT_DEFS = {
 			textureRevision = 1,
 			color = { 1, 1, 1 },
 			additive = true,
-			pulse = true,
+			pulse = false,
 			sound = "off", -- "off" | "added"
 			soundFile = MEDIA .. "war_horn.ogg",
 			icon = false,
@@ -864,11 +867,11 @@ local ALERT_DEFS = {
 			textureRevision = 1,
 			color = { 1, 1, 1 },
 			additive = true,
-			pulse = true,
+			pulse = false,
 			sound = "off", -- "off" | "removed"
 			soundFile = MEDIA .. "alarm.ogg",
 			icon = false,
-			combatOnly = true,
+			combatOnly = false,
 			needUsable = true, -- nur warnen, wenn das Mana für Frostschock reicht
 			needAggro = false,
 			needPlayer = true, -- nur gegen Spieler: Die Verlangsamung lohnt sich im PvP
@@ -894,6 +897,7 @@ local ALERT_DEFS = {
 		defaultIcon = "Interface\\Icons\\Spell_Nature_BloodLust",
 		defaults = {
 			enabled = true,
+			specs = "elemental,enhancement",
 			threshold = 1,
 			-- Talent auf Forever: 30 % Angriffstempo für 25 Sekunden. Links und rechts außen neben den Schocks.
 			size = 120, x = 0, y = 0, alpha = 1,
@@ -903,7 +907,7 @@ local ALERT_DEFS = {
 			textureRevision = 1,
 			color = { 1, 1, 1 },
 			additive = true,
-			pulse = true,
+			pulse = false,
 			sound = "off", -- "off" | "added"
 			soundFile = MEDIA .. "war_horn.ogg",
 			icon = false,
@@ -933,7 +937,7 @@ local ALERT_DEFS = {
 		requireKnown = true, -- ein Talent: ohne es bleibt der Alarm still
 		defaultIcon = "Interface\\Icons\\Spell_Nature_RavenForm",
 		defaults = {
-			enabled = true,
+			enabled = false,
 			threshold = 1,
 			-- Der nächste Naturzauber ist ein Spontanzauber. Unter den anderen Alarmen am unteren Rand.
 			size = 120, x = 0, y = 0, alpha = 1,
@@ -943,7 +947,7 @@ local ALERT_DEFS = {
 			textureRevision = 1,
 			color = { 1, 1, 1 },
 			additive = true,
-			pulse = true,
+			pulse = false,
 			sound = "off", -- "off" | "added"
 			soundFile = MEDIA .. "chime.ogg",
 			icon = false,
@@ -974,6 +978,7 @@ local ALERT_DEFS = {
 		defaultIcon = "Interface\\Icons\\Spell_Frost_SummonWaterElemental",
 		defaults = {
 			enabled = true,
+			specs = "restoration",
 			threshold = 1,
 			-- Lange Abklingzeit, lohnt sich erst bei wenig Mana: deshalb die Mana-Schwelle.
 			size = 140, x = 0, y = 0, alpha = 1,
@@ -1025,11 +1030,11 @@ local ALERT_DEFS = {
 			textureRevision = 1,
 			color = { 1, 1, 1 },
 			additive = true,
-			pulse = true,
+			pulse = false,
 			sound = "off", -- "off" | "removed"
 			soundFile = MEDIA .. "water_splash.ogg",
 			icon = false,
-			combatOnly = true,
+			combatOnly = false,
 			needUsable = true,
 			needAggro = false,
 			needReady = false,
@@ -1052,7 +1057,8 @@ local ALERT_DEFS = {
 		requireKnown = true,
 		defaultIcon = "Interface\\Icons\\Spell_Nature_Riptide",
 		defaults = {
-			enabled = false, -- kurze Abklingzeit: stünde sonst fast immer da,
+			enabled = true,
+			specs = "restoration", -- kurze Abklingzeit: stünde bei den anderen fast immer da
 			threshold = 1,
 			-- Heilzauber mit kurzer Abklingzeit, links und rechts weit außen.
 			size = 120, x = 0, y = 0, alpha = 1,
@@ -1109,7 +1115,7 @@ local ALERT_DEFS = {
 			needUsable = false,
 			needAggro = false,
 			minHealth = 0,
-			offhand = false,
+			offhand = true,
 			mainImbue = "flametongue", offImbue = "", -- welche Verzauberung die Hand tragen soll ("" = irgendeine)
 			auraName = "",
 			spellIDs = {},
@@ -3916,9 +3922,9 @@ local function initDB()
 	if type(db.font.face) ~= "string" or db.font.face == "" then db.font.face = "auto" end
 	if not OUTLINE_NAMES[db.font.outline] then db.font.outline = "outline" end
 	if type(db.font.timerSize) ~= "number" then db.font.timerSize = 14 end
-	if type(db.hotkeys) ~= "boolean" then db.hotkeys = false end -- Taste an den Grafiken zeigen
+	if type(db.hotkeys) ~= "boolean" then db.hotkeys = true end -- Taste an den Grafiken zeigen
 	if not ns.HOTKEY_PLACE_NAMES[db.hotkeyPlace] then db.hotkeyPlace = "BOTTOMRIGHT" end
-	if type(db.fadeOut) ~= "number" or db.fadeOut < 0 or db.fadeOut > 15 then db.fadeOut = 0 end -- Sekunden, 0 = sofort ausblenden
+	if type(db.fadeOut) ~= "number" or db.fadeOut < 0 or db.fadeOut > 15 then db.fadeOut = 5 end -- Sekunden, 0 = sofort ausblenden
 	-- Ein Zwischenstand von 2.52 hatte einen gemeinsamen Schalter für Grafiken und
 	-- Abklingzeit-Reihe und übernahm dabei den der Reihe. Das wird zurückgestellt.
 	if db.hotkeys == true and type(db.totems) == "table" and db.totems.hotkeys == nil and db.totems.enabled ~= nil then
