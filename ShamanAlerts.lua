@@ -1142,7 +1142,7 @@ local CUSTOM_DEFAULTS = {
 	needAggro = false,
 	needTarget = true, -- nur bei "Zauber bereit": angreifbares Ziel nötig
 	needRange = false, -- nur bei "Zauber bereit": Ziel muss in Reichweite sein
-	reachDim = false, -- blasser zeigen, solange kein angreifbares Ziel in Reichweite des weitesten Schadenszaubers steht
+	reachDim = false, -- je weiter das Ziel weg ist, desto blasser zeigen (siehe ns.reachBand)
 	totemHint = false, -- nur bei "Zauber bereit": ohne Feuertotem das Bild eines Feuertotems zeigen
 	needEnemies = false, minEnemies = 3, enemyRange = 10, -- nur bei so vielen Gegnern in diesem Umkreis (Namensplaketten)
 	needFireTotem = false, -- nur solange ein Feuertotem steht
@@ -3003,10 +3003,11 @@ function ns.currentSpec()
 	return state.spec or nil
 end
 
--- Angriffsreichweite: Auf Wunsch zeigt ein Alarm seine Grafik blasser, solange
--- kein angreifbares Ziel in Reichweite des Schadenszaubers steht, der am
--- weitesten reicht (meist der Blitzschlag). So sieht man: bereit, aber zu weit
--- weg. Das geht bei jedem Alarm, auch bei denen ohne eigenen Zauber auf das Ziel.
+-- Angriffsreichweite: Auf Wunsch zeigt ein Alarm seine Grafik umso blasser, je
+-- weiter das Ziel weg ist (in Stufen, siehe ns.reachBand), und gar nicht mehr,
+-- wenn es außer Reichweite des Schadenszaubers steht, der am weitesten reicht
+-- (meist der Blitzschlag). Ohne Ziel erscheint sie blass. Das geht bei jedem
+-- Alarm, auch bei denen ohne eigenen Zauber auf das Ziel.
 ns.REACH_ALPHA = 0.35
 
 -- Ausblenden über Zeit: Endet der Kampf oder fällt das Ziel weg, verschwinden
@@ -3099,9 +3100,8 @@ end
 function ns.applyReach(alert)
 	local current = alert.current
 	if not current then return end
-	local dim = alert.s.reachDim == true and ns.inReach() == false
 	-- dieselben Rahmen tragen auch das Ausblenden nach dem Kampf
-	local alpha = (dim and ns.REACH_ALPHA or 1) * (alert.fadeFactor or 1)
+	local alpha = ns.reachAlpha(alert) * (alert.fadeFactor or 1)
 	if current.wrapAlpha == alpha then return end
 	current.wrapAlpha = alpha
 	if alert.def.kind == "stacks" then
@@ -3165,6 +3165,85 @@ function ns.inReach()
 	end
 	state.reachAt, state.reachValue = now, value
 	return value
+end
+
+-- Entfernung in Stufen. Die genaue Entfernung verrät das Spiel nicht, wohl aber,
+-- ob ein Zauber reicht. Daraus ergeben sich vier Stufen:
+--   1 Nahkampf, 2 bis 20 Meter (Schocks), 3 in Reichweite des weitesten
+--   Schadenszaubers (meist Blitzschlag), 4 weiter weg.
+-- Ein Alarm ist voll zu sehen, solange das Ziel so nah steht, wie sein eigener
+-- Zauber reicht. Mit jeder Stufe darüber wird er blasser, in Stufe 4 ist er
+-- unsichtbar. Ohne Ziel bleibt es bei der blassen Anzeige.
+ns.REACH_OWN = { stormstrike = 1, earthshock = 2, flameshock = 2, frostshock = 2, interrupt = 2 }
+
+-- Die Stufe des Ziels. nil heißt: kein angreifbares Ziel, oder das Spiel verrät es nicht.
+function ns.reachBand()
+	local now = GetTime and GetTime() or 0
+	if state.bandAt == now then return state.bandValue or nil end
+	local band = false
+	local attackable = type(UnitCanAttack) ~= "function" or plain(UnitCanAttack("player", "target"), true)
+	if plain(UnitExists("target"), false) and attackable then
+		local far = ns.inReach()
+		if far == false then
+			band = 4
+		else
+			-- Zuerst der Zauber (der Sturmschlag misst die echte Nahkampfreichweite), sonst der Mess-Gegenstand.
+			local function within(kind, yards)
+				local spell, check = rangeSpell(kind), C_Spell and C_Spell.IsSpellInRange
+				if spell and check then
+					local ok, result = pcall(check, spell, "target")
+					if ok and result ~= nil and not isSecret(result) then return result == true or result == 1 end
+				end
+				return (unitWithin("target", yards))
+			end
+			local near, mid = within("near", 5), within("far", 20)
+			-- Was sich nicht messen lässt, zählt zur näheren Stufe: Im Zweifel bleibt die Grafik kräftiger.
+			if near == true then
+				band = 1
+			elseif mid == true then
+				band = near == false and 2 or 1
+			elseif mid == false then
+				band = 3
+			elseif near == false then
+				band = 2
+			elseif far == true then
+				band = 1
+			end
+		end
+	end
+	state.bandAt, state.bandValue = now, band
+	return band or nil
+end
+
+-- Bis zu welcher Stufe ein Alarm voll zu sehen ist: so weit, wie sein eigener Zauber reicht.
+function ns.ownBand(alert)
+	local fixed = ns.REACH_OWN[alert.def.key]
+	if fixed then return fixed end
+	local id = readySpell(alert)
+	local lookup = C_Spell and C_Spell.GetSpellInfo
+	if id and lookup then
+		local ok, info = pcall(lookup, id)
+		local range = ok and type(info) == "table" and info.maxRange
+		if type(range) == "number" and not isSecret(range) and range > 0 then
+			return range <= 8 and 1 or range <= 25 and 2 or 3
+		end
+	end
+	-- Ohne eigene Reichweite (Schilde, Procs, Abklingzeiten) zählt, wo der Schamane kämpft.
+	return ns.currentSpec() == "enhancement" and 1 or 3
+end
+
+-- Die Deckkraft eines Alarms nach der Entfernung des Ziels (1 = voll).
+function ns.reachAlpha(alert)
+	if alert.s.reachDim ~= true then return 1 end
+	local band = ns.reachBand()
+	if band == nil then
+		-- kein Ziel: blass; nicht feststellbar: nichts ändern
+		return ns.inReach() == false and ns.REACH_ALPHA or 1
+	end
+	if band >= 4 then return 0 end
+	local own = ns.ownBand(alert)
+	if band <= own then return 1 end
+	return (4 - band) / (4 - own)
 end
 
 -- Rang eines Talents. Auf WoW Forever sind Talente Knoten eines Baums; der
@@ -4570,8 +4649,9 @@ local function printStatus(rest)
 			end
 		end
 		if settings.reachDim then
-			local reach, _, name = ns.inReach(), ns.reachSpell()
-			msg(L["  Fainter out of attack range: yes (target in range right now: %s, measured by %s)."], reach == nil and L["unknown"] or yesNo(reach), tostring(name or L["unknown"]))
+			local band, _, name = ns.reachBand(), ns.reachSpell()
+			msg(L["  Fainter with distance: step %s of 4 right now (1 = melee, 2 = 20 yards, 3 = %s, 4 = beyond), full strength up to step %d, strength now %d%%."],
+				band and tostring(band) or "-", tostring(name or L["unknown"]), ns.ownBand(alert), math.floor(ns.reachAlpha(alert) * 100 + 0.5))
 		end
 		if (settings.specs or "") ~= "" then
 			local spec = ns.currentSpec()

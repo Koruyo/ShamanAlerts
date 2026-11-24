@@ -1317,7 +1317,7 @@ local function createFrame()
 		function(value)
 			cur().reachDim = value
 			ns.RefreshOptions() -- kein Neuaufbau nötig: die Deckkraft wird laufend nachgestellt
-		end), L["While you have no attackable target within reach of your damage spell with the longest range, usually Lightning Bolt, the graphic is shown faintly: ready, but too far away. /sha reach on switches this on for all alerts at once."]), CHECK)
+		end), L["The farther away your target is, the fainter the graphic. It has full strength while the target is within reach of the spell of this alert. Beyond that it gets fainter in steps: melee, 20 yards, the reach of your damage spell with the longest range, usually Lightning Bolt. Farther away than that it is invisible. Without a target it is shown faintly. /sha reach on switches this on for all alerts at once."]), CHECK)
 
 	-- Links unten: nur zeigen, solange einer der angehakten Talentbäume die meisten Punkte hat
 	left:section(L["Specialization"])

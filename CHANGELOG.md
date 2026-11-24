@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.56.0
+- "Fainter while no target is in attack range" now works in steps by distance instead of only
+  full or faint: full strength while the target is within reach of the alert's own spell
+  (Stormstrike: melee, shocks: 20 yards), fainter with every step beyond that, and invisible
+  once the target is out of reach of your damage spell with the longest range (usually
+  Lightning Bolt). Alerts without a range of their own (shields, procs, cooldowns) count up to
+  melee as Enhancement and up to Lightning Bolt otherwise. Without a target the graphic is
+  still shown faintly. `/sha status <alert>` names the current step and strength
+
 ## 2.55.0
 - New defaults for new installations and for "Reset" (existing settings stay as they are):
   - Flame Shock, Earth Shock, Frost Shock, Stormstrike and Water Shield also show out of combat
