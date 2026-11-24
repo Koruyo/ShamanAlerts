@@ -3174,7 +3174,8 @@ end
 -- Ein Alarm ist voll zu sehen, solange das Ziel so nah steht, wie sein eigener
 -- Zauber reicht. Mit jeder Stufe darüber wird er blasser, in Stufe 4 ist er
 -- unsichtbar. Ohne Ziel bleibt es bei der blassen Anzeige.
-ns.REACH_OWN = { stormstrike = 1, earthshock = 2, flameshock = 2, frostshock = 2, interrupt = 2 }
+-- Die Waffe des Mahlstroms dient dem Blitzschlag: voll, so weit der reicht.
+ns.REACH_OWN = { stormstrike = 1, earthshock = 2, flameshock = 2, frostshock = 2, interrupt = 2, maelstrom = 3 }
 
 -- Die Stufe des Ziels. nil heißt: kein angreifbares Ziel, oder das Spiel verrät es nicht.
 function ns.reachBand()

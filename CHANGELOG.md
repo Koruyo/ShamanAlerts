@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.56.1
+- Fainter by distance: Maelstrom Weapon keeps its full strength up to the reach of Lightning
+  Bolt, the spell it is used for, whatever the specialization
+
 ## 2.56.0
 - "Fainter while no target is in attack range" now works in steps by distance instead of only
   full or faint: full strength while the target is within reach of the alert's own spell
