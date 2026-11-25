@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.56.2
+- Fainter by distance: without a target the graphic is now invisible, as out of range. Before,
+  it was hidden with a far target but came back faintly once the target was gone. When it fades
+  out after combat or without a target, it keeps the strength it had last (invisible stays
+  invisible, full fades from full)
+
 ## 2.56.1
 - Fainter by distance: Maelstrom Weapon keeps its full strength up to the reach of Lightning
   Bolt, the spell it is used for, whatever the specialization

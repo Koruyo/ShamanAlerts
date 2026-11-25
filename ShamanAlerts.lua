@@ -3006,9 +3006,9 @@ end
 -- Angriffsreichweite: Auf Wunsch zeigt ein Alarm seine Grafik umso blasser, je
 -- weiter das Ziel weg ist (in Stufen, siehe ns.reachBand), und gar nicht mehr,
 -- wenn es außer Reichweite des Schadenszaubers steht, der am weitesten reicht
--- (meist der Blitzschlag). Ohne Ziel erscheint sie blass. Das geht bei jedem
--- Alarm, auch bei denen ohne eigenen Zauber auf das Ziel.
-ns.REACH_ALPHA = 0.35
+-- (meist der Blitzschlag). Ohne Ziel ist sie ebenso unsichtbar. Blendet sie nach
+-- dem Kampf oder ohne Ziel aus, behält sie dabei die Stärke von zuletzt. Das geht
+-- bei jedem Alarm, auch bei denen ohne eigenen Zauber auf das Ziel.
 
 -- Ausblenden über Zeit: Endet der Kampf oder fällt das Ziel weg, verschwinden
 -- die gerade sichtbaren Grafiken nicht schlagartig, sondern verblassen über
@@ -3071,7 +3071,7 @@ function ns.applyFade(alert, met, own)
 	-- Nur solange der Grund anhält und der Alarm sonst etwas zu zeigen hätte.
 	local allowed = duration > 0 and met == false and own == true and ns.fadeCause()
 	if not fade and allowed and alert.lastShown and alert.lastShownIn == current and ns.fadeHonest(alert) then
-		fade = { visuals = alert.lastShown, ends = now + duration, duration = duration, current = current }
+		fade = { visuals = alert.lastShown, ends = now + duration, duration = duration, current = current, reach = alert.lastReach }
 		alert.fade = fade
 	end
 	alert.lastShown = nil
@@ -3100,8 +3100,15 @@ end
 function ns.applyReach(alert)
 	local current = alert.current
 	if not current then return end
+	local reach = ns.reachAlpha(alert)
+	if alert.fade then
+		-- Beim Ausblenden bleibt die Stärke von zuletzt, sonst wäre sie ohne Ziel sofort 0.
+		reach = alert.fade.reach or reach
+	else
+		alert.lastReach = reach
+	end
 	-- dieselben Rahmen tragen auch das Ausblenden nach dem Kampf
-	local alpha = ns.reachAlpha(alert) * (alert.fadeFactor or 1)
+	local alpha = reach * (alert.fadeFactor or 1)
 	if current.wrapAlpha == alpha then return end
 	current.wrapAlpha = alpha
 	if alert.def.kind == "stacks" then
@@ -3172,8 +3179,8 @@ end
 --   1 Nahkampf, 2 bis 20 Meter (Schocks), 3 in Reichweite des weitesten
 --   Schadenszaubers (meist Blitzschlag), 4 weiter weg.
 -- Ein Alarm ist voll zu sehen, solange das Ziel so nah steht, wie sein eigener
--- Zauber reicht. Mit jeder Stufe darüber wird er blasser, in Stufe 4 ist er
--- unsichtbar. Ohne Ziel bleibt es bei der blassen Anzeige.
+-- Zauber reicht. Mit jeder Stufe darüber wird er blasser, in Stufe 4 und ohne
+-- Ziel ist er unsichtbar.
 -- Die Waffe des Mahlstroms dient dem Blitzschlag: voll, so weit der reicht.
 ns.REACH_OWN = { stormstrike = 1, earthshock = 2, flameshock = 2, frostshock = 2, interrupt = 2, maelstrom = 3 }
 
@@ -3238,8 +3245,8 @@ function ns.reachAlpha(alert)
 	if alert.s.reachDim ~= true then return 1 end
 	local band = ns.reachBand()
 	if band == nil then
-		-- kein Ziel: blass; nicht feststellbar: nichts ändern
-		return ns.inReach() == false and ns.REACH_ALPHA or 1
+		-- kein Ziel: unsichtbar wie außer Reichweite; nicht feststellbar: nichts ändern
+		return ns.inReach() == false and 0 or 1
 	end
 	if band >= 4 then return 0 end
 	local own = ns.ownBand(alert)
