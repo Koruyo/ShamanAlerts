@@ -1728,7 +1728,7 @@ local function createFrame()
 	supply:Hide()
 	pages.supplies = supply
 	addText(supply, L["Supplies"], "GameFontNormalLarge", 0, -8)
-	addText(supply, L["A big warning with its own sound when something runs low that you should buy or take from the bank. Drinks, potions and food count what suits your level, you do not need to enter anything. The number is the amount from which on it warns."],
+	addText(supply, L["A big warning with its own sound when something runs low that you should buy or take from the bank. Drinks, potions and food count what suits your level, you do not need to enter anything."],
 		nil, 0, -32, CONTENT_W)
 	local S = ns.Supplies
 	local supplySink = sink
@@ -1745,6 +1745,10 @@ local function createFrame()
 		repair = L["Warns when an equipped item has at most this much durability left."],
 		bags = L["Warns when your bags have at most this many free slots left."],
 	}
+	local kinds = S and S.KINDS or {}
+	local chosenKind = kinds[1]
+	local function chosen() return S.kindSettings(chosenKind) end
+	local MEDIA_PATH = "Interface\\AddOns\\" .. ADDON_NAME .. "\\Media\\"
 	local function soundName(kind)
 		local file = S.SoundFile(kind)
 		for _, choice in ipairs(S.SoundChoices()) do
@@ -1753,88 +1757,146 @@ local function createFrame()
 		return tostring(file):match("([^\\/]+)$") or tostring(file)
 	end
 	local function chooseSound(kind, file)
-		S.kindSettings(kind).sound = (file ~= "Interface\\AddOns\\" .. ADDON_NAME .. "\\Media\\" .. kind.sound) and file or nil
+		S.kindSettings(kind).sound = (file ~= MEDIA_PATH .. kind.sound) and file or nil
 		S.PlayKind(kind)
 		ns.RefreshOptions()
 	end
-	for index, kind in ipairs(S and S.KINDS or {}) do
-		local column, row = (index - 1) % 2, math.floor((index - 1) / 2)
-		local x, y = column * 372, -74 - row * 76
-		local function stored() return S.kindSettings(kind) end
-		tip(addCheck(supply, kind.text, x, y,
-			function() return stored().enabled end,
+
+	-- Links: die Vorräte, je mit Haken zum Einschalten; ein Klick auf den Namen wählt ihn aus.
+	addText(supply, L["Click a supply to set it up on the right."], "GameFontDisableSmall", 0, -66, 300)
+	for index, kind in ipairs(kinds) do
+		local y = -84 - (index - 1) * 27
+		local enable = tip(addCheck(supply, "", 0, y,
+			function() return S.kindSettings(kind).enabled end,
 			function(value)
-				stored().enabled = value
+				S.kindSettings(kind).enabled = value
 				S.Update()
 				ns.RefreshOptions()
-			end), SUPPLY_TIPS[kind.key] or "")
-		local soundButton = tip(addButton(supply, "", 150, x + 206, y, function(self)
-			local list = S.SoundChoices()
-			if not (MenuUtil and MenuUtil.CreateContextMenu) then
-				local at = 0
-				for position, choice in ipairs(list) do
-					if choice.file == S.SoundFile(kind) then at = position end
-				end
-				return chooseSound(kind, list[at % #list + 1].file)
-			end
-			pcall(MenuUtil.CreateContextMenu, self, function(_, root)
-				if root.SetScrollMode then root:SetScrollMode(360) end
-				for _, choice in ipairs(list) do
-					root:CreateRadio(choice.name, function() return S.SoundFile(kind) == choice.file end, function() chooseSound(kind, choice.file) end)
-				end
-			end)
-		end), L["The sound of this warning. Besides the sounds of ShamanAlerts you can pick every sound that other addons offer through LibSharedMedia."], L["Sound"])
-		soundButton.Refresh = function(self) self:SetText(L["Sound"] .. ": " .. soundName(kind)) end
-		soundButton.supplySound = kind.key
-		widgets[#widgets + 1] = soundButton
-		-- je Vorrat: im Kampf und in Dungeons & Co. warnen oder nicht
-		local function kindFlag(text, field, offset, body, title)
-			return tip(addCheck(supply, text, x + 186, y - offset,
-				function() return stored()[field] == true end,
-				function(value)
-					stored()[field] = value
-					S.Update()
-				end), body, title)
+			end), L["Switches this warning on or off."], kind.text)
+		enable.supplyEnabled = kind.key
+		local row = CreateFrame("Button", nil, supply)
+		row:SetPoint("TOPLEFT", supply, "TOPLEFT", 28, y)
+		row:SetSize(270, 24)
+		row.chosenMark = row:CreateTexture(nil, "BACKGROUND")
+		row.chosenMark:SetAllPoints(row)
+		row.chosenMark:SetColorTexture(1, 0.82, 0, 0.18)
+		row.hover = row:CreateTexture(nil, "HIGHLIGHT")
+		row.hover:SetAllPoints(row)
+		row.hover:SetColorTexture(1, 1, 1, 0.08)
+		row.label = row:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
+		row.label:SetPoint("LEFT", row, "LEFT", 6, 0)
+		row.label:SetText(kind.text)
+		row.supplyKey = kind.key
+		row:SetScript("OnClick", function()
+			chosenKind = kind
+			ns.RefreshOptions()
+		end)
+		tip(row, SUPPLY_TIPS[kind.key] or "", kind.text)
+		row.Refresh = function(self)
+			local on = S.kindSettings(kind).enabled
+			self.chosenMark:SetShown(chosenKind == kind)
+			if chosenKind == kind then self.label:SetTextColor(1, 0.82, 0) elseif on then self.label:SetTextColor(1, 1, 1) else self.label:SetTextColor(0.6, 0.6, 0.6) end
 		end
-		kindFlag(L["Only out of combat"], "combatHide", 28, L["In combat the warning waits until the fight is over."])
-		kindFlag(L["Not in instances"], "instanceHide", 50, L["There you can no longer buy anything anyway. Outside, in the open world and in cities, it warns."],
-			L["Not in dungeons, raids, battlegrounds and arenas"])
-		if not kind.missing then
-			local label = kind.percent and L["Warn from durability"] or kind.key == "bags" and L["Warn from free slots"] or L["Warn from"]
-			addSlider(supply, "Supply" .. kind.key, label, x + 4, y - 38, 0, kind.max, kind.step,
-				function(value) return kind.percent and ("%d %%"):format(value) or ("%d"):format(value) end,
-				function() return stored().at end,
-				function(value) stored().at = value end)
-		end
+		widgets[#widgets + 1] = row
 	end
 
-	addHeader(supply, L["Warning"], 0, -460, CONTENT_W)
-	local function supplyFlag(text, field, x, y, body, invert)
-		return tip(addCheck(supply, text, x, y,
+	-- Rechts: Einstellungen des gewählten Vorrats
+	local RX = 330
+	local chosenTitle = addText(supply, "", "GameFontNormalLarge", RX, -84)
+	chosenTitle.Refresh = function(self) self:SetText(chosenKind.text) end
+	widgets[#widgets + 1] = chosenTitle
+	local chosenTip = addText(supply, "", "GameFontHighlightSmall", RX, -108, CONTENT_W - RX)
+	chosenTip.Refresh = function(self) self:SetText(SUPPLY_TIPS[chosenKind.key] or "") end
+	widgets[#widgets + 1] = chosenTip
+
+	local atSlider = addSlider(supply, "SupplyAt", L["Warn from"], RX + 4, -188, 0, 100, 1,
+		function(value)
+			if chosenKind.percent then return ("%d %%"):format(value) end
+			if chosenKind.key == "bags" then return ("%d %s"):format(value, L["free slots"]) end
+			return ("%d"):format(value)
+		end,
+		function() return chosen().at or 0 end,
+		function(value) chosen().at = value end)
+	tip(atSlider, L["The warning appears as soon as you have this many or fewer."])
+	local atRefresh = atSlider.Refresh
+	atSlider.Refresh = function(self)
+		self:SetMinMaxValues(0, chosenKind.max or 100)
+		self:SetValueStep(chosenKind.step or 1)
+		atRefresh(self)
+	end
+	atSlider.visibleIf = function() return not chosenKind.missing end
+
+	local soundButton = tip(addButton(supply, "", 250, RX, -220, function(self)
+		local list = S.SoundChoices()
+		if not (MenuUtil and MenuUtil.CreateContextMenu) then
+			local at = 0
+			for position, choice in ipairs(list) do
+				if choice.file == S.SoundFile(chosenKind) then at = position end
+			end
+			return chooseSound(chosenKind, list[at % #list + 1].file)
+		end
+		pcall(MenuUtil.CreateContextMenu, self, function(_, root)
+			if root.SetScrollMode then root:SetScrollMode(360) end
+			for _, choice in ipairs(list) do
+				root:CreateRadio(choice.name, function() return S.SoundFile(chosenKind) == choice.file end, function() chooseSound(chosenKind, choice.file) end)
+			end
+		end)
+	end), L["The sound of this warning. Besides the sounds of ShamanAlerts you can pick every sound that other addons offer through LibSharedMedia."], L["Sound"])
+	soundButton.Refresh = function(self) self:SetText(L["Sound"] .. ": " .. soundName(chosenKind)) end
+	soundButton.supplySound = true
+	widgets[#widgets + 1] = soundButton
+	tip(addButton(supply, L["Play"], 110, RX + 258, -220, function() S.PlayKind(chosenKind) end), L["Plays the sound of this warning once."])
+
+	tip(addSlider(supply, "SupplyRepeats", L["Sound repeats"], RX + 4, -270, 0, 20, 1,
+		function(value) return value == 0 and L["again and again"] or ("%d×"):format(value) end,
+		function() return chosen().repeats end,
+		function(value) chosen().repeats = value end),
+		L["How often the sound comes while the warning stands. \"Again and again\" repeats it until the supply is fixed. A hint about a weaker kind sounds only once."])
+	tip(addSlider(supply, "SupplyInterval", L["Repeat the sound every"], RX + 4, -316, 5, 120, 1,
+		function(value) return ("%d s"):format(value) end,
+		function() return chosen().interval end,
+		function(value) chosen().interval = value end),
+		L["Time between two sounds of this warning."])
+	local function chosenFlag(text, field, y, body, title, invert)
+		return tip(addCheck(supply, text, RX, y,
+			function() return chosen()[field] == true end,
+			function(value)
+				chosen()[field] = value
+				S.Update()
+			end), body, title)
+	end
+	chosenFlag(L["Only out of combat"], "combatHide", -348, L["In combat the warning waits until the fight is over."])
+	chosenFlag(L["Not in instances"], "instanceHide", -372, L["There you can no longer buy anything anyway. Outside, in the open world and in cities, it warns."],
+		L["Not in dungeons, raids, battlegrounds and arenas"])
+	chosenFlag(L["Hide the text after the last sound"], "hideAfter", -396, L["When the set number of sounds is over, the text disappears too, once the interval has passed. It comes back as soon as the supply runs low again."])
+
+	-- Unten: was für alle Warnungen gilt
+	addHeader(supply, L["All warnings"], 0, -436, CONTENT_W)
+	local function supplyFlag(text, field, x, y, body)
+		local check = tip(addCheck(supply, text, x, y,
 			function() return S.settings[field] == true end,
 			function(value)
 				S.settings[field] = value
 				S.Update()
 			end), body)
+		check.supplyFlag = field
+		return check
 	end
-	supplyFlag(L["Play the sound"], "sound", 0, -482, L["Once as soon as something runs low, then again at the set interval as long as the warning stands."])
-	supplyFlag(L["Show the item's icon"], "icons", 372, -482, L["The icon of the item from the game stands in front of the text."])
-	addSlider(supply, "SupplyInterval", L["Repeat the sound every"], 4, -530, 5, 60, 1,
-		function(value) return ("%d s"):format(value) end,
-		function() return S.settings.interval end,
-		function(value) S.settings.interval = value end)
-	addSlider(supply, "SupplySize", L["Text size"], 376, -530, 24, 96, 2,
+	supplyFlag(L["Play the sound"], "sound", 0, -458, L["Switches the sounds of all supply warnings on or off."])
+	supplyFlag(L["Pulse"], "pulse", 250, -458, L["Warnings pulse gently. Hints about a weaker kind never pulse."])
+	supplyFlag(L["Show the item's icon"], "icons", 500, -458, L["The icon of the item from the game stands in front of the text."])
+	addSlider(supply, "SupplySize", L["Text size"], 4, -506, 24, 96, 2,
 		function(value) return ("%d"):format(value) end,
 		function() return S.settings.size end,
 		function(value) S.settings.size = value end)
-	local placeSupply = tip(addButton(supply, "", 200, 0, -570, function()
+	local placeSupply = tip(addButton(supply, "", 200, 250, -502, function()
 		S.SetUnlocked(not S.IsUnlocked())
 		ns.RefreshOptions()
 	end), L["Shows the warning and lets you drag it with the mouse. Click again to lock it."], L["Place"])
 	placeSupply.Refresh = function(self) self:SetText(S.IsUnlocked() and L["Lock position"] or L["Place"]) end
 	placeSupply.supplyPlace = true
 	widgets[#widgets + 1] = placeSupply
-	tip(addButton(supply, L["Test"], 200, 208, -570, function() S.Test() end), L["Shows the switched-on warnings for six seconds, with the sound of the first."])
+	tip(addButton(supply, L["Test"], 200, 458, -502, function() S.Test() end), L["Shows the switched-on warnings for six seconds, with the sound of the first."])
 	sink = supplySink
 
 	-- Seite "Profile & Austausch" -----------------------------------------------

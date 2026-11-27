@@ -1,5 +1,17 @@
 # Changelog
 
+## 2.58.0
+- Supplies page rebuilt: the supplies on the left, the settings of the chosen one on the right
+- Per supply: how often the sound comes (once, a set number of times or again and again until
+  it is fixed), the time between two sounds, and whether the text disappears after the last
+  sound. All warnings together: sounds on or off, pulsing on or off, icon, text size
+- Enough of a weaker kind: if the drinks, potions or food for your level run low but you still
+  carry enough of an older kind (for example Moonberry Juice at level 47), only a small hint
+  appears, "Water: only a weaker kind left", with one sound and without pulsing. The real
+  warning comes when the old stock runs low too
+- `/sha supplies <supply> repeat <0-20>`, `interval <5-120>`, `hide on|off` and
+  `/sha supplies pulse on|off`
+
 ## 2.57.1
 - Supplies: "only out of combat" and "not in dungeons, raids, battlegrounds and arenas" can now
   be set for every supply on its own, on the page and with

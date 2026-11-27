@@ -149,18 +149,25 @@ local function ladderFloor(ladder, level)
 end
 Supplies.ladderFloor = ladderFloor
 
--- Wie viel von der Liste passt zur Stufe?
+-- Wie viel von der Liste passt zur Stufe? Dazu, wie viel von einer
+-- schwächeren, älteren Sorte im Gepäck ist, die man auch noch nutzen kann.
 local function countFor(list, ladder, level)
 	local floor = 1
 	if ladder then
 		floor = ladderFloor(ladder, level)
 		if not floor then return nil end
 	end
-	local total = 0
+	local total, older = 0, 0
 	for _, entry in ipairs(list) do
-		if entry[2] >= floor and entry[2] <= level then total = total + itemCount(entry[1]) end
+		if entry[2] <= level then
+			if entry[2] >= floor then
+				total = total + itemCount(entry[1])
+			else
+				older = older + itemCount(entry[1])
+			end
+		end
 	end
-	return total
+	return total, nil, older
 end
 
 -- Die niedrigste Haltbarkeit der angelegten Ausrüstung in Prozent
@@ -198,8 +205,11 @@ end
 -- Die Vorräte
 -------------------------------------------------------------------------------
 
--- measure(level) liefert den Stand und ob der Vorrat für diesen Charakter gilt.
+-- measure(level) liefert den Stand und ob der Vorrat für diesen Charakter gilt,
+-- dazu auf Wunsch einen Text und die Menge einer schwächeren Sorte.
 -- Gewarnt wird, sobald der Stand höchstens die eingestellte Grenze erreicht.
+-- Reicht die schwächere Sorte noch über die Grenze, gibt es nur einen Hinweis:
+-- kleiner, ohne Pulsieren und mit nur einem Klang.
 -- Bei "missing" gibt es keine Grenze: gewarnt wird, wenn etwas fehlt.
 Supplies.KINDS = {
 	{
@@ -280,8 +290,8 @@ Supplies.KINDS = {
 for _, kind in ipairs(Supplies.KINDS) do Supplies.KINDS[kind.key] = kind end
 
 local DEFAULTS = {
-	sound = true,
-	interval = 10, -- Sekunden zwischen zwei Klängen, solange gewarnt wird
+	sound = true, -- Klänge überhaupt abspielen
+	pulse = true, -- Warnungen pulsieren lassen
 	size = 56,
 	icons = true, -- Symbol des Gegenstands vor dem Text
 	x = 0, y = -60, -- oben in der Mitte
@@ -293,9 +303,12 @@ local frame, detail
 local lines = {}
 local ready = false -- erst nach dem Laden des Gepäcks zählen, sonst gäbe es Fehlalarm
 local unlocked, testUntil = false, nil
-local lastSound, soundTurn = nil, 0
+local lastAny -- wann zuletzt ein Klang kam, damit sich zwei nicht überlagern
 local warning = {} -- Vorräte, die gerade warnen
-local wasLow = {}
+local wasLow = {} -- je Vorrat: "low" (Warnung), "weak" (Hinweis) oder nil
+local played, lastPlayed = {}, {} -- je Vorrat: wie oft und wann zuletzt sein Klang kam
+local active = false -- steht gerade etwas an? Dann rechnet die Anzeige jede Sekunde nach.
+local SOUND_GAP = 2.5 -- Sekunden zwischen den Klängen verschiedener Vorräte
 
 local function kindSettings(kind)
 	local stored = settings.kinds[kind.key]
@@ -308,6 +321,14 @@ local function kindSettings(kind)
 	-- (aus 2.57.0 gilt der gemeinsame Schalter weiter, bis er je Vorrat geändert wird)
 	if type(stored.combatHide) ~= "boolean" then stored.combatHide = settings.combatHide ~= false end
 	if type(stored.instanceHide) ~= "boolean" then stored.instanceHide = settings.instanceHide ~= false end
+	-- Wie oft der Klang kommt (0 = immer wieder, bis es behoben ist), in welchem
+	-- Abstand, und ob der Text nach dem letzten Klang verschwindet
+	if type(stored.repeats) ~= "number" or stored.repeats < 0 or stored.repeats > 20 then stored.repeats = 0 end
+	if type(stored.interval) ~= "number" or stored.interval < 5 or stored.interval > 120 then
+		local old = settings.interval -- gemeinsamer Abstand aus 2.57
+		stored.interval = (type(old) == "number" and old >= 5 and old <= 120) and old or 10
+	end
+	if type(stored.hideAfter) ~= "boolean" then stored.hideAfter = false end
 	if not kind.missing then
 		if type(stored.at) ~= "number" or stored.at < 0 or stored.at > kind.max then stored.at = kind.at end
 	end
@@ -318,14 +339,18 @@ Supplies.kindSettings = kindSettings
 -- Stand eines Vorrats: { kind, value, detail, applies, low }
 function Supplies.Check(kind)
 	local level = playerLevel()
-	local value, extra = kind.measure(level)
+	local value, extra, older = kind.measure(level)
 	local stored = kindSettings(kind)
-	local entry = { kind = kind, value = value, detail = extra, applies = value ~= nil }
+	local entry = { kind = kind, value = value, detail = extra, older = older, applies = value ~= nil }
 	if value ~= nil and stored.enabled then
 		if kind.missing then
 			entry.low = value > 0
 		else
 			entry.low = value <= stored.at
+			-- genug von einer schwächeren Sorte: nur ein Hinweis, kein Alarm
+			if entry.low and (older or 0) > 0 and value + older > stored.at then
+				entry.low, entry.weak = false, true
+			end
 		end
 	end
 	return entry
@@ -376,7 +401,9 @@ local function detailText(entry)
 	end
 	local value = entry.value or 0
 	if kind.percent then return ("%s: %d %%"):format(kind.label, value) end
-	return ("%s: %d / %d"):format(kind.label, value, stored.at)
+	local text = ("%s: %d / %d"):format(kind.label, value, stored.at)
+	if (entry.older or 0) > 0 then text = text .. (" (+%d %s)"):format(entry.older, L["weaker"]) end
+	return text
 end
 
 -- Der Klang eines Vorrats: der eigene oder der ausgewählte (auch aus anderen Addons)
@@ -387,7 +414,7 @@ function Supplies.SoundFile(kind)
 end
 
 local function playKind(kind)
-	lastSound = GetTime and GetTime() or 0
+	lastAny = GetTime and GetTime() or 0
 	if PlaySoundFile then pcall(PlaySoundFile, Supplies.SoundFile(kind), "Master") end
 end
 Supplies.PlayKind = playKind
@@ -493,18 +520,34 @@ end
 function Supplies.Update()
 	if not (settings and frame) then return end
 	local now = GetTime and GetTime() or 0
-	local shown, newly = {}, nil
+	local shown, due = {}, nil
+	local pulsing = false
 	warning = {}
 	for _, kind in ipairs(Supplies.KINDS) do
 		local entry = Supplies.Check(kind)
-		local allowed = entry.low and Supplies.Allowed(kind)
-		if allowed then
-			warning[#warning + 1] = entry
-			shown[#shown + 1] = entry
-			if not wasLow[kind.key] then newly = newly or kind end
+		local stored = kindSettings(kind)
+		local allowed = (entry.low or entry.weak) and Supplies.Allowed(kind)
+		local state = allowed and (entry.low and "low" or "weak") or nil
+		if wasLow[kind.key] ~= state then
+			played[kind.key], lastPlayed[kind.key] = 0, nil -- neu aufgetaucht: Klänge zählen von vorn
 		end
-		wasLow[kind.key] = allowed or nil
+		wasLow[kind.key] = state
+		if state then
+			-- Ein Hinweis auf eine schwächere Sorte klingt nur einmal.
+			local limit = state == "weak" and 1 or stored.repeats
+			local count, last = played[kind.key] or 0, lastPlayed[kind.key]
+			local done = limit > 0 and count >= limit
+			if state == "low" then warning[#warning + 1] = entry end
+			-- Auf Wunsch verschwindet der Text, wenn nach dem letzten Klang der Abstand um ist.
+			local hidden = done and stored.hideAfter and (not settings.sound or last == nil or now - last >= stored.interval)
+			if not hidden then
+				shown[#shown + 1] = entry
+				if state == "low" then pulsing = true end
+			end
+			if not done and not due and (last == nil or now - last >= stored.interval) then due = kind end
+		end
 	end
+	active = next(wasLow) ~= nil
 	local preview = unlocked or (testUntil and now < testUntil)
 	if preview and #shown == 0 then
 		for _, kind in ipairs(Supplies.KINDS) do
@@ -517,8 +560,17 @@ function Supplies.Update()
 	for index, entry in ipairs(shown) do
 		local fontString = line(index)
 		local color = entry.kind.color
-		fontString:SetTextColor(color[1], color[2], color[3])
-		fontString:SetText(entry.kind.text)
+		if entry.weak then
+			-- nur ein Hinweis: kleiner und blasser
+			local size = math.max(14, math.floor(settings.size * 0.55 + 0.5))
+			setFont(fontString, size)
+			fontString.icon:SetSize(size, size)
+			fontString:SetTextColor(color[1] * 0.8, color[2] * 0.8, color[3] * 0.8)
+			fontString:SetText(L["%s: only a weaker kind left (%d)"]:format(entry.kind.label, entry.older or 0))
+		else
+			fontString:SetTextColor(color[1], color[2], color[3])
+			fontString:SetText(entry.kind.text)
+		end
 		fontString:Show()
 		fontString.icon:SetTexture(Supplies.Icon(entry.kind))
 		fontString.icon:SetShown(settings.icons)
@@ -541,14 +593,24 @@ function Supplies.Update()
 	frame:EnableMouse(unlocked)
 	frame:SetShown(#shown > 0)
 
-	-- Klang: sofort, wenn etwas neu knapp wird, danach im eingestellten Abstand reihum
-	if settings.sound and #warning > 0 then
-		if newly then
-			playKind(newly)
-		elseif lastSound == nil or now - lastSound >= settings.interval then
-			soundTurn = soundTurn % #warning + 1
-			playKind(warning[soundTurn].kind)
-		end
+	-- Pulsieren nur bei echten Warnungen, nicht bei Hinweisen
+	if frame.pulse then
+		pcall(function()
+			if settings.pulse and (pulsing or preview) then
+				if not frame.pulse:IsPlaying() then frame.pulse:Play() end
+			else
+				frame.pulse:Stop()
+				frame:SetAlpha(1)
+			end
+		end)
+	end
+
+	-- Klang: sofort, wenn etwas neu knapp wird, danach im Abstand des Vorrats,
+	-- so oft wie eingestellt. Zwei Vorräte klingen nicht gleichzeitig.
+	if settings.sound and due and (lastAny == nil or now - lastAny >= SOUND_GAP) then
+		played[due.key] = (played[due.key] or 0) + 1
+		lastPlayed[due.key] = now
+		playKind(due)
 	end
 	if ns.RefreshSupplyOptions then ns.RefreshSupplyOptions() end
 end
@@ -564,6 +626,7 @@ end
 function Supplies.IsUnlocked() return unlocked end
 
 -- Zeigt die eingeschalteten Warnungen sechs Sekunden lang, mit dem Klang der ersten.
+-- Für einen Vorrat allein: nur sein Klang.
 function Supplies.Test()
 	testUntil = (GetTime and GetTime() or 0) + 6
 	Supplies.Update()
@@ -598,7 +661,7 @@ function Supplies.Init(db)
 	end
 	if type(settings.kinds) ~= "table" then settings.kinds = {} end
 	for _, kind in ipairs(Supplies.KINDS) do kindSettings(kind) end
-	settings.combatHide, settings.instanceHide = nil, nil -- steht jetzt je Vorrat
+	settings.combatHide, settings.instanceHide, settings.interval = nil, nil, nil -- steht jetzt je Vorrat
 	Supplies.settings = settings
 
 	if not frame then
@@ -638,8 +701,8 @@ function Supplies.Init(db)
 				fade:SetToAlpha(0.35)
 				fade:SetDuration(0.6)
 				fade:SetSmoothing("IN_OUT")
-				frame:SetScript("OnShow", function() pulse:Play() end)
 				frame:SetScript("OnHide", function() pulse:Stop() end)
+				frame.pulse = pulse
 			end)
 		end
 		-- Solange gewarnt wird, kommt der Klang im eingestellten Abstand wieder.
@@ -648,7 +711,7 @@ function Supplies.Init(db)
 			elapsedSum = elapsedSum + (elapsed or 0)
 			if elapsedSum < 1 then return end
 			elapsedSum = 0
-			if #warning > 0 then Supplies.Update() end
+			if active then Supplies.Update() end
 		end)
 		local events = CreateFrame("Frame")
 		for _, event in ipairs({ "PLAYER_ENTERING_WORLD", "BAG_UPDATE_DELAYED", "PLAYER_LEVEL_UP", "PLAYER_REGEN_DISABLED", "PLAYER_REGEN_ENABLED",
@@ -696,9 +759,15 @@ local function onOff(word)
 	return nil
 end
 
+-- "immer wieder alle 10 s" oder "3× alle 10 s"
+function Supplies.RepeatText(stored)
+	local times = stored.repeats == 0 and L["again and again"] or ("%d×"):format(stored.repeats)
+	return L["sound %s, every %d s"]:format(times, stored.interval)
+end
+
 local function printStatus()
 	local msg = ns.msg or print
-	msg(L["Supplies: sound %s, every %d s."], settings.sound and L["on"] or L["off"], settings.interval)
+	msg(L["Supplies: sounds %s, pulsing %s."], settings.sound and L["on"] or L["off"], settings.pulse and L["on"] or L["off"])
 	for _, kind in ipairs(Supplies.KINDS) do
 		local entry, stored = Supplies.Check(kind), kindSettings(kind)
 		local state
@@ -708,6 +777,8 @@ local function printStatus()
 			state = L["not for this character or level"]
 		elseif entry.low then
 			state = L["warns now"]
+		elseif entry.weak then
+			state = L["only a weaker kind"]
 		else
 			state = L["enough"]
 		end
@@ -715,7 +786,9 @@ local function printStatus()
 		local places = {}
 		if stored.combatHide then places[#places + 1] = L["Only out of combat"] end
 		if stored.instanceHide then places[#places + 1] = L["Not in instances"] end
-		if #places > 0 then state = state .. " (" .. table.concat(places, ", ") .. ")" end
+		places[#places + 1] = Supplies.RepeatText(stored)
+		if stored.hideAfter then places[#places + 1] = L["text hides after the last sound"] end
+		state = state .. " (" .. table.concat(places, ", ") .. ")"
 		msg("  %s [%s]%s: %s – %s", kind.text, kind.key, limit, entry.applies and detailText(entry) or "-", state)
 	end
 end
@@ -732,11 +805,11 @@ local function supplyCommand(rest)
 	elseif word == "move" or word == "place" then
 		Supplies.SetUnlocked(not unlocked)
 		return msg(unlocked and L["Supplies warning unlocked: drag it with the mouse, then /sha supplies move again."] or L["Supplies warning locked."])
-	elseif word == "sound" or word == "combat" or word == "instances" then
+	elseif word == "sound" or word == "pulse" or word == "combat" or word == "instances" then
 		local flag = onOff(value)
 		if flag == nil then return msg(L["Please enter on or off."]) end
-		if word == "sound" then
-			settings.sound = flag
+		if word == "sound" or word == "pulse" then
+			settings[word] = flag
 		else
 			-- ohne Vorrat: für alle auf einmal
 			for _, kind in ipairs(Supplies.KINDS) do
@@ -754,10 +827,21 @@ local function supplyCommand(rest)
 	end
 	local stored = kindSettings(kind)
 	local option, optionValue = (value or ""):lower():match("^(%a+)%s+(%S+)$")
-	if option == "combat" or option == "instances" then
+	if option == "combat" or option == "instances" or option == "hide" then
 		local flag = onOff(optionValue)
 		if flag == nil then return msg(L["Please enter on or off."]) end
-		stored[option == "combat" and "combatHide" or "instanceHide"] = not flag
+		if option == "hide" then
+			stored.hideAfter = flag
+		else
+			stored[option == "combat" and "combatHide" or "instanceHide"] = not flag
+		end
+		Supplies.Update()
+		return printStatus()
+	elseif option == "repeat" or option == "interval" then
+		local number = tonumber(optionValue)
+		local low, high = option == "repeat" and 0 or 5, option == "repeat" and 20 or 120
+		if not number or number < low or number > high then return msg(L["Please enter a number from %d to %d."], low, high) end
+		stored[option == "repeat" and "repeats" or "interval"] = math.floor(number)
 		Supplies.Update()
 		return printStatus()
 	end
