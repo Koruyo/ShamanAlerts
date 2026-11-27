@@ -310,6 +310,150 @@ local played, lastPlayed = {}, {} -- je Vorrat: wie oft und wann zuletzt sein Kl
 local active = false -- steht gerade etwas an? Dann rechnet die Anzeige jede Sekunde nach.
 local SOUND_GAP = 2.5 -- Sekunden zwischen den Klängen verschiedener Vorräte
 
+local BUILT_IN = #Supplies.KINDS
+Supplies.BUILT_IN = BUILT_IN
+Supplies.MAX_CUSTOM = 6 -- so viele eigene Vorräte passen in die Liste
+
+-------------------------------------------------------------------------------
+-- Eigene Vorräte: Text und Gegenstände selbst gewählt, gezählt ohne Stufen
+-------------------------------------------------------------------------------
+
+local function itemName(id)
+	local lookup = (C_Item and C_Item.GetItemNameByID) or GetItemInfo
+	if lookup then
+		local ok, name = pcall(lookup, id)
+		if ok and type(name) == "string" and name ~= "" then return name end
+	end
+	return nil
+end
+
+-- "Name (ID)" je Gegenstand, durch Komma getrennt: so steht es im Eingabefeld.
+function Supplies.ItemsText(kind)
+	local parts = {}
+	for _, id in ipairs(kind.spec and kind.spec.items or {}) do
+		local name = itemName(id)
+		parts[#parts + 1] = name and ("%s (%d)"):format(name, id) or tostring(id)
+	end
+	return table.concat(parts, ", ")
+end
+
+-- Ein Eintrag aus dem Eingabefeld: Link, "Name (ID)", reine ID oder Name.
+local function resolveItem(text)
+	text = text:match("^%s*(.-)%s*$")
+	if text == "" then return nil end
+	local id = tonumber(text:match("|Hitem:(%d+)") or text:match("item:(%d+)") or text:match("%((%d+)%)%s*$") or text:match("^(%d+)$"))
+	if id then return id end
+	local lookup = (C_Item and C_Item.GetItemInfoInstant) or GetItemInfoInstant
+	if lookup then
+		local ok, found = pcall(lookup, text)
+		if ok and type(found) == "number" and found > 0 and itemName(found) and itemName(found):lower() == text:lower() then return found end
+	end
+	return nil
+end
+
+local function customKind(spec)
+	local kind = {
+		key = spec.key, custom = true, spec = spec, label = spec.text, text = spec.text,
+		sound = "alarm.ogg", color = { 1, 0.3, 0.3 }, enabled = true, at = 5, max = 200, step = 1,
+	}
+	kind.icon = spec.items[1] or "Interface\\Icons\\INV_Misc_QuestionMark"
+	kind.measure = function()
+		if #spec.items == 0 then return nil end -- ohne Gegenstände gibt es nichts zu zählen
+		local total = 0
+		for _, id in ipairs(spec.items) do total = total + itemCount(id) end
+		return total
+	end
+	return kind
+end
+
+-- Hängt die eigenen Vorräte hinter die eingebauten. Ein schon bekannter
+-- Vorrat behält seinen Eintrag, damit Auswahl und Zähler an ihm hängen bleiben.
+local customKinds = setmetatable({}, { __mode = "k" })
+local function rebuildKinds()
+	for index = #Supplies.KINDS, BUILT_IN + 1, -1 do
+		Supplies.KINDS[Supplies.KINDS[index].key] = nil
+		Supplies.KINDS[index] = nil
+	end
+	for index = #settings.custom, 1, -1 do
+		local spec = settings.custom[index]
+		local valid = type(spec) == "table" and type(spec.key) == "string" and spec.key:match("^custom%d+$")
+		if not valid then table.remove(settings.custom, index) end
+	end
+	for _, spec in ipairs(settings.custom) do
+		if type(spec.text) ~= "string" or spec.text == "" then spec.text = L["Buy supplies!"] end
+		if type(spec.items) ~= "table" then spec.items = {} end
+		local kind = customKinds[spec] or customKind(spec)
+		customKinds[spec] = kind
+		kind.text, kind.label = spec.text, spec.text
+		Supplies.KINDS[#Supplies.KINDS + 1] = kind
+		Supplies.KINDS[kind.key] = kind
+	end
+end
+
+-- Legt einen eigenen Vorrat an. nil, wenn schon so viele da sind, wie in die Liste passen.
+function Supplies.AddCustom(text)
+	if #settings.custom >= Supplies.MAX_CUSTOM then return nil end
+	local number = 1
+	while Supplies.KINDS["custom" .. number] do number = number + 1 end
+	local spec = { key = "custom" .. number, text = (text and text ~= "") and text or L["Buy supplies!"], items = {} }
+	settings.custom[#settings.custom + 1] = spec
+	rebuildKinds()
+	local kind = Supplies.KINDS[spec.key]
+	Supplies.kindSettings(kind)
+	Supplies.Update()
+	return kind
+end
+
+function Supplies.DeleteCustom(kind)
+	if not (kind and kind.custom) then return false end
+	for index, spec in ipairs(settings.custom) do
+		if spec.key == kind.key then table.remove(settings.custom, index) end
+	end
+	settings.kinds[kind.key] = nil
+	wasLow[kind.key], played[kind.key], lastPlayed[kind.key] = nil, nil, nil
+	rebuildKinds()
+	Supplies.Update()
+	return true
+end
+
+function Supplies.SetCustomText(kind, text)
+	if not (kind and kind.custom) then return end
+	text = (text or ""):match("^%s*(.-)%s*$")
+	kind.spec.text = text ~= "" and text or L["Buy supplies!"]
+	kind.text, kind.label = kind.spec.text, kind.spec.text
+	Supplies.Update()
+end
+
+-- Übernimmt die Gegenstände aus dem Eingabefeld. Liefert, was nicht zu finden war.
+function Supplies.SetCustomItems(kind, text)
+	if not (kind and kind.custom) then return {} end
+	local items, seen, missing = {}, {}, {}
+	for piece in tostring(text or ""):gmatch("[^,;\n]+") do
+		local id = resolveItem(piece)
+		if id and not seen[id] then
+			seen[id] = true
+			items[#items + 1] = id
+		elseif not id and piece:match("%S") then
+			missing[#missing + 1] = piece:match("^%s*(.-)%s*$")
+		end
+	end
+	kind.spec.items = items
+	kind.icon = items[1] or "Interface\\Icons\\INV_Misc_QuestionMark"
+	Supplies.Update()
+	return missing
+end
+
+-- Fügt einen Gegenstand hinzu, etwa beim Hineinziehen aus der Tasche.
+function Supplies.AddCustomItem(kind, id)
+	if not (kind and kind.custom and type(id) == "number") then return end
+	for _, known in ipairs(kind.spec.items) do
+		if known == id then return end
+	end
+	kind.spec.items[#kind.spec.items + 1] = id
+	kind.icon = kind.spec.items[1]
+	Supplies.Update()
+end
+
 local function kindSettings(kind)
 	local stored = settings.kinds[kind.key]
 	if type(stored) ~= "table" then
@@ -641,9 +785,12 @@ end
 
 function Supplies.Reset()
 	if not settings then return end
+	local custom = type(settings.custom) == "table" and settings.custom or {}
 	for key in pairs(settings) do settings[key] = nil end
 	for key, value in pairs(DEFAULTS) do settings[key] = value end
 	settings.kinds = {}
+	settings.custom = custom -- eigene Vorräte bleiben, nur ihre Einstellungen gehen zurück
+	rebuildKinds()
 	for _, kind in ipairs(Supplies.KINDS) do kindSettings(kind) end
 	if frame then position() end
 	Supplies.Update()
@@ -660,6 +807,8 @@ function Supplies.Init(db)
 		if type(settings[key]) ~= type(value) then settings[key] = value end
 	end
 	if type(settings.kinds) ~= "table" then settings.kinds = {} end
+	if type(settings.custom) ~= "table" then settings.custom = {} end
+	rebuildKinds()
 	for _, kind in ipairs(Supplies.KINDS) do kindSettings(kind) end
 	settings.combatHide, settings.instanceHide, settings.interval = nil, nil, nil -- steht jetzt je Vorrat
 	Supplies.settings = settings
@@ -819,6 +968,19 @@ local function supplyCommand(rest)
 		Supplies.Update()
 		return printStatus()
 	end
+	if word == "new" then
+		local kind = Supplies.AddCustom(value)
+		if not kind then return msg(L["At most %d own supplies."], Supplies.MAX_CUSTOM) end
+		msg(L["Own supply \"%s\" created (key %s). Add its items with /sha supplies %s items <names, IDs or links>."], kind.text, kind.key, kind.key)
+		if ns.RefreshOptions then ns.RefreshOptions() end
+		return
+	elseif word == "delete" then
+		local kind = Supplies.KINDS[(value or ""):lower()]
+		if not (kind and kind.custom) then return msg(L["Only own supplies can be deleted."]) end
+		Supplies.DeleteCustom(kind)
+		if ns.RefreshOptions then ns.RefreshOptions() end
+		return msg(L["Own supply \"%s\" deleted."], kind.text)
+	end
 	local kind = Supplies.KINDS[word]
 	if not kind then
 		local keys = {}
@@ -826,6 +988,17 @@ local function supplyCommand(rest)
 		return msg(L["Unknown supply. Available: %s."], table.concat(keys, ", "))
 	end
 	local stored = kindSettings(kind)
+	local textOption, textValue = (value or ""):match("^(%a+)%s+(.+)$")
+	if kind.custom and textOption and (textOption:lower() == "items" or textOption:lower() == "text") then
+		if textOption:lower() == "text" then
+			Supplies.SetCustomText(kind, textValue)
+		else
+			local missing = Supplies.SetCustomItems(kind, textValue)
+			if #missing > 0 then msg(L["Not found: %s. Enter an ID or a link instead (shift-click the item)."], table.concat(missing, ", ")) end
+		end
+		if ns.RefreshOptions then ns.RefreshOptions() end
+		return printStatus()
+	end
 	local option, optionValue = (value or ""):lower():match("^(%a+)%s+(%S+)$")
 	if option == "combat" or option == "instances" or option == "hide" then
 		local flag = onOff(optionValue)

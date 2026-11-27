@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.59.0
+- Own supplies: "+ New supply" on the supplies page creates up to six own warnings with their
+  own text and the items they count, for example arrows or reagents. Items by name, ID or link,
+  or dragged from the bags onto the field. They have the same settings as the built-in ones
+  (threshold, sound, repeats, combat, instances) and can be deleted again
+- `/sha supplies new [text]`, `<supply> items <names, IDs or links>`, `<supply> text <text>`,
+  `delete <supply>`
+
 ## 2.58.0
 - Supplies page rebuilt: the supplies on the left, the settings of the chosen one on the right
 - Per supply: how often the sound comes (once, a set number of times or again and again until

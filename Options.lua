@@ -1762,21 +1762,43 @@ local function createFrame()
 		ns.RefreshOptions()
 	end
 
+	-- Gelöschter eigener Vorrat: zurück zum ersten
+	widgets[#widgets + 1] = { Refresh = function()
+		if not chosenKind or S.KINDS[chosenKind.key] ~= chosenKind then chosenKind = kinds[1] end
+	end }
+
 	-- Links: die Vorräte, je mit Haken zum Einschalten; ein Klick auf den Namen wählt ihn aus.
-	addText(supply, L["Click a supply to set it up on the right."], "GameFontDisableSmall", 0, -66, 300)
-	for index, kind in ipairs(kinds) do
-		local y = -84 - (index - 1) * 27
+	tip(addButton(supply, L["+ New supply"], 170, 0, -60, function()
+		local kind = S.AddCustom()
+		if not kind then return ns.msg(L["At most %d own supplies."], S.MAX_CUSTOM) end
+		chosenKind = kind
+		ns.RefreshOptions()
+	end), L["Creates your own supply: choose its text and the items it counts, for example arrows or reagents."])
+	addText(supply, L["Click a supply to set it up on the right."], "GameFontDisableSmall", 180, -66)
+	for index = 1, (S and S.BUILT_IN or 0) + (S and S.MAX_CUSTOM or 0) do
+		local y = -90 - (index - 1) * 22
+		local function kindAt() return S.KINDS[index] end
 		local enable = tip(addCheck(supply, "", 0, y,
-			function() return S.kindSettings(kind).enabled end,
+			function() local kind = kindAt(); return kind ~= nil and S.kindSettings(kind).enabled end,
 			function(value)
+				local kind = kindAt()
+				if not kind then return end
 				S.kindSettings(kind).enabled = value
 				S.Update()
 				ns.RefreshOptions()
-			end), L["Switches this warning on or off."], kind.text)
-		enable.supplyEnabled = kind.key
+			end), L["Switches this warning on or off."])
+		enable:SetSize(20, 20)
+		enable.visibleIf = function() return kindAt() ~= nil end
+		local enableRefresh = enable.Refresh
+		enable.Refresh = function(self)
+			local kind = kindAt()
+			self.supplyEnabled = kind and kind.key
+			self.tipTitle = kind and kind.text
+			enableRefresh(self)
+		end
 		local row = CreateFrame("Button", nil, supply)
-		row:SetPoint("TOPLEFT", supply, "TOPLEFT", 28, y)
-		row:SetSize(270, 24)
+		row:SetPoint("TOPLEFT", supply, "TOPLEFT", 26, y + 1)
+		row:SetSize(276, 21)
 		row.chosenMark = row:CreateTexture(nil, "BACKGROUND")
 		row.chosenMark:SetAllPoints(row)
 		row.chosenMark:SetColorTexture(1, 0.82, 0, 0.18)
@@ -1785,15 +1807,22 @@ local function createFrame()
 		row.hover:SetColorTexture(1, 1, 1, 0.08)
 		row.label = row:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
 		row.label:SetPoint("LEFT", row, "LEFT", 6, 0)
-		row.label:SetText(kind.text)
-		row.supplyKey = kind.key
 		row:SetScript("OnClick", function()
-			chosenKind = kind
-			ns.RefreshOptions()
+			if kindAt() then
+				chosenKind = kindAt()
+				ns.RefreshOptions()
+			end
 		end)
-		tip(row, SUPPLY_TIPS[kind.key] or "", kind.text)
+		tip(row, "")
+		row.visibleIf = function() return kindAt() ~= nil end
 		row.Refresh = function(self)
+			local kind = kindAt()
+			if not kind then return end
 			local on = S.kindSettings(kind).enabled
+			self.supplyKey = kind.key
+			self.label:SetText(kind.text)
+			self.tipTitle = kind.text
+			self.tipBody = kind.custom and L["Your own supply."] or SUPPLY_TIPS[kind.key] or ""
 			self.chosenMark:SetShown(chosenKind == kind)
 			if chosenKind == kind then self.label:SetTextColor(1, 0.82, 0) elseif on then self.label:SetTextColor(1, 1, 1) else self.label:SetTextColor(0.6, 0.6, 0.6) end
 		end
@@ -1807,7 +1836,62 @@ local function createFrame()
 	widgets[#widgets + 1] = chosenTitle
 	local chosenTip = addText(supply, "", "GameFontHighlightSmall", RX, -108, CONTENT_W - RX)
 	chosenTip.Refresh = function(self) self:SetText(SUPPLY_TIPS[chosenKind.key] or "") end
+	chosenTip.visibleIf = function() return not chosenKind.custom end
 	widgets[#widgets + 1] = chosenTip
+
+	-- eigener Vorrat: Text, Gegenstände, Löschen
+	local function customOnly(widget)
+		widget.visibleIf = function() return chosenKind.custom == true end
+		widgets[#widgets + 1] = widget
+		return widget
+	end
+	customOnly(addText(supply, L["Text"], "GameFontNormalSmall", RX, -112))
+	local textBox = addEditBox(supply, 320, RX + 86, -108, function(_, text)
+		S.SetCustomText(chosenKind, text)
+		ns.RefreshOptions()
+	end)
+	textBox.Refresh = function(self) if not (self.HasFocus and self:HasFocus()) then self:SetText(chosenKind.text or "") end end
+	textBox.supplyField = "text"
+	customOnly(tip(textBox, L["The text of the warning. Press Enter to take it over."], L["Text"]))
+	customOnly(addText(supply, L["Items"], "GameFontNormalSmall", RX, -140))
+	local itemsBox = addEditBox(supply, 320, RX + 86, -136, function(_, text)
+		local missing = S.SetCustomItems(chosenKind, text)
+		if #missing > 0 then ns.msg(L["Not found: %s. Enter an ID or a link instead (shift-click the item)."], table.concat(missing, ", ")) end
+		ns.RefreshOptions()
+	end)
+	itemsBox.Refresh = function(self) if not (self.HasFocus and self:HasFocus()) then self:SetText(S.ItemsText(chosenKind)) end end
+	itemsBox.supplyField = "items"
+	-- Gegenstand aus der Tasche hierher ziehen
+	local function takeCursorItem()
+		if not GetCursorInfo then return end
+		local what, id = GetCursorInfo()
+		if what == "item" and type(id) == "number" then
+			S.AddCustomItem(chosenKind, id)
+			if ClearCursor then ClearCursor() end
+			ns.RefreshOptions()
+		end
+	end
+	itemsBox:SetScript("OnReceiveDrag", takeCursorItem)
+	itemsBox:SetScript("OnMouseDown", takeCursorItem)
+	-- Umschalt-Klick auf einen Gegenstand fügt seinen Link ein, solange das Feld aktiv ist.
+	if hooksecurefunc and ChatEdit_InsertLink then
+		pcall(hooksecurefunc, "ChatEdit_InsertLink", function(link)
+			if type(link) == "string" and link:find("item:", 1, true) and itemsBox:IsVisible() and itemsBox.HasFocus and itemsBox:HasFocus() then
+				local current = itemsBox:GetText() or ""
+				itemsBox:SetText((current:match("%S") and (current:gsub("[,%s]*$", "") .. ", ") or "") .. link)
+			end
+		end)
+	end
+	customOnly(tip(itemsBox, L["Names, IDs or links, separated by commas, then Enter. You can also drag an item from your bags onto the field or shift-click it while the field is active."], L["Items"]))
+	customOnly(addText(supply, L["Counts these items in your bags, whatever your level."], "GameFontDisableSmall", RX, -160, CONTENT_W - RX))
+	customOnly(tip(addButton(supply, L["Delete"], 110, CONTENT_W - 110, -82, function()
+		local kind = chosenKind
+		confirm(L["Really delete the supply \"%s\"?"]:format(kind.text), function()
+			S.DeleteCustom(kind)
+			chosenKind = kinds[1]
+			ns.RefreshOptions()
+		end)
+	end), L["Deletes this own supply."])).supplyDelete = true
 
 	local atSlider = addSlider(supply, "SupplyAt", L["Warn from"], RX + 4, -188, 0, 100, 1,
 		function(value)
@@ -1871,7 +1955,7 @@ local function createFrame()
 	chosenFlag(L["Hide the text after the last sound"], "hideAfter", -396, L["When the set number of sounds is over, the text disappears too, once the interval has passed. It comes back as soon as the supply runs low again."])
 
 	-- Unten: was für alle Warnungen gilt
-	addHeader(supply, L["All warnings"], 0, -436, CONTENT_W)
+	addHeader(supply, L["All warnings"], 0, -462, CONTENT_W)
 	local function supplyFlag(text, field, x, y, body)
 		local check = tip(addCheck(supply, text, x, y,
 			function() return S.settings[field] == true end,
@@ -1882,21 +1966,21 @@ local function createFrame()
 		check.supplyFlag = field
 		return check
 	end
-	supplyFlag(L["Play the sound"], "sound", 0, -458, L["Switches the sounds of all supply warnings on or off."])
-	supplyFlag(L["Pulse"], "pulse", 250, -458, L["Warnings pulse gently. Hints about a weaker kind never pulse."])
-	supplyFlag(L["Show the item's icon"], "icons", 500, -458, L["The icon of the item from the game stands in front of the text."])
-	addSlider(supply, "SupplySize", L["Text size"], 4, -506, 24, 96, 2,
+	supplyFlag(L["Play the sound"], "sound", 0, -484, L["Switches the sounds of all supply warnings on or off."])
+	supplyFlag(L["Pulse"], "pulse", 250, -484, L["Warnings pulse gently. Hints about a weaker kind never pulse."])
+	supplyFlag(L["Show the item's icon"], "icons", 500, -484, L["The icon of the item from the game stands in front of the text."])
+	addSlider(supply, "SupplySize", L["Text size"], 4, -532, 24, 96, 2,
 		function(value) return ("%d"):format(value) end,
 		function() return S.settings.size end,
 		function(value) S.settings.size = value end)
-	local placeSupply = tip(addButton(supply, "", 200, 250, -502, function()
+	local placeSupply = tip(addButton(supply, "", 200, 250, -528, function()
 		S.SetUnlocked(not S.IsUnlocked())
 		ns.RefreshOptions()
 	end), L["Shows the warning and lets you drag it with the mouse. Click again to lock it."], L["Place"])
 	placeSupply.Refresh = function(self) self:SetText(S.IsUnlocked() and L["Lock position"] or L["Place"]) end
 	placeSupply.supplyPlace = true
 	widgets[#widgets + 1] = placeSupply
-	tip(addButton(supply, L["Test"], 200, 458, -502, function() S.Test() end), L["Shows the switched-on warnings for six seconds, with the sound of the first."])
+	tip(addButton(supply, L["Test"], 200, 458, -528, function() S.Test() end), L["Shows the switched-on warnings for six seconds, with the sound of the first."])
 	sink = supplySink
 
 	-- Seite "Profile & Austausch" -----------------------------------------------
