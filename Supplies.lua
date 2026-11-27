@@ -308,6 +308,11 @@ local warning = {} -- Vorräte, die gerade warnen
 local wasLow = {} -- je Vorrat: "low" (Warnung), "weak" (Hinweis) oder nil
 local played, lastPlayed = {}, {} -- je Vorrat: wie oft und wann zuletzt sein Klang kam
 local active = false -- steht gerade etwas an? Dann rechnet die Anzeige jede Sekunde nach.
+-- Beim Ladebildschirm stimmen Kampf und Instanz kurz nicht: Wer im Kampf in einen
+-- Dungeon geht, ist schon "außer Kampf", aber noch nicht "in der Instanz".
+-- So lange und ein paar Sekunden danach bleibt alles still.
+local loading, quietUntil = false, 0
+local QUIET_AFTER_LOADING = 3
 local SOUND_GAP = 2.5 -- Sekunden zwischen den Klängen verschiedener Vorräte
 
 local BUILT_IN = #Supplies.KINDS
@@ -664,6 +669,7 @@ end
 function Supplies.Update()
 	if not (settings and frame) then return end
 	local now = GetTime and GetTime() or 0
+	if (loading or now < quietUntil) and not (unlocked or (testUntil and now < testUntil)) then return end
 	local shown, due = {}, nil
 	local pulsing = false
 	warning = {}
@@ -864,14 +870,30 @@ function Supplies.Init(db)
 		end)
 		local events = CreateFrame("Frame")
 		for _, event in ipairs({ "PLAYER_ENTERING_WORLD", "BAG_UPDATE_DELAYED", "PLAYER_LEVEL_UP", "PLAYER_REGEN_DISABLED", "PLAYER_REGEN_ENABLED",
-			"UPDATE_INVENTORY_DURABILITY", "SPELLS_CHANGED", "ZONE_CHANGED_NEW_AREA", "PLAYER_DEAD", "PLAYER_ALIVE", "PLAYER_UNGHOST" }) do
+			"UPDATE_INVENTORY_DURABILITY", "SPELLS_CHANGED", "ZONE_CHANGED_NEW_AREA", "PLAYER_DEAD", "PLAYER_ALIVE", "PLAYER_UNGHOST",
+			"PLAYER_LEAVING_WORLD", "LOADING_SCREEN_ENABLED", "LOADING_SCREEN_DISABLED" }) do
 			pcall(events.RegisterEvent, events, event)
 		end
 		events:SetScript("OnEvent", function(_, event)
+			if event == "PLAYER_LEAVING_WORLD" or event == "LOADING_SCREEN_ENABLED" then
+				loading = true
+				return
+			end
+			if event == "PLAYER_ENTERING_WORLD" or event == "LOADING_SCREEN_DISABLED" then
+				loading = false
+				quietUntil = (GetTime and GetTime() or 0) + QUIET_AFTER_LOADING
+				if ready and C_Timer and C_Timer.After then C_Timer.After(QUIET_AFTER_LOADING + 0.1, Supplies.Update) end
+			end
+			if event == "PLAYER_REGEN_ENABLED" and C_Timer and C_Timer.After then
+				-- Kampfende kommt beim Betreten eines Dungeons oft vor dem Ladebildschirm:
+				-- kurz warten, ob einer folgt.
+				C_Timer.After(1.5, Supplies.Update)
+				return
+			end
 			if event == "PLAYER_ENTERING_WORLD" and not ready then
 				-- Das Gepäck ist beim Betreten der Welt noch nicht ganz geladen.
 				if C_Timer and C_Timer.After then
-					C_Timer.After(3, function()
+					C_Timer.After(QUIET_AFTER_LOADING + 0.1, function()
 						ready = true
 						Supplies.Update()
 					end)

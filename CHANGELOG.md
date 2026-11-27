@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.59.1
+- Supplies no longer sound when you enter a dungeon in combat: the loading screen ends combat
+  before the dungeon counts as one. During a loading screen and for three seconds after it the
+  supplies stay quiet, and the end of combat is checked a moment later
 ## 2.59.0
 - Own supplies: "+ New supply" on the supplies page creates up to six own warnings with their
   own text and the items they count, for example arrows or reagents. Items by name, ID or link,
