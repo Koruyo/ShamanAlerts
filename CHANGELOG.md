@@ -7,6 +7,8 @@
   (threshold, sound, repeats, combat, instances) and can be deleted again
 - `/sha supplies new [text]`, `<supply> items <names, IDs or links>`, `<supply> text <text>`,
   `delete <supply>`
+- Fixed: choosing the ankh on the supplies page after a supply with a higher threshold set the
+  ankh's threshold to 10 (since 2.58.0). Please check the ankh's value once
 
 ## 2.58.0
 - Supplies page rebuilt: the supplies on the left, the settings of the chosen one on the right

@@ -1904,8 +1904,12 @@ local function createFrame()
 	tip(atSlider, L["The warning appears as soon as you have this many or fewer."])
 	local atRefresh = atSlider.Refresh
 	atSlider.Refresh = function(self)
+		-- Ein kleinerer Bereich drückt den alten Wert zurecht und meldet das als
+		-- Änderung. Das darf nicht beim gewählten Vorrat landen.
+		self.refreshing = true
 		self:SetMinMaxValues(0, chosenKind.max or 100)
 		self:SetValueStep(chosenKind.step or 1)
+		self.refreshing = false
 		atRefresh(self)
 	end
 	atSlider.visibleIf = function() return not chosenKind.missing end
