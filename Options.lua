@@ -13,7 +13,7 @@ local ADDON_NAME, ns = ...
 local L = ns.L
 
 local FRAME_NAME = "ShamanAlertsOptionsFrame"
-local WIDTH, HEIGHT = 1000, 700
+local WIDTH, HEIGHT = 1000, 720
 local SIDE_X, SIDE_W = 14, 200 -- Liste links
 local ROW_H, MAX_ROWS = 20, 25
 local LIST_TOP = -36
@@ -477,6 +477,7 @@ local TABS = {
 local PAGES = {
 	{ key = "totems", name = L["Totem bar"] },
 	{ key = "general", name = L["General"] },
+	{ key = "supplies", name = L["Supplies"] },
 	{ key = "profiles", name = L["Profiles & sharing"] },
 	{ key = "help", name = L["Help & diagnostics"] },
 }
@@ -1608,6 +1609,7 @@ local function createFrame()
 		L["/sha totem – the page of the totem bar"],
 		L["/sha profile – save and load profiles, share settings"],
 		L["/sha minimap – show or hide the minimap button"],
+		L["/sha supplies – warnings when water, ankh and other supplies run low"],
 		L["/sha reset [alert] – reset one alert or everything"],
 		L["/sha debug – record diagnostics"],
 		L["/sha help – all commands and fields"],
@@ -1718,6 +1720,112 @@ local function createFrame()
 			if ns.Minimap then ns.Minimap.SetShown(value) end
 		end), L["A left click on the button opens this window, a right click the page of the totem bar. The addon is also listed in the addon menu of the minimap and under Options > AddOns."])
 	sink = alertSink
+
+	-- Seite "Vorräte": große Warnung, wenn Wasser, Ankh und anderes knapp werden ----
+	local supply = CreateFrame("Frame", nil, window)
+	supply:SetPoint("TOPLEFT", window, "TOPLEFT", CONTENT_X, -28)
+	supply:SetSize(CONTENT_W, PAGE_H)
+	supply:Hide()
+	pages.supplies = supply
+	addText(supply, L["Supplies"], "GameFontNormalLarge", 0, -8)
+	addText(supply, L["A big warning with its own sound when something runs low that you should buy or take from the bank. Drinks, potions and food count what suits your level, you do not need to enter anything. The number is the amount from which on it warns."],
+		nil, 0, -32, CONTENT_W)
+	local S = ns.Supplies
+	local supplySink = sink
+	sink = { list = widgets, changed = function() if S then S.Update() end end }
+	local SUPPLY_TIPS = {
+		water = L["Counts the drinks and foods that restore mana and suit your level: from vendors, mages, quests and events. From level 47, for example, Morning Glory Dew counts but Moonberry Juice no longer does."],
+		ankh = L["From level 30, when shamans learn Reincarnation."],
+		healing = L["Counts the healing potions that suit your level."],
+		mana = L["Counts the mana potions that suit your level."],
+		food = L["Counts the food that restores health and suits your level."],
+		bandage = L["Counts all bandages."],
+		totems = L["Warns while one of the four totems is missing from your bags whose element you already use."],
+		hearth = L["Warns while your hearthstone is not in your bags."],
+		repair = L["Warns when an equipped item has at most this much durability left."],
+		bags = L["Warns when your bags have at most this many free slots left."],
+	}
+	local function soundName(kind)
+		local file = S.SoundFile(kind)
+		for _, choice in ipairs(S.SoundChoices()) do
+			if choice.file == file then return choice.name end
+		end
+		return tostring(file):match("([^\\/]+)$") or tostring(file)
+	end
+	local function chooseSound(kind, file)
+		S.kindSettings(kind).sound = (file ~= "Interface\\AddOns\\" .. ADDON_NAME .. "\\Media\\" .. kind.sound) and file or nil
+		S.PlayKind(kind)
+		ns.RefreshOptions()
+	end
+	for index, kind in ipairs(S and S.KINDS or {}) do
+		local column, row = (index - 1) % 2, math.floor((index - 1) / 2)
+		local x, y = column * 372, -74 - row * 62
+		local function stored() return S.kindSettings(kind) end
+		tip(addCheck(supply, kind.text, x, y,
+			function() return stored().enabled end,
+			function(value)
+				stored().enabled = value
+				S.Update()
+				ns.RefreshOptions()
+			end), SUPPLY_TIPS[kind.key] or "")
+		local soundButton = tip(addButton(supply, "", 150, x + 206, y, function(self)
+			local list = S.SoundChoices()
+			if not (MenuUtil and MenuUtil.CreateContextMenu) then
+				local at = 0
+				for position, choice in ipairs(list) do
+					if choice.file == S.SoundFile(kind) then at = position end
+				end
+				return chooseSound(kind, list[at % #list + 1].file)
+			end
+			pcall(MenuUtil.CreateContextMenu, self, function(_, root)
+				if root.SetScrollMode then root:SetScrollMode(360) end
+				for _, choice in ipairs(list) do
+					root:CreateRadio(choice.name, function() return S.SoundFile(kind) == choice.file end, function() chooseSound(kind, choice.file) end)
+				end
+			end)
+		end), L["The sound of this warning. Besides the sounds of ShamanAlerts you can pick every sound that other addons offer through LibSharedMedia."], L["Sound"])
+		soundButton.Refresh = function(self) self:SetText(L["Sound"] .. ": " .. soundName(kind)) end
+		soundButton.supplySound = kind.key
+		widgets[#widgets + 1] = soundButton
+		if not kind.missing then
+			local label = kind.percent and L["Warn from durability"] or kind.key == "bags" and L["Warn from free slots"] or L["Warn from"]
+			addSlider(supply, "Supply" .. kind.key, label, x + 4, y - 38, 0, kind.max, kind.step,
+				function(value) return kind.percent and ("%d %%"):format(value) or ("%d"):format(value) end,
+				function() return stored().at end,
+				function(value) stored().at = value end)
+		end
+	end
+
+	addHeader(supply, L["Warning"], 0, -396, CONTENT_W)
+	local function supplyFlag(text, field, x, y, body, invert)
+		return tip(addCheck(supply, text, x, y,
+			function() return S.settings[field] == true end,
+			function(value)
+				S.settings[field] = value
+				S.Update()
+			end), body)
+	end
+	supplyFlag(L["Only out of combat"], "combatHide", 0, -418, L["In combat the warning waits until the fight is over."])
+	supplyFlag(L["Not in dungeons, raids, battlegrounds and arenas"], "instanceHide", 0, -442, L["There you can no longer buy anything anyway. Outside, in the open world and in cities, it warns."])
+	supplyFlag(L["Play the sound"], "sound", 372, -418, L["Once as soon as something runs low, then again at the set interval as long as the warning stands."])
+	supplyFlag(L["Show the item's icon"], "icons", 372, -442, L["The icon of the item from the game stands in front of the text."])
+	addSlider(supply, "SupplyInterval", L["Repeat the sound every"], 4, -490, 5, 60, 1,
+		function(value) return ("%d s"):format(value) end,
+		function() return S.settings.interval end,
+		function(value) S.settings.interval = value end)
+	addSlider(supply, "SupplySize", L["Text size"], 376, -490, 24, 96, 2,
+		function(value) return ("%d"):format(value) end,
+		function() return S.settings.size end,
+		function(value) S.settings.size = value end)
+	local placeSupply = tip(addButton(supply, "", 200, 0, -530, function()
+		S.SetUnlocked(not S.IsUnlocked())
+		ns.RefreshOptions()
+	end), L["Shows the warning and lets you drag it with the mouse. Click again to lock it."], L["Place"])
+	placeSupply.Refresh = function(self) self:SetText(S.IsUnlocked() and L["Lock position"] or L["Place"]) end
+	placeSupply.supplyPlace = true
+	widgets[#widgets + 1] = placeSupply
+	tip(addButton(supply, L["Test"], 200, 208, -530, function() S.Test() end), L["Shows the switched-on warnings for six seconds, with the sound of the first."])
+	sink = supplySink
 
 	-- Seite "Profile & Austausch" -----------------------------------------------
 	local prof = CreateFrame("Frame", nil, window)
@@ -2123,6 +2231,7 @@ do
 	panelButton(L["Totem bar"], 208, -16, function() ns.ShowOptionsPage("totems") end)
 	panelButton(L["Profiles & sharing"], 0, -46, function() ns.ShowOptionsPage("profiles") end)
 	panelButton(L["Help & diagnostics"], 208, -46, function() ns.ShowOptionsPage("help") end)
+	panelButton(L["Supplies"], 416, -16, function() ns.ShowOptionsPage("supplies") end)
 	local minimapCheck = CreateFrame("CheckButton", nil, panel, "UICheckButtonTemplate")
 	minimapCheck:SetSize(24, 24)
 	minimapCheck:SetPoint("TOPLEFT", text, "BOTTOMLEFT", -2, -84)

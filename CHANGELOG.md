@@ -1,5 +1,20 @@
 # Changelog
 
+## 2.57.0
+- New page "Supplies": a big warning with its own sound when something runs low that you
+  should buy or take from the bank
+  - "Buy water!" from 20 drinks or fewer and "Buy ankh!" from one ankh or fewer (from level 30,
+    when shamans learn Reincarnation), both switched on
+  - Prepared, switched off: healing potions, mana potions, food, bandages, missing totems,
+    missing hearthstone, repair (durability) and almost full bags
+  - Drinks, potions and food count what suits your level, for every level from 1 to 60: vendor
+    and conjured water, quest and event drinks, health and mana foods. Nothing to enter
+  - Only out of combat and never in dungeons, raids, battlegrounds and arenas (both switchable)
+  - Ten new sounds made for ShamanAlerts; each warning can also use any other sound of the
+    addon or of other addons through LibSharedMedia. The new sounds are registered there too
+  - The item's icon from the game stands in front of the text; size and place are adjustable
+  - `/sha supplies` for status, `test`, `move` and `<supply> on|off|<number>`
+
 ## 2.56.2
 - Fainter by distance: without a target the graphic is now invisible, as out of range. Before,
   it was hidden with a far target but came back faintly once the target was gone. When it fades

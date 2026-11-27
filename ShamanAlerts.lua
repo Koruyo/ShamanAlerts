@@ -4100,6 +4100,7 @@ events:SetScript("OnEvent", function(self, event, arg1, _, arg3)
 		end
 		updateEngineSounds()
 		if ns.Totems then ns.Totems.Init(db) end
+		if ns.Supplies then ns.Supplies.Init(db) end
 		-- Ob das Ziel noch lebt und angreifbar ist, meldet kein einzelnes Ereignis
 		-- zuverlässig. Auch das Ende einer Abklingzeit meldet das Spiel nicht.
 		if C_Timer and C_Timer.NewTicker then C_Timer.NewTicker(0.15, updateConditions) end
@@ -4741,6 +4742,7 @@ local function printHelp()
 	print(L["  /sha hotkeys [on|off|bottomright|top|center ...] - show the key of the spell at the graphics; /sha totem hotkeys on for the cooldown icons"])
 	print(L["  /sha reach [on|off] - show all alerts fainter while no target is in attack range (per alert: reachdim)"])
 	print(L["  /sha fade <seconds> - let the graphics fade out after combat or without a target instead of vanishing (0 = off)"])
+	print(L["  /sha supplies [test|move|<supply> on|off|<number>] - warnings when water, ankh and other supplies run low"])
 	print(L["  /sha spec [auto|elemental|enhancement|restoration] - show your specialization or set it by hand"])
 	print(L["  /sha profile - page for profiles and sharing; /sha profile save|load|delete <name>, /sha profile list"])
 	print(L["  /sha export - the settings as text to pass on"])
@@ -4833,6 +4835,7 @@ commands.reset = function(rest)
 		ns.Totems.Reset()
 		if ns.RefreshTotemOptions then ns.RefreshTotemOptions() end
 	end
+	if not only and ns.Supplies then ns.Supplies.Reset() end
 	msg(only and (L["Settings for \""] .. only.def.title .. L["\" reset."]) or L["All settings reset."])
 end
 
