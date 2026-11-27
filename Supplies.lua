@@ -10,7 +10,7 @@
 -- (ab 45), aber nicht mehr Mondbeerensaft (ab 35).
 --
 -- Voreingestellt warnt das Addon nur außerhalb des Kampfes und nie in Dungeons,
--- Schlachtzügen, Schlachtfeldern oder Arenen.
+-- Schlachtzügen, Schlachtfeldern oder Arenen. Beides lässt sich je Vorrat ändern.
 
 local ADDON_NAME, ns = ...
 local L = ns.L
@@ -280,8 +280,6 @@ Supplies.KINDS = {
 for _, kind in ipairs(Supplies.KINDS) do Supplies.KINDS[kind.key] = kind end
 
 local DEFAULTS = {
-	combatHide = true, -- nur außerhalb des Kampfes warnen
-	instanceHide = true, -- nie in Dungeons, Schlachtzügen, Schlachtfeldern und Arenen
 	sound = true,
 	interval = 10, -- Sekunden zwischen zwei Klängen, solange gewarnt wird
 	size = 56,
@@ -306,6 +304,10 @@ local function kindSettings(kind)
 		settings.kinds[kind.key] = stored
 	end
 	if type(stored.enabled) ~= "boolean" then stored.enabled = kind.enabled end
+	-- je Vorrat: nur außerhalb des Kampfes, nie in Dungeons, Schlachtzügen, Schlachtfeldern und Arenen
+	-- (aus 2.57.0 gilt der gemeinsame Schalter weiter, bis er je Vorrat geändert wird)
+	if type(stored.combatHide) ~= "boolean" then stored.combatHide = settings.combatHide ~= false end
+	if type(stored.instanceHide) ~= "boolean" then stored.instanceHide = settings.instanceHide ~= false end
 	if not kind.missing then
 		if type(stored.at) ~= "number" or stored.at < 0 or stored.at > kind.max then stored.at = kind.at end
 	end
@@ -351,15 +353,18 @@ local function inCombat()
 	return false
 end
 
--- Darf gerade gewarnt werden?
-function Supplies.Allowed()
+-- Darf gerade gewarnt werden? Ohne "kind" nur das, was für alle Vorräte gilt.
+function Supplies.Allowed(kind)
 	if not (settings and ready and isShaman()) then return false end
 	if UnitIsDeadOrGhost then
 		local ok, dead = pcall(UnitIsDeadOrGhost, "player")
 		if ok and dead == true then return false end
 	end
-	if settings.combatHide and inCombat() then return false end
-	if settings.instanceHide and inGroupContent() then return false end
+	if kind then
+		local stored = kindSettings(kind)
+		if stored.combatHide and inCombat() then return false end
+		if stored.instanceHide and inGroupContent() then return false end
+	end
 	return true
 end
 
@@ -488,17 +493,17 @@ end
 function Supplies.Update()
 	if not (settings and frame) then return end
 	local now = GetTime and GetTime() or 0
-	local allowed = Supplies.Allowed()
 	local shown, newly = {}, nil
 	warning = {}
 	for _, kind in ipairs(Supplies.KINDS) do
 		local entry = Supplies.Check(kind)
-		if entry.low and allowed then
+		local allowed = entry.low and Supplies.Allowed(kind)
+		if allowed then
 			warning[#warning + 1] = entry
 			shown[#shown + 1] = entry
 			if not wasLow[kind.key] then newly = newly or kind end
 		end
-		wasLow[kind.key] = (entry.low and allowed) or nil
+		wasLow[kind.key] = allowed or nil
 	end
 	local preview = unlocked or (testUntil and now < testUntil)
 	if preview and #shown == 0 then
@@ -593,6 +598,7 @@ function Supplies.Init(db)
 	end
 	if type(settings.kinds) ~= "table" then settings.kinds = {} end
 	for _, kind in ipairs(Supplies.KINDS) do kindSettings(kind) end
+	settings.combatHide, settings.instanceHide = nil, nil -- steht jetzt je Vorrat
 	Supplies.settings = settings
 
 	if not frame then
@@ -692,8 +698,7 @@ end
 
 local function printStatus()
 	local msg = ns.msg or print
-	msg(L["Supplies: warn only out of combat: %s, not in dungeons, raids, battlegrounds and arenas: %s, sound: %s every %d s."],
-		settings.combatHide and L["yes"] or L["no"], settings.instanceHide and L["yes"] or L["no"], settings.sound and L["on"] or L["off"], settings.interval)
+	msg(L["Supplies: sound %s, every %d s."], settings.sound and L["on"] or L["off"], settings.interval)
 	for _, kind in ipairs(Supplies.KINDS) do
 		local entry, stored = Supplies.Check(kind), kindSettings(kind)
 		local state
@@ -707,6 +712,10 @@ local function printStatus()
 			state = L["enough"]
 		end
 		local limit = kind.missing and "" or (kind.percent and (" (" .. L["at most"] .. " " .. stored.at .. " %)") or (" (" .. L["at most"] .. " " .. stored.at .. ")"))
+		local places = {}
+		if stored.combatHide then places[#places + 1] = L["Only out of combat"] end
+		if stored.instanceHide then places[#places + 1] = L["Not in instances"] end
+		if #places > 0 then state = state .. " (" .. table.concat(places, ", ") .. ")" end
 		msg("  %s [%s]%s: %s – %s", kind.text, kind.key, limit, entry.applies and detailText(entry) or "-", state)
 	end
 end
@@ -726,9 +735,14 @@ local function supplyCommand(rest)
 	elseif word == "sound" or word == "combat" or word == "instances" then
 		local flag = onOff(value)
 		if flag == nil then return msg(L["Please enter on or off."]) end
-		if word == "sound" then settings.sound = flag
-		elseif word == "combat" then settings.combatHide = not flag
-		else settings.instanceHide = not flag end
+		if word == "sound" then
+			settings.sound = flag
+		else
+			-- ohne Vorrat: für alle auf einmal
+			for _, kind in ipairs(Supplies.KINDS) do
+				kindSettings(kind)[word == "combat" and "combatHide" or "instanceHide"] = not flag
+			end
+		end
 		Supplies.Update()
 		return printStatus()
 	end
@@ -739,6 +753,14 @@ local function supplyCommand(rest)
 		return msg(L["Unknown supply. Available: %s."], table.concat(keys, ", "))
 	end
 	local stored = kindSettings(kind)
+	local option, optionValue = (value or ""):lower():match("^(%a+)%s+(%S+)$")
+	if option == "combat" or option == "instances" then
+		local flag = onOff(optionValue)
+		if flag == nil then return msg(L["Please enter on or off."]) end
+		stored[option == "combat" and "combatHide" or "instanceHide"] = not flag
+		Supplies.Update()
+		return printStatus()
+	end
 	local flag, number = onOff(value), tonumber((value or ""):gsub(",", "."), 10)
 	if flag ~= nil then
 		stored.enabled = flag

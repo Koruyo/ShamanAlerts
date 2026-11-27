@@ -1759,7 +1759,7 @@ local function createFrame()
 	end
 	for index, kind in ipairs(S and S.KINDS or {}) do
 		local column, row = (index - 1) % 2, math.floor((index - 1) / 2)
-		local x, y = column * 372, -74 - row * 62
+		local x, y = column * 372, -74 - row * 76
 		local function stored() return S.kindSettings(kind) end
 		tip(addCheck(supply, kind.text, x, y,
 			function() return stored().enabled end,
@@ -1787,6 +1787,18 @@ local function createFrame()
 		soundButton.Refresh = function(self) self:SetText(L["Sound"] .. ": " .. soundName(kind)) end
 		soundButton.supplySound = kind.key
 		widgets[#widgets + 1] = soundButton
+		-- je Vorrat: im Kampf und in Dungeons & Co. warnen oder nicht
+		local function kindFlag(text, field, offset, body, title)
+			return tip(addCheck(supply, text, x + 186, y - offset,
+				function() return stored()[field] == true end,
+				function(value)
+					stored()[field] = value
+					S.Update()
+				end), body, title)
+		end
+		kindFlag(L["Only out of combat"], "combatHide", 28, L["In combat the warning waits until the fight is over."])
+		kindFlag(L["Not in instances"], "instanceHide", 50, L["There you can no longer buy anything anyway. Outside, in the open world and in cities, it warns."],
+			L["Not in dungeons, raids, battlegrounds and arenas"])
 		if not kind.missing then
 			local label = kind.percent and L["Warn from durability"] or kind.key == "bags" and L["Warn from free slots"] or L["Warn from"]
 			addSlider(supply, "Supply" .. kind.key, label, x + 4, y - 38, 0, kind.max, kind.step,
@@ -1796,7 +1808,7 @@ local function createFrame()
 		end
 	end
 
-	addHeader(supply, L["Warning"], 0, -396, CONTENT_W)
+	addHeader(supply, L["Warning"], 0, -460, CONTENT_W)
 	local function supplyFlag(text, field, x, y, body, invert)
 		return tip(addCheck(supply, text, x, y,
 			function() return S.settings[field] == true end,
@@ -1805,26 +1817,24 @@ local function createFrame()
 				S.Update()
 			end), body)
 	end
-	supplyFlag(L["Only out of combat"], "combatHide", 0, -418, L["In combat the warning waits until the fight is over."])
-	supplyFlag(L["Not in dungeons, raids, battlegrounds and arenas"], "instanceHide", 0, -442, L["There you can no longer buy anything anyway. Outside, in the open world and in cities, it warns."])
-	supplyFlag(L["Play the sound"], "sound", 372, -418, L["Once as soon as something runs low, then again at the set interval as long as the warning stands."])
-	supplyFlag(L["Show the item's icon"], "icons", 372, -442, L["The icon of the item from the game stands in front of the text."])
-	addSlider(supply, "SupplyInterval", L["Repeat the sound every"], 4, -490, 5, 60, 1,
+	supplyFlag(L["Play the sound"], "sound", 0, -482, L["Once as soon as something runs low, then again at the set interval as long as the warning stands."])
+	supplyFlag(L["Show the item's icon"], "icons", 372, -482, L["The icon of the item from the game stands in front of the text."])
+	addSlider(supply, "SupplyInterval", L["Repeat the sound every"], 4, -530, 5, 60, 1,
 		function(value) return ("%d s"):format(value) end,
 		function() return S.settings.interval end,
 		function(value) S.settings.interval = value end)
-	addSlider(supply, "SupplySize", L["Text size"], 376, -490, 24, 96, 2,
+	addSlider(supply, "SupplySize", L["Text size"], 376, -530, 24, 96, 2,
 		function(value) return ("%d"):format(value) end,
 		function() return S.settings.size end,
 		function(value) S.settings.size = value end)
-	local placeSupply = tip(addButton(supply, "", 200, 0, -530, function()
+	local placeSupply = tip(addButton(supply, "", 200, 0, -570, function()
 		S.SetUnlocked(not S.IsUnlocked())
 		ns.RefreshOptions()
 	end), L["Shows the warning and lets you drag it with the mouse. Click again to lock it."], L["Place"])
 	placeSupply.Refresh = function(self) self:SetText(S.IsUnlocked() and L["Lock position"] or L["Place"]) end
 	placeSupply.supplyPlace = true
 	widgets[#widgets + 1] = placeSupply
-	tip(addButton(supply, L["Test"], 200, 208, -530, function() S.Test() end), L["Shows the switched-on warnings for six seconds, with the sound of the first."])
+	tip(addButton(supply, L["Test"], 200, 208, -570, function() S.Test() end), L["Shows the switched-on warnings for six seconds, with the sound of the first."])
 	sink = supplySink
 
 	-- Seite "Profile & Austausch" -----------------------------------------------

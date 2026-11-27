@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.57.1
+- Supplies: "only out of combat" and "not in dungeons, raids, battlegrounds and arenas" can now
+  be set for every supply on its own, on the page and with
+  `/sha supplies <supply> combat|instances on|off`. The common setting of 2.57.0 is carried
+  over to every supply
+
 ## 2.57.0
 - New page "Supplies": a big warning with its own sound when something runs low that you
   should buy or take from the bank
