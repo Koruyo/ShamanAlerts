@@ -11,7 +11,6 @@ L["  /sha - open or close the options window"] = "  /sha - Optionsfenster öffne
 L["  /sha debug - record 30 seconds of diagnostics (then /reload), /sha debug clear deletes them"] = "  /sha debug - 30 Sekunden Diagnose aufzeichnen (danach /reload), /sha debug clear löscht sie"
 L["  /sha export - the settings as text to pass on"] = "  /sha export - die Einstellungen als Text zum Weitergeben"
 L["  /sha font <auto|font name>, /sha font outline <auto|none|outline|thick>, /sha font timersize <number>"] = "  /sha font <auto|Schriftname>, /sha font outline <auto|none|outline|thick>, /sha font timersize <Zahl>"
-L["  /sha id <alert> <aura ID|reset> - add an aura ID or reset the IDs"] = "  /sha id <Alarm> <Aura-ID|reset> - Aura-ID ergänzen oder zurücksetzen"
 L["  /sha minimap [on|off] - show or hide the minimap button"] = "  /sha minimap [on|off] - Knopf an der Minimap zeigen oder verbergen"
 L["  /sha new [title] - create your own alert; /sha delete <alert> - delete one of your own alerts"] = "  /sha new [Titel] - eigenen Alarm anlegen; /sha delete <Alarm> - eigenen Alarm löschen"
 L["  /sha profile - page for profiles and sharing; /sha profile save|load|delete <name>, /sha profile list"] = "  /sha profile - Seite für Profile und Austausch; /sha profile save|load|delete <Name>, /sha profile list"
@@ -901,3 +900,11 @@ L["Only own supplies can be deleted."] = "Nur eigene Vorräte lassen sich lösch
 L["Own supply \"%s\" deleted."] = "Eigener Vorrat „%s“ gelöscht."
 L["Not found: %s. Enter an ID or a link instead (shift-click the item)."] = "Nicht gefunden: %s. Stattdessen eine ID oder einen Link eintragen (Gegenstand mit Umschalt anklicken)."
 L["  /sha supplies new [text], <supply> items <names, IDs or links>, <supply> text <text>, delete <supply> - your own supplies"] = "  /sha supplies new [Text], <Vorrat> items <Namen, IDs oder Links>, <Vorrat> text <Text>, delete <Vorrat> - eigene Vorräte"
+
+-- 2.60.0: IDs entfernen, Ebenen
+L["%s does not track the ID %s."] = "%s verfolgt die ID %s nicht."
+L["  /sha id <alert> <aura ID|-aura ID|reset> - add an aura ID, remove one (with a minus) or reset the IDs"] = "  /sha id <Alarm> <Aura-ID|-Aura-ID|reset> - Aura-ID ergänzen, mit Minus entfernen oder zurücksetzen"
+L["Click to remove this ID. It is not learned again by itself; enter it above to add it back."] = "Klicken entfernt diese ID. Sie wird nicht von selbst wieder gelernt; oben eintragen, um sie zurückzuholen."
+L["Layer"] = "Ebene"
+L["Alerts on a higher layer are drawn in front of alerts on a lower one. All start on 5."] = "Alarme auf einer höheren Ebene liegen vor denen auf einer niedrigeren. Alle beginnen auf 5."
+L["Higher layers lie in front. If two alerts overlap, raise the one that should stay visible or lower the other."] = "Höhere Ebenen liegen vorne. Überlappen sich zwei Alarme, den sichtbaren höher oder den anderen niedriger stellen."

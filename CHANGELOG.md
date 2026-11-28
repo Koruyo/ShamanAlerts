@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.60.0
+- Spell and aura IDs can be removed one by one: each ID on the "Spell & aura" tab is a button,
+  a click removes just that ID. Removed IDs are not learned again by name; entering one again
+  brings it back. Also `/sha id <alert> -<ID>` (or `remove <ID>`); `reset` still restores all
+- Layers: a "Layer" slider (1-10, all start on 5) on the "Arrangement" tab decides which alert
+  is drawn in front when two overlap. Also `/sha set <alert> layer <1-10>`
 ## 2.59.1
 - Supplies no longer sound when you enter a dungeon in combat: the loading screen ends combat
   before the dungeon counts as one. During a loading screen and for three seconds after it the

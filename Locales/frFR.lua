@@ -299,7 +299,6 @@ L["  /sha set <alert> <field> <value> - e.g. /sha set maelstrom threshold 4"] = 
 L["     Fields: enabled, threshold, size, alpha, texture, color, additive, pulse, icon, combatonly, needusable, needaggro, needplayer, noplayer, needtarget, needrange, needenemies, minenemies, enemyrange, needfiretotem, needcasting, castfirst, needready, lead, refresh, duration, yieldto, behind, placelike, minhealth, maxmana, bossalways, specs, reachdim, totemhint, offhand, mainimbue, offimbue, sound, soundfile, name"] = "     Champs : enabled, threshold, size, alpha, texture, color, additive, pulse, icon, combatonly, needusable, needaggro, needplayer, noplayer, needtarget, needrange, needenemies, minenemies, enemyrange, needfiretotem, needcasting, castfirst, needready, lead, refresh, duration, yieldto, behind, placelike, minhealth, maxmana, bossalways, specs, reachdim, totemhint, offhand, mainimbue, offimbue, sound, soundfile, name"
 L["     Display: display (icon, texture), iconzoom, iconborder, bordercolor, iconspell (spell ID, name, path or auto)"] = "     Affichage : display (icon, texture), iconzoom, iconborder, bordercolor, iconspell (spell ID, name, path or auto)"
 L["     Layout: layout (center, bottom, top, left, right, sides, topbottom, around), count, distance, spread, rotate, angle, flip, perstack, x, y"] = "     Disposition : layout (center, bottom, top, left, right, sides, topbottom, around), count, distance, spread, rotate, angle, flip, perstack, x, y"
-L["  /sha id <alert> <aura ID|reset> - add an aura ID or reset the IDs"] = "  /sha id <alerte> <ID d'aura|reset> - ajouter un ID d'aura ou réinitialiser les IDs"
 L["  /sha new [title] - create your own alert; /sha delete <alert> - delete one of your own alerts"] = "  /sha new [titre] - créer votre propre alerte ; /sha delete <alerte> - supprimer une de vos alertes"
 L["     Custom alerts: title, kind (active, missing, stacks, ready), unit (player, target), auratype (buff, debuff, mine), timer"] = "     Alertes personnalisées : title, kind (active, missing, stacks, ready), unit (player, target), auratype (buff, debuff, mine), timer"
 L["  /sha scan - list your buffs and your debuffs on the target with their IDs"] = "  /sha scan - lister vos buffs et vos debuffs sur la cible avec leurs IDs"
@@ -898,3 +897,11 @@ L["Only own supplies can be deleted."] = "Seules vos propres provisions peuvent 
 L["Own supply \"%s\" deleted."] = "Provision « %s » supprimée."
 L["Not found: %s. Enter an ID or a link instead (shift-click the item)."] = "Introuvable : %s. Indiquez plutôt un ID ou un lien (Maj-clic sur l'objet)."
 L["  /sha supplies new [text], <supply> items <names, IDs or links>, <supply> text <text>, delete <supply> - your own supplies"] = "  /sha supplies new [texte], <provision> items <noms, ID ou liens>, <provision> text <texte>, delete <provision> - vos propres provisions"
+
+-- 2.60.0: IDs entfernen, Ebenen
+L["%s does not track the ID %s."] = "%s ne suit pas l'ID %s."
+L["  /sha id <alert> <aura ID|-aura ID|reset> - add an aura ID, remove one (with a minus) or reset the IDs"] = "  /sha id <alerte> <ID d'aura|-ID d'aura|reset> - ajouter un ID d'aura, en retirer un (avec un moins) ou réinitialiser"
+L["Click to remove this ID. It is not learned again by itself; enter it above to add it back."] = "Cliquez pour retirer cet ID. Il n'est pas réappris tout seul ; saisissez-le ci-dessus pour le remettre."
+L["Layer"] = "Calque"
+L["Alerts on a higher layer are drawn in front of alerts on a lower one. All start on 5."] = "Les alertes d'un calque plus élevé passent devant celles d'un calque plus bas. Toutes commencent à 5."
+L["Higher layers lie in front. If two alerts overlap, raise the one that should stay visible or lower the other."] = "Les calques élevés passent devant. Si deux alertes se chevauchent, montez celle qui doit rester visible ou baissez l'autre."

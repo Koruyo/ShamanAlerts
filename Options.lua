@@ -1142,6 +1142,14 @@ local function createFrame()
 	addText(place, L["While this window is open, a preview stands in the place of the alert. Drag it with the mouse or enter the values here (Enter applies). X and Y move the center around which the copies are arranged."],
 		"GameFontDisableSmall", 0, -290, 620)
 
+	addHeader(place, L["Layer"], 0, -336, CONTENT_W)
+	tip(addSlider(place, "Layer", L["Layer"], 4, -370, 1, 10, 1,
+		function(value) return ("%d"):format(value) end,
+		function() return cur().layer or 5 end,
+		function(value) cur().layer = value end), L["Alerts on a higher layer are drawn in front of alerts on a lower one. All start on 5."])
+	addText(place, L["Higher layers lie in front. If two alerts overlap, raise the one that should stay visible or lower the other."],
+		"GameFontDisableSmall", 224, -368, 400)
+
 	-- Reiter "Bedingungen" ------------------------------------------------------
 	-- Welche Bedingungen es gibt, hängt von der Art des Alarms ab. Beide Spalten
 	-- sind deshalb fließend: Was zu sehen ist, rückt lückenlos untereinander.
@@ -1496,16 +1504,56 @@ local function createFrame()
 	inAuraSection(tip(addButton(aura, L["List auras"], 130, CONTENT_W - 130, -25, function() ns.commands.scan() end),
 		L["Writes your buffs and your debuffs on the target with their IDs into the chat. This only works out of combat."]))
 
-	local ids = addText(aura, "", "GameFontDisableSmall", 0, -58, 620)
+	-- Die IDs als kleine Knöpfe: ein Klick entfernt eine, ohne den Alarm zurückzusetzen.
+	local ids = addText(aura, "", "GameFontDisableSmall", 0, -60, 620)
+	local CHIP_W, CHIP_X, CHIPS_PER_ROW, CHIP_ROWS = 72, 96, 7, 2
+	local chips = {}
+	local function spellName(id)
+		local lookup = (C_Spell and C_Spell.GetSpellName) or GetSpellInfo
+		if not lookup then return nil end
+		local ok, name = pcall(lookup, id)
+		return ok and type(name) == "string" and name or nil
+	end
+	for index = 1, CHIPS_PER_ROW * CHIP_ROWS do
+		local column, row = (index - 1) % CHIPS_PER_ROW, math.floor((index - 1) / CHIPS_PER_ROW)
+		local chip = addButton(aura, "", CHIP_W - 4, CHIP_X + column * CHIP_W, -54 - row * 24, function(self)
+			if not self.spellID then return end
+			ns.commands.id(selected.key .. " -" .. self.spellID)
+			ns.RefreshOptions()
+		end)
+		chip:SetScript("OnEnter", function(self)
+			if not (GameTooltip and self.spellID) then return end
+			GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+			GameTooltip:SetText(spellName(self.spellID) or tostring(self.spellID), 1, 0.82, 0)
+			GameTooltip:AddLine(L["Click to remove this ID. It is not learned again by itself; enter it above to add it back."], 1, 1, 1, true)
+			GameTooltip:Show()
+		end)
+		chip:SetScript("OnLeave", hideTooltip)
+		chip.spellChip = index
+		chips[index] = chip -- sichtbar macht sie ids.Refresh, nicht der Abschnitt
+	end
 	ids.Refresh = function(self)
 		local list = ns.sortedSpellIDs(selected)
-		if selected.def.kind == "ready" then
-			self:SetText(#list == 0 and L["Enter the name of the spell above. It must be in your spellbook."]
-				or (L["Spell IDs: "] .. table.concat(list, ", ")))
+		local shown = 0
+		if selected.def.kind == "ready" and #list == 0 then
+			self:SetText(L["Enter the name of the spell above. It must be in your spellbook."])
 		elseif #list == 0 then
 			self:SetText(L["No aura ID known yet. The alert only appears once you have had the aura out of combat or enter an ID."])
 		else
-			self:SetText(L["Tracked IDs: "] .. table.concat(list, ", "))
+			self:SetText(selected.def.kind == "ready" and L["Spell IDs: "] or L["Tracked IDs: "])
+			shown = math.min(#list, #chips)
+		end
+		local weapon = selected.def.kind == "weapon"
+		for index, chip in ipairs(chips) do
+			local id = index <= shown and list[index] or nil
+			if id and index == #chips and #list > #chips then
+				chip.spellID = nil
+				chip:SetText("+" .. (#list - #chips + 1))
+			else
+				chip.spellID = id
+				chip:SetText(id and (id .. " x") or "")
+			end
+			chip:SetShown(id ~= nil and not weapon)
 		end
 	end
 	widgets[#widgets + 1] = ids

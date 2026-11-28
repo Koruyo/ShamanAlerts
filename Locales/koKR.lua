@@ -302,7 +302,6 @@ L["  /sha - open or close the options window"] = "  /sha - 설정 창 열기 또
 L["  /sha test [alert] - preview for 3 seconds, with the sound"] = "  /sha test [알림] - 3초 동안 소리와 함께 미리보기"
 L["  /sha set <alert> <field> <value> - e.g. /sha set maelstrom threshold 4"] = "  /sha set <알림> <필드> <값> - 예: /sha set maelstrom threshold 4"
 L["     Display: display (icon, texture), iconzoom, iconborder, bordercolor, iconspell (spell ID, name, path or auto)"] = "     Display: display (icon, texture), iconzoom, iconborder, bordercolor, iconspell (주문 ID, 이름, 경로 또는 auto)"
-L["  /sha id <alert> <aura ID|reset> - add an aura ID or reset the IDs"] = "  /sha id <알림> <효과 ID|reset> - 효과 ID 추가 또는 ID 초기화"
 L["  /sha new [title] - create your own alert; /sha delete <alert> - delete one of your own alerts"] = "  /sha new [제목] - 직접 알림 만들기, /sha delete <알림> - 직접 만든 알림 삭제"
 L["  /sha scan - list your buffs and your debuffs on the target with their IDs"] = "  /sha scan - 강화 효과와 대상의 약화 효과를 ID와 함께 나열"
 L["  /sha minimap [on|off] - show or hide the minimap button"] = "  /sha minimap [on|off] - 미니맵 버튼 표시 또는 숨기기"
@@ -912,3 +911,11 @@ L["Only own supplies can be deleted."] = "직접 만든 보급품만 삭제할 �
 L["Own supply \"%s\" deleted."] = "보급품 '%s' 삭제됨."
 L["Not found: %s. Enter an ID or a link instead (shift-click the item)."] = "찾을 수 없음: %s. 대신 ID나 링크를 입력하세요 (아이템 Shift-클릭)."
 L["  /sha supplies new [text], <supply> items <names, IDs or links>, <supply> text <text>, delete <supply> - your own supplies"] = "  /sha supplies new [문구], <보급품> items <이름, ID 또는 링크>, <보급품> text <문구>, delete <보급품> - 직접 만든 보급품"
+
+-- 2.60.0: IDs entfernen, Ebenen
+L["%s does not track the ID %s."] = "%s은(는) ID %s을(를) 추적하지 않습니다."
+L["  /sha id <alert> <aura ID|-aura ID|reset> - add an aura ID, remove one (with a minus) or reset the IDs"] = "  /sha id <경고> <오라 ID|-오라 ID|reset> - 오라 ID 추가, 빼기(마이너스) 또는 초기화"
+L["Click to remove this ID. It is not learned again by itself; enter it above to add it back."] = "클릭하면 이 ID를 뺍니다. 저절로 다시 배우지 않으니, 되돌리려면 위에 입력하세요."
+L["Layer"] = "레이어"
+L["Alerts on a higher layer are drawn in front of alerts on a lower one. All start on 5."] = "높은 레이어의 경고가 낮은 레이어의 경고보다 앞에 그려집니다. 모두 5에서 시작합니다."
+L["Higher layers lie in front. If two alerts overlap, raise the one that should stay visible or lower the other."] = "높은 레이어가 앞에 놓입니다. 두 경고가 겹치면 보일 쪽을 올리거나 다른 쪽을 내리세요."

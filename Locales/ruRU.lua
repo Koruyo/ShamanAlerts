@@ -300,7 +300,6 @@ L["  /sha - open or close the options window"] = "  /sha - открыть или
 L["  /sha test [alert] - preview for 3 seconds, with the sound"] = "  /sha test [оповещение] - предпросмотр на 3 секунды, со звуком"
 L["  /sha set <alert> <field> <value> - e.g. /sha set maelstrom threshold 4"] = "  /sha set <оповещение> <поле> <значение> - напр. /sha set maelstrom threshold 4"
 L["     Display: display (icon, texture), iconzoom, iconborder, bordercolor, iconspell (spell ID, name, path or auto)"] = "     Display: display (icon, texture), iconzoom, iconborder, bordercolor, iconspell (ID заклинания, название, путь или auto)"
-L["  /sha id <alert> <aura ID|reset> - add an aura ID or reset the IDs"] = "  /sha id <оповещение> <ID ауры|reset> - добавить ID ауры или сбросить ID"
 L["  /sha new [title] - create your own alert; /sha delete <alert> - delete one of your own alerts"] = "  /sha new [название] - создать собственное оповещение; /sha delete <оповещение> - удалить собственное оповещение"
 L["  /sha scan - list your buffs and your debuffs on the target with their IDs"] = "  /sha scan - список ваших баффов и ваших дебаффов на цели с их ID"
 L["  /sha minimap [on|off] - show or hide the minimap button"] = "  /sha minimap [on|off] - показать или скрыть кнопку у миникарты"
@@ -911,3 +910,11 @@ L["Only own supplies can be deleted."] = "Удалять можно только
 L["Own supply \"%s\" deleted."] = "Припас «%s» удалён."
 L["Not found: %s. Enter an ID or a link instead (shift-click the item)."] = "Не найдено: %s. Укажите ID или ссылку (Shift-щелчок по предмету)."
 L["  /sha supplies new [text], <supply> items <names, IDs or links>, <supply> text <text>, delete <supply> - your own supplies"] = "  /sha supplies new [текст], <припас> items <названия, ID или ссылки>, <припас> text <текст>, delete <припас> - собственные припасы"
+
+-- 2.60.0: IDs entfernen, Ebenen
+L["%s does not track the ID %s."] = "%s не отслеживает ID %s."
+L["  /sha id <alert> <aura ID|-aura ID|reset> - add an aura ID, remove one (with a minus) or reset the IDs"] = "  /sha id <оповещение> <ID ауры|-ID ауры|reset> - добавить ID ауры, удалить (со знаком минус) или сбросить"
+L["Click to remove this ID. It is not learned again by itself; enter it above to add it back."] = "Щёлкните, чтобы удалить этот ID. Сам он больше не запомнится; введите его выше, чтобы вернуть."
+L["Layer"] = "Слой"
+L["Alerts on a higher layer are drawn in front of alerts on a lower one. All start on 5."] = "Оповещения на более высоком слое рисуются поверх более низких. Все начинают с 5."
+L["Higher layers lie in front. If two alerts overlap, raise the one that should stay visible or lower the other."] = "Высокие слои лежат спереди. Если два оповещения перекрываются, поднимите нужное или опустите другое."

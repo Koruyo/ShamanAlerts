@@ -297,7 +297,6 @@ L["  /sha - open or close the options window"] = "  /sha - apre o chiude la fine
 L["  /sha test [alert] - preview for 3 seconds, with the sound"] = "  /sha test [avviso] - anteprima di 3 secondi, con il suono"
 L["  /sha set <alert> <field> <value> - e.g. /sha set maelstrom threshold 4"] = "  /sha set <avviso> <campo> <valore> - es. /sha set maelstrom threshold 4"
 L["     Display: display (icon, texture), iconzoom, iconborder, bordercolor, iconspell (spell ID, name, path or auto)"] = "     Display: display (icon, texture), iconzoom, iconborder, bordercolor, iconspell (ID magia, nome, percorso o auto)"
-L["  /sha id <alert> <aura ID|reset> - add an aura ID or reset the IDs"] = "  /sha id <avviso> <ID aura|reset> - aggiunge un ID aura o reimposta gli ID"
 L["  /sha new [title] - create your own alert; /sha delete <alert> - delete one of your own alerts"] = "  /sha new [titolo] - crea un tuo avviso; /sha delete <avviso> - elimina uno dei tuoi avvisi"
 L["  /sha scan - list your buffs and your debuffs on the target with their IDs"] = "  /sha scan - elenca i tuoi buff e i tuoi debuff sul bersaglio con i relativi ID"
 L["  /sha minimap [on|off] - show or hide the minimap button"] = "  /sha minimap [on|off] - mostra o nasconde il pulsante della minimappa"
@@ -901,3 +900,11 @@ L["Only own supplies can be deleted."] = "Si possono eliminare solo le provviste
 L["Own supply \"%s\" deleted."] = "Provvista «%s» eliminata."
 L["Not found: %s. Enter an ID or a link instead (shift-click the item)."] = "Non trovato: %s. Inserisci invece un ID o un link (Maiusc-clic sull'oggetto)."
 L["  /sha supplies new [text], <supply> items <names, IDs or links>, <supply> text <text>, delete <supply> - your own supplies"] = "  /sha supplies new [testo], <provvista> items <nomi, ID o link>, <provvista> text <testo>, delete <provvista> - provviste proprie"
+
+-- 2.60.0: IDs entfernen, Ebenen
+L["%s does not track the ID %s."] = "%s non segue l'ID %s."
+L["  /sha id <alert> <aura ID|-aura ID|reset> - add an aura ID, remove one (with a minus) or reset the IDs"] = "  /sha id <avviso> <ID aura|-ID aura|reset> - aggiungi un ID aura, rimuovine uno (con il meno) o reimposta"
+L["Click to remove this ID. It is not learned again by itself; enter it above to add it back."] = "Clicca per rimuovere questo ID. Non viene riappreso da solo; inseriscilo sopra per riaggiungerlo."
+L["Layer"] = "Livello"
+L["Alerts on a higher layer are drawn in front of alerts on a lower one. All start on 5."] = "Gli avvisi su un livello più alto stanno davanti a quelli su un livello più basso. Tutti partono da 5."
+L["Higher layers lie in front. If two alerts overlap, raise the one that should stay visible or lower the other."] = "I livelli alti stanno davanti. Se due avvisi si sovrappongono, alza quello da vedere o abbassa l'altro."

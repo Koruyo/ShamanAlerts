@@ -1164,6 +1164,8 @@ local CUSTOM_DEFAULTS = {
 	timer = true, -- Restzeit unter der Grafik (nur bei "ist aktiv")
 	auraName = "",
 	spellIDs = {},
+	blockedIDs = {}, -- von Hand entfernte IDs: werden nicht wieder gelernt
+	layer = 5, -- Ebene: höher liegt vor niedrigeren Alarmen
 }
 
 local CUSTOM_KINDS = { "active", "missing", "stacks", "ready" }
@@ -1423,7 +1425,7 @@ local function learnSpellIDs()
 		-- Bei "Zauber bereit" zählt nur das Zauberbuch, keine Aura mit gleichem Namen.
 		if next(names) and alert.def.kind ~= "ready" then
 			forEachReadableAura(alert.def.unit, alert.def.filter, function(name, spellID, _, duration)
-				if names[name] and not alert.s.spellIDs[spellID] then
+				if names[name] and not alert.s.spellIDs[spellID] and not alert.s.blockedIDs[spellID] then
 					alert.s.spellIDs[spellID] = true
 					learned = spellID
 				end
@@ -1445,7 +1447,7 @@ local function learnSpellIDs()
 			for name in pairs(names) do
 				local ok, info = pcall(C_Spell.GetSpellInfo, name)
 				local spellID = ok and type(info) == "table" and info.spellID
-				if type(spellID) == "number" and not isSecret(spellID) and not alert.s.spellIDs[spellID] then
+				if type(spellID) == "number" and not isSecret(spellID) and not alert.s.spellIDs[spellID] and not alert.s.blockedIDs[spellID] then
 					alert.s.spellIDs[spellID] = true
 					learned = spellID
 				end
@@ -3777,6 +3779,37 @@ local function rebuildDependents(alert)
 	state.rebuildingDependents = false
 end
 
+-- Ebenen: Jede Stufe hebt alle Frames eines Alarms, die direkt an UIParent
+-- hängen, um ein paar Frame-Level an. Ihre Kinder rücken mit.
+local LAYER_STEP = 6
+local function layerLevel(alert)
+	local layer = tonumber(alert.s.layer) or 5
+	return math.max(1, math.min(10, math.floor(layer + 0.5))) * LAYER_STEP
+end
+ns.layerLevel = layerLevel
+
+local function applyLayer(alert)
+	local current = alert.current
+	if not current then return end
+	local level, seen = layerLevel(alert), {}
+	local function visit(value, depth)
+		if type(value) ~= "table" or seen[value] then return end
+		seen[value] = true
+		if value.SetFrameLevel and value.GetParent then
+			local ok, parent = pcall(value.GetParent, value)
+			if ok and parent == UIParent then pcall(value.SetFrameLevel, value, level) end
+			return
+		end
+		if depth < 2 then
+			for _, inner in pairs(value) do visit(inner, depth + 1) end
+		end
+	end
+	for key, value in pairs(current) do
+		if key ~= "partner" then visit(value, 0) end
+	end
+end
+ns.applyLayer = applyLayer
+
 function Build(alert)
 	sharePlacement(alert)
 	if inCombat() then
@@ -3809,6 +3842,7 @@ function Build(alert)
 		disableCurrent(alert)
 		return false
 	end
+	applyLayer(alert)
 	updateConditions()
 	rebuildDependents(alert)
 	return true
@@ -3971,6 +4005,8 @@ local function initSettings(def, stored)
 	if type(settings.iconBorderColor) ~= "table" or #settings.iconBorderColor < 3 then settings.iconBorderColor = copyTable(def.defaults.iconBorderColor) end
 	if settings.display ~= "icon" and settings.display ~= "texture" then settings.display = def.defaults.display end
 	if next(settings.spellIDs) == nil then settings.spellIDs = copyTable(def.defaults.spellIDs) end
+	if type(settings.blockedIDs) ~= "table" then settings.blockedIDs = {} end
+	if type(settings.layer) ~= "number" then settings.layer = 5 end
 	if def.custom then settings.sound = settings.sound or "off" end
 	return settings
 end
@@ -4225,6 +4261,7 @@ local FIELDS = {
 	x = numberField("x", -4000, 4000, true),
 	y = numberField("y", -4000, 4000, true),
 	alpha = numberField("alpha", 0.05, 1, false),
+	layer = numberField("layer", 1, 10, true),
 	pulse = booleanField("pulse"),
 	additive = booleanField("additive"),
 	icon = booleanField("icon"),
@@ -4734,7 +4771,7 @@ local function printHelp()
 	print(L["     Fields: enabled, threshold, size, alpha, texture, color, additive, pulse, icon, combatonly, needusable, needaggro, needplayer, noplayer, needtarget, needrange, needenemies, minenemies, enemyrange, needfiretotem, needcasting, castfirst, needready, lead, refresh, duration, yieldto, behind, placelike, minhealth, maxmana, bossalways, specs, reachdim, totemhint, offhand, mainimbue, offimbue, sound, soundfile, name"])
 	print(L["     Display: display (icon, texture), iconzoom, iconborder, bordercolor, iconspell (spell ID, name, path or auto)"])
 	print(L["     Layout: layout (center, bottom, top, left, right, sides, topbottom, around), count, distance, spread, rotate, angle, flip, perstack, x, y"])
-	print(L["  /sha id <alert> <aura ID|reset> - add an aura ID or reset the IDs"])
+	print(L["  /sha id <alert> <aura ID|-aura ID|reset> - add an aura ID, remove one (with a minus) or reset the IDs"])
 	print(L["  /sha new [title] - create your own alert; /sha delete <alert> - delete one of your own alerts"])
 	print(L["     Custom alerts: title, kind (active, missing, stacks, ready), unit (player, target), auratype (buff, debuff, mine), timer"])
 	print(L["  /sha scan - list your buffs and your debuffs on the target with their IDs"])
@@ -4773,16 +4810,34 @@ commands.set = function(rest)
 	end
 end
 
+-- Entfernt eine ID und merkt sie sich, damit sie nicht gleich wieder gelernt wird.
+function ns.removeSpellID(alert, id)
+	if not alert.s.spellIDs[id] then return false end
+	alert.s.spellIDs[id] = nil
+	alert.s.blockedIDs[id] = true
+	return true
+end
+
 commands.id = function(rest)
-	local alertText, value = rest:match("^(%S+)%s+(%S+)$")
+	local alertText, value = (rest or ""):match("^(%S+)%s+(.-)%s*$")
 	local alert = findAlert(alertText)
-	if not alert then return msg(L["Example: /sha id flameshock 8050. Alerts: %s."], alertKeys()) end
+	if not alert or not value or value == "" then return msg(L["Example: /sha id flameshock 8050. Alerts: %s."], alertKeys()) end
+	local word, removeText = value:match("^(%S+)%s+(%S+)$")
+	if word and (word:lower() == "remove" or word:lower() == "del") then value = "-" .. removeText end
 	if value:lower() == "reset" then
 		alert.s.spellIDs = copyTable(alert.def.defaults.spellIDs)
+		alert.s.blockedIDs = {}
+	elseif value:sub(1, 1) == "-" then
+		local id = tonumber(value:sub(2))
+		if not id or not ns.removeSpellID(alert, math.floor(id)) then
+			return msg(L["%s does not track the ID %s."], alert.def.title, value:sub(2))
+		end
 	else
 		local id = tonumber(value)
 		if not id or id < 1 then return msg(L["Please enter an aura ID or reset."]) end
-		alert.s.spellIDs[math.floor(id)] = true
+		id = math.floor(id)
+		alert.s.spellIDs[id] = true
+		alert.s.blockedIDs[id] = nil
 	end
 	afterChange(alert)
 	msg(L["%s: aura IDs %s."], alert.def.title, table.concat(sortedSpellIDs(alert), ", "))
@@ -5032,11 +5087,11 @@ local function cleanSettings(def, source)
 		local wanted = source[key]
 		if wanted == nil then
 			-- fehlt: Voreinstellung
-		elseif key == "spellIDs" then
+		elseif key == "spellIDs" or key == "blockedIDs" then
 			if type(wanted) == "table" then
-				result.spellIDs = {}
+				result[key] = {}
 				for id, on in pairs(wanted) do
-					if type(id) == "number" and on == true then result.spellIDs[id] = true end
+					if type(id) == "number" and on == true then result[key][id] = true end
 				end
 			end
 		elseif key == "color" or key == "iconBorderColor" then
