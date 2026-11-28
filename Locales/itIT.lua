@@ -930,3 +930,19 @@ L["Only in instances"] = "Solo nelle istanze"
 L["Only in dungeons, raids, battlegrounds and arenas"] = "Solo in spedizioni, incursioni, campi di battaglia e arene"
 L["Warns only in dungeons, raids, battlegrounds and arenas, for example about a missing weapon stone."] = "Avvisa solo in spedizioni, incursioni, campi di battaglia e arene, ad esempio di una pietra per armi mancante."
 L["Warns in dungeons, raids and battlegrounds while a weapon carries no sharpening stone, weightstone or oil. Your shaman enchant does not count."] = "Avvisa in spedizioni, incursioni e campi di battaglia finché un'arma non ha pietra per affilare, pietra di bilanciamento od olio. Il tuo incantamento da sciamano non conta."
+
+-- 2.64.0: Außer Totem-Reichweite
+L["Out of totem range"] = "Fuori portata dei totem"
+L["Totem range"] = "Portata dei totem"
+L["Broken ring"] = "Anello spezzato"
+L["Torn thread"] = "Filo spezzato"
+L["Fading totem"] = "Totem che svanisce"
+L["Shows in combat when you have walked out of range of your own totems: a totem that gives a buff is standing, but its buff is gone. Totems without a buff (Searing, Tremor, Windfury ...) do not count."] = "Appare in combattimento quando sei uscito dalla portata dei tuoi totem: c'è un totem che dà un beneficio, ma il beneficio è sparito. I totem senza beneficio (Rovente, Tremore, Furia del Vento ...) non contano."
+
+-- 2.64.0: Reinigung
+L["Purge: buff on the target"] = "Epurazione: beneficio sul bersaglio"
+L["Purge"] = "Epurazione"
+L["Shattered shield"] = "Scudo infranto"
+L["Lightning hand"] = "Mano di fulmine"
+L["The game itself shows every buff on the target that you can purge. This alert needs no aura ID."] = "Il gioco stesso mostra ogni beneficio sul bersaglio che puoi epurare. Questo avviso non ha bisogno di ID di aura."
+L["Shows while your target carries a buff that you can remove with Purge, for example a magic shield or a heal over time. The game decides which buffs count, in combat too."] = "Appare finché il tuo bersaglio ha un beneficio che puoi rimuovere con Epurazione, ad esempio uno scudo magico o una cura nel tempo. Il gioco decide quali benefici contano, anche in combattimento."

@@ -934,3 +934,19 @@ L["Only in instances"] = "Solo en instancias"
 L["Only in dungeons, raids, battlegrounds and arenas"] = "Solo en mazmorras, bandas, campos de batalla y arenas"
 L["Warns only in dungeons, raids, battlegrounds and arenas, for example about a missing weapon stone."] = "Solo avisa en mazmorras, bandas, campos de batalla y arenas, por ejemplo de una piedra de afilar que falta."
 L["Warns in dungeons, raids and battlegrounds while a weapon carries no sharpening stone, weightstone or oil. Your shaman enchant does not count."] = "Avisa en mazmorras, bandas y campos de batalla mientras un arma no lleve piedra de afilar, piedra de peso ni aceite. Tu encantamiento de chamán no cuenta."
+
+-- 2.64.0: Außer Totem-Reichweite
+L["Out of totem range"] = "Fuera del alcance de los tótems"
+L["Totem range"] = "Alcance de los tótems"
+L["Broken ring"] = "Anillo roto"
+L["Torn thread"] = "Hilo roto"
+L["Fading totem"] = "Tótem que se desvanece"
+L["Shows in combat when you have walked out of range of your own totems: a totem that gives a buff is standing, but its buff is gone. Totems without a buff (Searing, Tremor, Windfury ...) do not count."] = "Aparece en combate cuando te has alejado del alcance de tus propios tótems: hay un tótem que da un beneficio, pero su beneficio ha desaparecido. Los tótems sin beneficio (Abrasador, Tremor, Viento Furioso ...) no cuentan."
+
+-- 2.64.0: Reinigung
+L["Purge: buff on the target"] = "Purgar: beneficio en el objetivo"
+L["Purge"] = "Purgar"
+L["Shattered shield"] = "Escudo destrozado"
+L["Lightning hand"] = "Mano de rayo"
+L["The game itself shows every buff on the target that you can purge. This alert needs no aura ID."] = "El propio juego muestra cada beneficio del objetivo que puedes purgar. Esta alerta no necesita ningún ID de aura."
+L["Shows while your target carries a buff that you can remove with Purge, for example a magic shield or a heal over time. The game decides which buffs count, in combat too."] = "Aparece mientras tu objetivo lleve un beneficio que puedas quitar con Purgar, por ejemplo un escudo mágico o una sanación en el tiempo. El juego decide qué beneficios cuentan, también en combate."

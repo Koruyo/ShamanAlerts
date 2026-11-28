@@ -497,6 +497,68 @@ end
 
 -- Steht auf dem Platz gerade ein Totem (1 = Feuer)? nil heißt: Das verrät das
 -- Spiel nicht.
+-- Totems, die einen sichtbaren Buff geben. Geht man außer Reichweite, verschwindet
+-- der Buff; daran erkennt der Alarm "Außer Totem-Reichweite", dass man zu weit weg
+-- ist. Je Element der erste Rang; die übrigen Ränge heißen gleich.
+local TOTEM_SPELLS = {
+	{ 3599, 1535, 8190, 8181, 8227 }, -- Feuer: Verbrennen, Feuernova, Magma, Frostwiderstand, Flammenzunge
+	{ 8071, 2484, 8075, 5730, 8143 }, -- Erde: Steinhaut, Erdbindung, Stärke der Erde, Steinklaue, Erzittern
+	{ 5394, 5675, 8166, 8170, 8184, 16190 }, -- Wasser: Heilender Fluss, Manaquelle, Gift, Krankheit, Feuerwiderstand, Manaflut
+	{ 8177, 8512, 10595, 15107, 8835, 6495, 25908 }, -- Luft: Erdung, Windzorn, Naturwiderstand, Windmauer, Anmut der Luft, Wachposten, Beruhigende Winde
+}
+local BUFF_TOTEMS = { [8181] = true, [8071] = true, [8075] = true, [5394] = true, [5675] = true, [8184] = true, [10595] = true, [15107] = true, [8835] = true, [25908] = true }
+Totems.BUFF_GRACE = 3 -- Sekunden nach dem Setzen, bis der Buff sicher da ist
+local totemByName -- Name in der Sprache des Spiels -> { element, buff }
+local placed = {} -- je Element: { buff = true/false, at = Zeit } des zuletzt gesetzten Totems
+
+local function totemNames()
+	if totemByName then return totemByName end
+	local lookup = C_Spell and C_Spell.GetSpellName
+	if not lookup then return {} end
+	local names, found = {}, false
+	for element, ids in ipairs(TOTEM_SPELLS) do
+		for _, id in ipairs(ids) do
+			local ok, name = pcall(lookup, id)
+			if ok and type(name) == "string" and not isSecret(name) and name ~= "" then
+				names[name] = { element = element, buff = BUFF_TOTEMS[id] == true }
+				found = true
+			end
+		end
+	end
+	if found then totemByName = names end
+	return names
+end
+
+-- Ein Zauber des Schamanen: War es ein Totem, merkt sich die Leiste, ob es einen Buff gibt.
+function Totems.NoteCast(spellID)
+	if isSecret(spellID) or type(spellID) ~= "number" then return false end
+	local lookup = C_Spell and C_Spell.GetSpellName
+	if not lookup then return false end
+	local ok, name = pcall(lookup, spellID)
+	if not ok or isSecret(name) or type(name) ~= "string" then return false end
+	local totem = totemNames()[name]
+	if not totem then return false end
+	placed[totem.element] = { buff = totem.buff, at = GetTime and GetTime() or 0 }
+	return true
+end
+
+-- Steht gerade ein eigenes Totem, das einen Buff gibt, und ist es lange genug
+-- da, dass der Buff angekommen sein müsste? true/false.
+function Totems.BuffTotemStanding()
+	local now = GetTime and GetTime() or 0
+	for element = 1, 4 do
+		local entry = placed[element]
+		if entry then
+			if Totems.IsActive(element) == false then
+				placed[element] = nil
+			elseif entry.buff and now - entry.at >= Totems.BUFF_GRACE then
+				return true
+			end
+		end
+	end
+	return false
+end
+
 function Totems.IsActive(index)
 	if GetTotemDuration then
 		local ok, object = pcall(GetTotemDuration, index)
@@ -600,7 +662,16 @@ function Totems.Init(db)
 		frame:RegisterEvent("PLAYER_ENTERING_WORLD")
 		frame:RegisterEvent("SPELLS_CHANGED")
 		frame:RegisterEvent("SPELL_UPDATE_COOLDOWN")
-		frame:SetScript("OnEvent", function(_, event)
+		if frame.RegisterUnitEvent then pcall(frame.RegisterUnitEvent, frame, "UNIT_SPELLCAST_SUCCEEDED", "player") end
+		frame:SetScript("OnEvent", function(_, event, unit, _, spellID)
+			if event == "UNIT_SPELLCAST_SUCCEEDED" then
+				-- Ein gesetztes Totem: nach der Wartezeit den Reichweiten-Alarm neu prüfen
+				if unit == "player" and Totems.NoteCast(spellID) and C_Timer and C_Timer.After and ns.updateConditions then
+					C_Timer.After(Totems.BUFF_GRACE + 0.1, ns.updateConditions)
+				end
+				return
+			end
+			if event == "PLAYER_TOTEM_UPDATE" and ns.updateConditions then pcall(ns.updateConditions) end
 			if event == "SPELL_UPDATE_COOLDOWN" then
 				Totems.UpdateCooldowns()
 			elseif event == "SPELLS_CHANGED" then

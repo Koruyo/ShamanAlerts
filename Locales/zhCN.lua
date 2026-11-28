@@ -940,3 +940,19 @@ L["Only in instances"] = "仅在副本中"
 L["Only in dungeons, raids, battlegrounds and arenas"] = "仅在地下城、团队副本、战场和竞技场中"
 L["Warns only in dungeons, raids, battlegrounds and arenas, for example about a missing weapon stone."] = "仅在地下城、团队副本、战场和竞技场中提醒，例如缺少磨刀石时。"
 L["Warns in dungeons, raids and battlegrounds while a weapon carries no sharpening stone, weightstone or oil. Your shaman enchant does not count."] = "在地下城、团队副本和战场中，武器上没有磨刀石、平衡石或油时提醒。萨满的武器强化不算在内。"
+
+-- 2.64.0: Außer Totem-Reichweite
+L["Out of totem range"] = "超出图腾范围"
+L["Totem range"] = "图腾范围"
+L["Broken ring"] = "破碎之环"
+L["Torn thread"] = "断裂之线"
+L["Fading totem"] = "消逝的图腾"
+L["Shows in combat when you have walked out of range of your own totems: a totem that gives a buff is standing, but its buff is gone. Totems without a buff (Searing, Tremor, Windfury ...) do not count."] = "战斗中离开自己图腾的范围时显示：一个提供增益的图腾还在，但增益已消失。没有增益的图腾（灼热、战栗、风怒 ...）不计算在内。"
+
+-- 2.64.0: Reinigung
+L["Purge: buff on the target"] = "净化术：目标身上的增益"
+L["Purge"] = "净化术"
+L["Shattered shield"] = "破碎护盾"
+L["Lightning hand"] = "闪电之手"
+L["The game itself shows every buff on the target that you can purge. This alert needs no aura ID."] = "游戏会自行显示目标身上每个你能净化的增益。此警报不需要光环 ID。"
+L["Shows while your target carries a buff that you can remove with Purge, for example a magic shield or a heal over time. The game decides which buffs count, in combat too."] = "目标身上有可被净化术移除的增益时显示，例如魔法护盾或持续治疗。哪些增益算在内由游戏决定，战斗中也一样。"

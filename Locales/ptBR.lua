@@ -932,3 +932,19 @@ L["Only in instances"] = "Só em instâncias"
 L["Only in dungeons, raids, battlegrounds and arenas"] = "Só em masmorras, raides, campos de batalha e arenas"
 L["Warns only in dungeons, raids, battlegrounds and arenas, for example about a missing weapon stone."] = "Avisa só em masmorras, raides, campos de batalha e arenas, por exemplo sobre uma pedra de amolar em falta."
 L["Warns in dungeons, raids and battlegrounds while a weapon carries no sharpening stone, weightstone or oil. Your shaman enchant does not count."] = "Avisa em masmorras, raides e campos de batalha enquanto uma arma não tiver pedra de amolar, pedra de peso ou óleo. Seu encantamento de xamã não conta."
+
+-- 2.64.0: Außer Totem-Reichweite
+L["Out of totem range"] = "Fora do alcance dos totens"
+L["Totem range"] = "Alcance dos totens"
+L["Broken ring"] = "Anel partido"
+L["Torn thread"] = "Fio rompido"
+L["Fading totem"] = "Totem esmaecendo"
+L["Shows in combat when you have walked out of range of your own totems: a totem that gives a buff is standing, but its buff is gone. Totems without a buff (Searing, Tremor, Windfury ...) do not count."] = "Aparece em combate quando você saiu do alcance dos seus próprios totens: um totem que dá um bônus está de pé, mas o bônus sumiu. Totens sem bônus (Calcinante, Tremor, Fúria dos Ventos ...) não contam."
+
+-- 2.64.0: Reinigung
+L["Purge: buff on the target"] = "Expurgar: bônus no alvo"
+L["Purge"] = "Expurgar"
+L["Shattered shield"] = "Escudo despedaçado"
+L["Lightning hand"] = "Mão de relâmpago"
+L["The game itself shows every buff on the target that you can purge. This alert needs no aura ID."] = "O próprio jogo mostra cada bônus no alvo que você pode expurgar. Este alerta não precisa de ID de aura."
+L["Shows while your target carries a buff that you can remove with Purge, for example a magic shield or a heal over time. The game decides which buffs count, in combat too."] = "Aparece enquanto seu alvo tiver um bônus que você pode remover com Expurgar, por exemplo um escudo mágico ou uma cura ao longo do tempo. O jogo decide quais bônus contam, também em combate."

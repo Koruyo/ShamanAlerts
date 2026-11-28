@@ -15,7 +15,7 @@ local L = ns.L
 local FRAME_NAME = "ShamanAlertsOptionsFrame"
 local WIDTH, HEIGHT = 1000, 720
 local SIDE_X, SIDE_W = 14, 200 -- Liste links
-local ROW_H, MAX_ROWS = 20, 25
+local ROW_H, MAX_ROWS = 18, 28
 local LIST_TOP = -36
 local CONTENT_X = SIDE_X + SIDE_W + 20 -- Seite rechts
 local CONTENT_W = WIDTH - CONTENT_X - 20
@@ -542,6 +542,8 @@ local DESCRIPTIONS = {
 	watershield = L["Warns in combat while Water Shield is missing, even if another shield is active. By default only for Restoration."],
 	riptide = L["Appears as soon as Riptide is ready. Switched off by default."],
 	flametongue = L["Warns while your main hand does not carry Flametongue Weapon. By default only for Restoration."],
+	purge = L["Shows while your target carries a buff that you can remove with Purge, for example a magic shield or a heal over time. The game decides which buffs count, in combat too."],
+	totemrange = L["Shows in combat when you have walked out of range of your own totems: a totem that gives a buff is standing, but its buff is gone. Totems without a buff (Searing, Tremor, Windfury ...) do not count."],
 	bloodfury = L["Appears as soon as Blood Fury (orc) is ready."],
 	berserking = L["Appears as soon as Berserking (troll) is ready."],
 }
@@ -1674,8 +1676,10 @@ local function createFrame()
 	end
 	local auraToggle = {}
 	auraToggle.Refresh = function()
-		local usesAura = selected.def.kind ~= "weapon"
+		local usesAura = selected.def.kind ~= "weapon" and not selected.def.anyAura
 		for _, region in ipairs(auraSection) do region:SetShown(usesAura) end
+		auraNote:SetText(selected.def.anyAura and L["The game itself shows every buff on the target that you can purge. This alert needs no aura ID."]
+			or L["This alert checks the weapons directly and needs no aura."])
 		auraNote:SetShown(not usesAura)
 	end
 	widgets[#widgets + 1] = auraToggle

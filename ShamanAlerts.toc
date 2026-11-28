@@ -12,7 +12,7 @@
 ## Notes-zhCN: 为强化萨满祭司在角色周围显示提示：漩涡武器、震击、风暴打击、护盾、武器附魔、图腾栏、自定义提示和配置方案。选项：/sha
 ## Notes-zhTW: 為強化薩滿在角色周圍顯示提醒：漩渦武器、震擊、風暴打擊、護盾、武器附魔、圖騰列、自訂提醒與設定檔。選項：/sha
 ## Author: Koruyo
-## Version: 2.63.0
+## Version: 2.64.0
 ## X-License: MIT
 ## X-Curse-Project-ID: 1811216
 ## X-Website: https://github.com/Koruyo/ShamanAlerts

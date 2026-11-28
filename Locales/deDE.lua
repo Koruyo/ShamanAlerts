@@ -930,3 +930,19 @@ L["Only in instances"] = "Nur in Instanzen"
 L["Only in dungeons, raids, battlegrounds and arenas"] = "Nur in Dungeons, Schlachtzügen, Schlachtfeldern und Arenen"
 L["Warns only in dungeons, raids, battlegrounds and arenas, for example about a missing weapon stone."] = "Warnt nur in Dungeons, Schlachtzügen, Schlachtfeldern und Arenen, etwa vor einem fehlenden Wetzstein."
 L["Warns in dungeons, raids and battlegrounds while a weapon carries no sharpening stone, weightstone or oil. Your shaman enchant does not count."] = "Warnt in Dungeons, Schlachtzügen und Schlachtfeldern, solange eine Waffe keinen Wetzstein, Gewichtsstein oder kein Öl trägt. Deine Schamanen-Verzauberung zählt nicht mit."
+
+-- 2.64.0: Außer Totem-Reichweite
+L["Out of totem range"] = "Außer Totem-Reichweite"
+L["Totem range"] = "Totem-Reichweite"
+L["Broken ring"] = "Zerbrochener Ring"
+L["Torn thread"] = "Gerissener Faden"
+L["Fading totem"] = "Verblassendes Totem"
+L["Shows in combat when you have walked out of range of your own totems: a totem that gives a buff is standing, but its buff is gone. Totems without a buff (Searing, Tremor, Windfury ...) do not count."] = "Erscheint im Kampf, wenn du aus der Reichweite deiner eigenen Totems gelaufen bist: Ein Totem, das einen Buff gibt, steht, aber sein Buff ist weg. Totems ohne Buff (Verbrennen, Erzittern, Windzorn ...) zählen nicht."
+
+-- 2.64.0: Reinigung
+L["Purge: buff on the target"] = "Reinigung: Buff am Ziel"
+L["Purge"] = "Reinigung"
+L["Shattered shield"] = "Zerspringender Schild"
+L["Lightning hand"] = "Blitzhand"
+L["The game itself shows every buff on the target that you can purge. This alert needs no aura ID."] = "Das Spiel zeigt selbst jeden Buff am Ziel, den du reinigen kannst. Dieser Alarm braucht keine Aura-ID."
+L["Shows while your target carries a buff that you can remove with Purge, for example a magic shield or a heal over time. The game decides which buffs count, in combat too."] = "Erscheint, solange dein Ziel einen Buff trägt, den du mit Reinigung entfernen kannst, etwa einen Magieschild oder eine Heilung über Zeit. Welche Buffs zählen, entscheidet das Spiel, auch im Kampf."

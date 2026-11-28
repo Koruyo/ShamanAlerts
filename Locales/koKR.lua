@@ -941,3 +941,19 @@ L["Only in instances"] = "인스턴스에서만"
 L["Only in dungeons, raids, battlegrounds and arenas"] = "던전, 공격대, 전장, 투기장에서만"
 L["Warns only in dungeons, raids, battlegrounds and arenas, for example about a missing weapon stone."] = "던전, 공격대, 전장, 투기장에서만 경고합니다. 예: 숫돌이 없을 때."
 L["Warns in dungeons, raids and battlegrounds while a weapon carries no sharpening stone, weightstone or oil. Your shaman enchant does not count."] = "던전, 공격대, 전장에서 무기에 숫돌, 무게추, 오일이 없으면 경고합니다. 주술사 무기 강화는 포함되지 않습니다."
+
+-- 2.64.0: Außer Totem-Reichweite
+L["Out of totem range"] = "토템 범위 밖"
+L["Totem range"] = "토템 범위"
+L["Broken ring"] = "깨진 고리"
+L["Torn thread"] = "끊어진 실"
+L["Fading totem"] = "희미해지는 토템"
+L["Shows in combat when you have walked out of range of your own totems: a totem that gives a buff is standing, but its buff is gone. Totems without a buff (Searing, Tremor, Windfury ...) do not count."] = "전투 중 자신의 토템 범위를 벗어나면 나타납니다. 버프를 주는 토템이 서 있는데 그 버프가 사라진 경우입니다. 버프가 없는 토템(불타는, 진동, 질풍 ...)은 포함되지 않습니다."
+
+-- 2.64.0: Reinigung
+L["Purge: buff on the target"] = "정화: 대상의 버프"
+L["Purge"] = "정화"
+L["Shattered shield"] = "깨진 보호막"
+L["Lightning hand"] = "번개 손"
+L["The game itself shows every buff on the target that you can purge. This alert needs no aura ID."] = "정화할 수 있는 대상의 버프를 게임이 직접 보여 줍니다. 이 경고에는 오라 ID가 필요 없습니다."
+L["Shows while your target carries a buff that you can remove with Purge, for example a magic shield or a heal over time. The game decides which buffs count, in combat too."] = "대상에게 정화로 없앨 수 있는 버프(예: 마법 보호막, 지속 치유)가 있는 동안 나타납니다. 어떤 버프가 해당하는지는 전투 중에도 게임이 정합니다."

@@ -264,6 +264,12 @@ registerTextures(CATEGORY_WOW, "Wow", "wow_", {
 	{ "watershield_bubble", L["Water Shield"] .. ": " .. L["Bubble"] },
 	{ "watershield_orbs", L["Water Shield"] .. ": " .. L["Orbs"] },
 	{ "watershield_crest", L["Water Shield"] .. ": " .. L["Crest"] },
+	{ "purge_shatter", L["Purge"] .. ": " .. L["Shattered shield"] },
+	{ "purge_vortex", L["Purge"] .. ": " .. L["Vortex"] },
+	{ "purge_grasp", L["Purge"] .. ": " .. L["Lightning hand"] },
+	{ "totemrange_ring", L["Totem range"] .. ": " .. L["Broken ring"] },
+	{ "totemrange_tether", L["Totem range"] .. ": " .. L["Torn thread"] },
+	{ "totemrange_fading", L["Totem range"] .. ": " .. L["Fading totem"] },
 }, true, "BLEND")
 
 -- Schlichte Motive im selben gemalten Stil: je Alarm ein einzelner, klarer Gegenstand.
@@ -1053,6 +1059,94 @@ local ALERT_DEFS = {
 		},
 	},
 	{
+		-- Reinigen: Auf dem Ziel liegt ein Buff, den der Schamane entfernen kann. Welche
+		-- das sind, entscheidet das Spiel über den Filter, auch im Kampf.
+		key = "purge",
+		class = "SHAMAN",
+		title = L["Purge: buff on the target"],
+		kind = "active",
+		unit = "target",
+		filter = "HELPFUL|RAID_PLAYER_DISPELLABLE",
+		anyAura = true,
+		learnNames = { "Purge", "Reinigung" }, -- nur, um zu prüfen, ob der Zauber bekannt ist
+		castIDs = { 370, 8012 }, -- Reinigung, für den Namen in jeder Sprache
+		requireKnown = true,
+		defaultIcon = "Interface\\Icons\\Spell_Nature_Purge",
+		defaults = {
+			enabled = false,
+			threshold = 1,
+			size = 110, x = 0, y = 0, alpha = 1,
+			layout = "top", count = 1, distance = 120, spread = 26, rotate = false, angle = 0, flip = false, perStack = false,
+			display = "texture", iconZoom = 8, iconBorder = 1, iconBorderColor = { 0, 0, 0 }, iconSpell = "",
+			texture = "wow_purge_shatter",
+			color = { 1, 1, 1 },
+			additive = true,
+			pulse = true,
+			sound = "off",
+			soundFile = MEDIA .. "zap.ogg",
+			icon = false,
+			combatOnly = false,
+			needUsable = false,
+			needAggro = false,
+			needReady = false,
+			lead = 1, leadRevision = 1,
+			refresh = 0, auraDuration = 0,
+			minHealth = 0,
+			timer = false,
+			auraName = "",
+			spellIDs = {}, -- bleibt leer: der Filter entscheidet
+		},
+	},
+	{
+		-- Außer Reichweite der eigenen Totems: Ihr Buff fehlt, obwohl ein Totem steht,
+		-- das einen gibt. Welches Totem steht, merkt sich die Totem-Leiste beim Setzen.
+		key = "totemrange",
+		class = "SHAMAN",
+		title = L["Out of totem range"],
+		kind = "missing",
+		unit = "player",
+		filter = "HELPFUL",
+		learnNames = {}, -- die Namen der Buffs liest das Spiel aus den IDs unten
+		needBuffTotem = true,
+		defaultIcon = "Interface\\Icons\\Spell_Nature_StoneSkinTotem",
+		defaults = {
+			enabled = false,
+			threshold = 1,
+			size = 110, x = 0, y = 0, alpha = 1,
+			layout = "bottom", count = 1, distance = 360, spread = 26, rotate = false, angle = 0, flip = false, perStack = false,
+			display = "texture", iconZoom = 8, iconBorder = 1, iconBorderColor = { 0, 0, 0 }, iconSpell = "",
+			texture = "wow_totemrange_ring",
+			color = { 1, 1, 1 },
+			additive = true,
+			pulse = true,
+			sound = "off", -- "off" | "removed"
+			soundFile = MEDIA .. "totem_drum.ogg",
+			icon = false,
+			combatOnly = true, -- nach dem Kampf läuft man ohnehin von den Totems weg
+			needUsable = false,
+			needAggro = false,
+			needReady = false,
+			lead = 1, leadRevision = 1,
+			refresh = 0, auraDuration = 0,
+			minHealth = 0,
+			auraName = "",
+			-- Die Buffs der Totems (alle Ränge): Stärke der Erde, Steinhaut, Anmut der Luft,
+			-- Manaquelle, Heilender Fluss, Feuer-, Frost- und Naturwiderstand, Windmauer, Beruhigende Winde
+			spellIDs = {
+				[8076] = true, [8162] = true, [8163] = true, [10441] = true, [25362] = true,
+				[8072] = true, [8156] = true, [8157] = true, [10403] = true, [10404] = true, [10405] = true,
+				[8836] = true, [10626] = true, [25360] = true,
+				[5677] = true, [10491] = true, [10493] = true, [10494] = true,
+				[5672] = true, [6371] = true, [6372] = true, [10460] = true, [10461] = true,
+				[8185] = true, [10534] = true, [10535] = true,
+				[8182] = true, [10476] = true, [10477] = true,
+				[10596] = true, [10598] = true, [10599] = true,
+				[15108] = true, [15109] = true, [15110] = true,
+				[25909] = true,
+			},
+		},
+	},
+	{
 		key = "riptide",
 		class = "SHAMAN",
 		title = L["Riptide ready"],
@@ -1426,7 +1520,7 @@ local function learnSpellIDs()
 	state.lastScan = now
 	local changed = false
 	for _, alert in ipairs(alerts) do
-		local names = alert.def.kind ~= "weapon" and auraNames(alert) or {}
+		local names = (alert.def.kind ~= "weapon" and not alert.def.anyAura) and auraNames(alert) or {}
 		local learned
 		-- Bei "Zauber bereit" zählt nur das Zauberbuch, keine Aura mit gleichem Namen.
 		if next(names) and alert.def.kind ~= "ready" then
@@ -1842,6 +1936,8 @@ local function quietButton(button)
 end
 
 local function spellFilter(alert)
+	-- Ohne Liste: Das Spiel wählt selbst über den Filter (etwa jeden Buff, den man reinigen kann).
+	if alert.def.anyAura then return nil end
 	return { includeSpellIDs = copyTable(alert.s.spellIDs) }
 end
 
@@ -3614,6 +3710,8 @@ function conditionMet(alert)
 	end
 	-- Mit dem Feuertotem-Hinweis verschwindet der Alarm ohne Totem nicht, er zeigt das Totem-Bild.
 	if ready and alert.s.needFireTotem and not (alert.current and alert.current.hints) and ns.Totems and ns.Totems.IsActive(1) == false then return false end
+	-- Außer Totem-Reichweite: nur solange ein eigenes Totem steht, das einen Buff gibt
+	if alert.def.needBuffTotem and not (ns.Totems and ns.Totems.BuffTotemStanding and ns.Totems.BuffTotemStanding()) then return false end
 	-- Ohne Auskunft des Spiels bliebe der Alarm dauernd stehen, deshalb zählt nur ein klares Ja.
 	if ready and alert.s.needCasting and targetCasting() ~= true then return false end
 	if alert.def.unit ~= "target" then
@@ -3925,7 +4023,7 @@ function Build(alert)
 	alert.cooling = false
 	if not PLAIN_KINDS[kind] then
 		-- Ohne bekannte Aura-ID würde der Filter jede Aura durchlassen.
-		if next(alert.s.spellIDs) == nil then
+		if next(alert.s.spellIDs) == nil and not alert.def.anyAura then
 			alert.initError = L["no aura ID known yet"]
 			return false
 		end
@@ -5287,8 +5385,8 @@ ns.ALERT_DEFS = ALERT_DEFS
 -- eigenen Alarme.
 ns.ALERT_GROUPS = {
 	{ name = L["Attacks & procs"], keys = { "maelstrom", "stormstrike", "firenova", "clearcast", "flurry" } },
-	{ name = L["Shocks"], keys = { "earthshock", "flameshock", "frostshock", "interrupt" } },
-	{ name = L["Shields & weapons"], keys = { "shield", "watershield", "weapon", "flametongue" } },
+	{ name = L["Shocks"], keys = { "earthshock", "flameshock", "frostshock", "interrupt", "purge" } },
+	{ name = L["Shields & weapons"], keys = { "shield", "watershield", "weapon", "flametongue", "totemrange" } },
 	{ name = L["Cooldowns"], keys = { "farseer", "swiftness", "manatide", "riptide", "bloodfury", "berserking" } },
 	{ name = L["Custom alerts"] },
 }
@@ -5338,6 +5436,7 @@ ns.applyPreview = applyPreview
 ns.setMoving = setMoving
 ns.scheduleBuild = scheduleBuild
 ns.flushBuild = flushBuild
+ns.updateConditions = updateConditions
 ns.flushScheduledBuilds = flushScheduledBuilds
 ns.playAlertSound = playAlertSound
 ns.soundModes = soundModes

@@ -1,5 +1,17 @@
 # Changelog
 
+## 2.64.0
+- New alert "Out of totem range": in combat it shows when you have walked away from your own
+  totems. It counts a totem that gives a buff (Strength of Earth, Stoneskin, Mana Spring, Healing
+  Stream, Grace of Air, the resistance totems, Windwall, Tranquil Air) while that buff is
+  missing. Totems without a buff (Searing, Tremor, Windfury ...) do not count. Three new
+  WoW-style graphics. Off by default, under "Shields & weapons"
+- New alert "Purge: buff on the target": shows while your target carries a buff that you can
+  remove with Purge. The game itself decides which buffs count (filter
+  `HELPFUL|RAID_PLAYER_DISPELLABLE`), in combat too, so no aura IDs are needed. Three new
+  WoW-style graphics. Off by default, under "Shocks"
+- The list of alerts on the left has slightly lower rows, so all built-in alerts and one own
+  alert fit without scrolling
 ## 2.63.0
 - New supply warning "Weapon stones": in dungeons, raids, battlegrounds and arenas it warns while
   a weapon carries no sharpening stone, weightstone or oil. The shaman enchant (Windfury,

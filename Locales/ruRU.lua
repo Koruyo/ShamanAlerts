@@ -940,3 +940,19 @@ L["Only in instances"] = "Только в подземельях"
 L["Only in dungeons, raids, battlegrounds and arenas"] = "Только в подземельях, рейдах, на полях боя и аренах"
 L["Warns only in dungeons, raids, battlegrounds and arenas, for example about a missing weapon stone."] = "Предупреждает только в подземельях, рейдах, на полях боя и аренах, например об отсутствующем точильном камне."
 L["Warns in dungeons, raids and battlegrounds while a weapon carries no sharpening stone, weightstone or oil. Your shaman enchant does not count."] = "Предупреждает в подземельях, рейдах и на полях боя, пока на оружии нет точильного камня, грузила или масла. Чары шамана не считаются."
+
+-- 2.64.0: Außer Totem-Reichweite
+L["Out of totem range"] = "Вне радиуса тотемов"
+L["Totem range"] = "Радиус тотемов"
+L["Broken ring"] = "Разорванное кольцо"
+L["Torn thread"] = "Порванная нить"
+L["Fading totem"] = "Угасающий тотем"
+L["Shows in combat when you have walked out of range of your own totems: a totem that gives a buff is standing, but its buff is gone. Totems without a buff (Searing, Tremor, Windfury ...) do not count."] = "Появляется в бою, когда вы вышли из радиуса своих тотемов: тотем, дающий эффект, стоит, но эффекта больше нет. Тотемы без эффекта (жгучий, трепета, неистовства ветра ...) не учитываются."
+
+-- 2.64.0: Reinigung
+L["Purge: buff on the target"] = "Развеивание: эффект на цели"
+L["Purge"] = "Развеивание магии"
+L["Shattered shield"] = "Разбитый щит"
+L["Lightning hand"] = "Рука молний"
+L["The game itself shows every buff on the target that you can purge. This alert needs no aura ID."] = "Игра сама показывает каждый эффект на цели, который можно развеять. Этому оповещению не нужен ID ауры."
+L["Shows while your target carries a buff that you can remove with Purge, for example a magic shield or a heal over time. The game decides which buffs count, in combat too."] = "Появляется, пока на цели есть эффект, который можно снять развеиванием магии, например магический щит или лечение со временем. Какие эффекты считаются, решает игра, в том числе в бою."

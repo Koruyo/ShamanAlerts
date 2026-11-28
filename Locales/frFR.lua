@@ -927,3 +927,19 @@ L["Only in instances"] = "Seulement en instance"
 L["Only in dungeons, raids, battlegrounds and arenas"] = "Seulement en donjon, raid, champ de bataille et arène"
 L["Warns only in dungeons, raids, battlegrounds and arenas, for example about a missing weapon stone."] = "N'avertit qu'en donjon, raid, champ de bataille et arène, par exemple d'une pierre à aiguiser manquante."
 L["Warns in dungeons, raids and battlegrounds while a weapon carries no sharpening stone, weightstone or oil. Your shaman enchant does not count."] = "Avertit en donjon, raid et champ de bataille tant qu'une arme ne porte ni pierre à aiguiser, ni pierre de lest, ni huile. Votre enchantement de chaman ne compte pas."
+
+-- 2.64.0: Außer Totem-Reichweite
+L["Out of totem range"] = "Hors de portée des totems"
+L["Totem range"] = "Portée des totems"
+L["Broken ring"] = "Anneau brisé"
+L["Torn thread"] = "Fil rompu"
+L["Fading totem"] = "Totem qui s'estompe"
+L["Shows in combat when you have walked out of range of your own totems: a totem that gives a buff is standing, but its buff is gone. Totems without a buff (Searing, Tremor, Windfury ...) do not count."] = "S'affiche en combat quand vous êtes sorti de la portée de vos propres totems : un totem qui donne un bonus est posé, mais son bonus a disparu. Les totems sans bonus (Incendiaire, Séisme, Furie-des-vents ...) ne comptent pas."
+
+-- 2.64.0: Reinigung
+L["Purge: buff on the target"] = "Purge : bonus sur la cible"
+L["Purge"] = "Purge"
+L["Shattered shield"] = "Bouclier brisé"
+L["Lightning hand"] = "Main de foudre"
+L["The game itself shows every buff on the target that you can purge. This alert needs no aura ID."] = "Le jeu affiche lui-même chaque bonus de la cible que vous pouvez purger. Cette alerte n'a besoin d'aucun ID d'aura."
+L["Shows while your target carries a buff that you can remove with Purge, for example a magic shield or a heal over time. The game decides which buffs count, in combat too."] = "S'affiche tant que votre cible porte un bonus que vous pouvez retirer avec Purge, par exemple un bouclier magique ou un soin sur la durée. Le jeu décide quels bonus comptent, en combat aussi."
