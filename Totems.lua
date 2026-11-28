@@ -47,6 +47,7 @@ local DEFAULTS = {
 	-- Namen aus dem Zauberbuch, durch Komma getrennt. Unbekannte Zauber bleiben weg.
 	cdSpells = L["Grounding Totem, Earthbind Totem, Mana Tide Totem"],
 	hotkeys = true, -- die Taste des Zaubers auf den Symbolen der Abklingzeit-Reihe zeigen
+	hotkeySize = 0, -- Schriftgröße dieser Tasten (0 = passend zur Symbolgröße)
 }
 
 -- In anderen Sprachen als Deutsch und Englisch kommen die Namen der drei
@@ -353,7 +354,8 @@ local function layoutCooldowns()
 			icon.border:SetShown(not spell.sample)
 			local timer = countdownText(icon.cooldown)
 			if timer then ns.applyFont(timer, math.max(6, math.floor(settings.fontSize * size / settings.iconSize + 0.5))) end
-			ns.applyFont(icon.hotkey, math.max(6, math.floor(size * 0.4 + 0.5)))
+			local keySize = settings.hotkeySize or 0
+			ns.applyFont(icon.hotkey, keySize >= 6 and keySize or math.max(6, math.floor(size * 0.4 + 0.5)))
 			if icon.hotkey.SetTextColor then icon.hotkey:SetTextColor(1, 1, 1) end -- weiß wie auf den Aktionsleisten
 			icon.hotkey:SetText(settings.hotkeys and not spell.sample and ns.Hotkeys and ns.Hotkeys.ForSpell(spell.id, spell.name) or "")
 			icon:Show()

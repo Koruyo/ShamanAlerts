@@ -90,10 +90,51 @@ end
 local function addButton(parent, text, width, x, y, onClick)
 	local button = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate")
 	button:SetSize(width, 22)
+	button.width = width
 	button:SetPoint("TOPLEFT", parent, "TOPLEFT", x, y)
 	button:SetText(text)
 	button:SetScript("OnClick", onClick)
 	return button
+end
+
+-- Kleiner Pfeil rechts an einem Umschalt-Knopf: Der Knopf schaltet weiter wie
+-- bisher, der Pfeil öffnet alle Möglichkeiten als Liste. Er hängt am Knopf und
+-- verschwindet mit ihm. choices() liefert { { key, name }, ... }.
+local function addDropdown(button, choices, current, choose)
+	button:SetWidth((button.width or 160) - 24)
+	local arrow = CreateFrame("Button", nil, button)
+	arrow:SetSize(22, 22)
+	arrow:SetPoint("LEFT", button, "RIGHT", 2, 0)
+	arrow:SetNormalTexture("Interface\\ChatFrame\\UI-ChatIcon-ScrollDown-Up")
+	arrow:SetPushedTexture("Interface\\ChatFrame\\UI-ChatIcon-ScrollDown-Down")
+	arrow:SetHighlightTexture("Interface\\Buttons\\UI-Common-MouseHilight", "ADD")
+	arrow:SetScript("OnClick", function(self)
+		if not (MenuUtil and MenuUtil.CreateContextMenu) then return end
+		pcall(MenuUtil.CreateContextMenu, self, function(_, root)
+			for _, choice in ipairs(choices()) do
+				root:CreateRadio(choice[2], function() return current() == choice[1] end, function() choose(choice[1]) end)
+			end
+		end)
+	end)
+	arrow:SetScript("OnEnter", function(self)
+		if not GameTooltip then return end
+		GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+		GameTooltip:SetText(L["Choose from a list"], 1, 0.82, 0)
+		GameTooltip:Show()
+	end)
+	arrow:SetScript("OnLeave", function() if GameTooltip then GameTooltip:Hide() end end)
+	if not (MenuUtil and MenuUtil.CreateContextMenu) then arrow:Hide() end
+	button.dropdown = arrow
+	return arrow
+end
+
+-- Liste für addDropdown aus einer Reihenfolge und den Namen dazu
+local function choicesOf(order, names)
+	return function()
+		local list = {}
+		for _, key in ipairs(order) do list[#list + 1] = { key, names[key] } end
+		return list
+	end
 end
 
 -- kind: nur für diese Alarm-Art sichtbar (nil = immer). Ein Widget mit "hideFor"
@@ -1838,7 +1879,22 @@ local function createFrame()
 	end), L["Where the key stands on the picture. Each click picks the next place."])
 	placeButton.Refresh = function(self) self:SetText(L["Key: "] .. ns.HOTKEY_PLACE_NAMES[ns.db.hotkeyPlace]) end
 	placeButton.hotkeyPlace = true
+	addDropdown(placeButton, choicesOf(ns.HOTKEY_PLACES, ns.HOTKEY_PLACE_NAMES),
+		function() return ns.db.hotkeyPlace end,
+		function(key)
+			ns.db.hotkeyPlace = key
+			ns.refreshHotkeys()
+			ns.RefreshOptions()
+		end)
 	widgets[#widgets + 1] = placeButton
+	tip(addSlider(general, "HotkeyFontSize", L["Font size of the keys"], 330, -122, 6, 32, 1,
+		function(value) return ("%d"):format(value) end,
+		function() return ns.db.font.hotkeySize or ns.db.font.timerSize end,
+		function(value)
+			ns.db.font.hotkeySize = value
+			ns.refreshHotkeys()
+		end),
+		L["How big the key stands on the graphics."])
 	tip(addSlider(general, "FadeOut", L["Fade out after combat"], 4, -122, 0, 10, 0.5,
 		function(value) return value == 0 and L["(off)"] or (("%.1f s"):format(value):gsub("%.", L["."])) end,
 		function() return ns.db.fadeOut or 0 end,
@@ -2405,6 +2461,13 @@ function createTotemFrame(parent)
 		ns.RefreshTotemOptions()
 	end)
 	growthButton.Refresh = function(self) self:SetText(L["Direction: "] .. totems.GROWTH_NAMES[t().growth]) end
+	addDropdown(growthButton, choicesOf(totems.GROWTH_ORDER, totems.GROWTH_NAMES),
+		function() return t().growth end,
+		function(key)
+			t().growth = key
+			totems.Apply()
+			ns.RefreshTotemOptions()
+		end)
 	totemWidgets[#totemWidgets + 1] = growthButton
 
 	addSlider(window, "TotemSize", L["Icon size"], 20, -140, 16, 80, 2,
@@ -2479,22 +2542,33 @@ function createTotemFrame(parent)
 		ns.RefreshTotemOptions()
 	end)
 	sideButton.Refresh = function(self) self:SetText(L["Place: "] .. totems.CD_SIDE_NAMES[t().cdSide]) end
+	addDropdown(sideButton, choicesOf(totems.CD_SIDE_ORDER, totems.CD_SIDE_NAMES),
+		function() return t().cdSide end,
+		function(key)
+			t().cdSide = key
+			totems.Apply()
+			ns.RefreshTotemOptions()
+		end)
 	totemWidgets[#totemWidgets + 1] = sideButton
 	addSlider(window, "TotemCooldownSize", L["Size of the icons"], COLUMN + 4, -166, 12, 60, 2,
 		function(value) return ("%d"):format(value) end,
 		function() return t().cdSize end,
 		function(value) t().cdSize = value end)
+	addSlider(window, "TotemHotkeySize", L["Font size of the keys"], COLUMN + 4, -212, 0, 32, 1,
+		function(value) return value < 6 and L["automatic"] or ("%d"):format(value) end,
+		function() return t().hotkeySize or 0 end,
+		function(value) t().hotkeySize = value < 6 and 0 or value end)
 
-	addText(window, L["Spells, separated by commas (Enter applies):"], nil, COLUMN + 2, -198, 316)
-	local spellBox = addEditBox(window, 308, COLUMN + 2, -214, function(_, text)
+	addText(window, L["Spells, separated by commas (Enter applies):"], nil, COLUMN + 2, -244, 316)
+	local spellBox = addEditBox(window, 308, COLUMN + 2, -260, function(_, text)
 		totems.SetField("cdspells", text) -- leer = wieder die Voreinstellung
 	end)
 	spellBox.Refresh = function(self) self:SetText(tostring(t().cdSpells or "")) end
 	totemWidgets[#totemWidgets + 1] = spellBox
-	local known = addText(window, "", nil, COLUMN + 2, -242, 316)
+	local known = addText(window, "", nil, COLUMN + 2, -288, 316)
 	known.Refresh = function(self) self:SetText(L["Found in your spellbook: "] .. totems.CooldownSummary() .. ".") end
 	totemWidgets[#totemWidgets + 1] = known
-	addText(window, L["Only spells your character knows are shown. A bright icon means ready, a gray one with a number is still cooling down. The row hangs on the totem bar and moves with it."], nil, COLUMN + 2, -298, 316)
+	addText(window, L["Only spells your character knows are shown. A bright icon means ready, a gray one with a number is still cooling down. The row hangs on the totem bar and moves with it."], nil, COLUMN + 2, -344, 316)
 
 	sink = previous
 	window:SetScript("OnShow", function()

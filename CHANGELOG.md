@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.62.0
+- Buttons that switch through places now have a small arrow next to them that opens all choices
+  as a list: the place of the key on the graphics, the direction of the totem bar and the side
+  of its cooldown row. A click on the button itself still picks the next one
+- Font size of the keys: a slider on the "General" page for the keys on the alert graphics
+  (starts at the size of the time left, as before), and one on the "Totem bar" page for the keys
+  on the cooldown icons ("automatic" fits them to the icon size, as before)
+- New defaults for new installs and resets: Maelstrom Weapon, Flame Shock, Stormstrike, Earth
+  Shock, Fire Nova and Frost Shock grow paler the farther the target is; Riptide stands on both
+  sides; keys on the alert graphics start hidden; Fire Nova knows its newer spell IDs; the German
+  cooldown row no longer lists Blood Fury. Existing settings stay as they are
 ## 2.61.0
 - Layers are now one list instead of a slider: "Order layers" on the "Arrangement" tab opens a
   page with all alerts. Drag them with the mouse (or use the arrows); the higher an alert stands,

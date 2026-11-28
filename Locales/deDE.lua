@@ -311,7 +311,7 @@ L["Ghost Wolf"] = "Geisterwolf"
 L["Ghost Wolf, running"] = "Geisterwolf, laufend"
 L["Glowing (additive)"] = "Leuchtend (additiv)"
 L["Graphics"] = "Grafik"
-L["Grounding Totem, Earthbind Totem, Mana Tide Totem"] = "Totem der Erdung, Totem der Erdbindung, Totem der Manaflut, Zorn des Scharfsehers, Schnelligkeit der Natur, Kochendes Blut"
+L["Grounding Totem, Earthbind Totem, Mana Tide Totem"] = "Totem der Erdung, Totem der Erdbindung, Totem der Manaflut, Zorn des Scharfsehers, Schnelligkeit der Natur"
 L["Gust of wind"] = "Windstoß"
 L["Healing Wave"] = "Welle der Heilung"
 L["Heart"] = "Herz"
@@ -914,3 +914,9 @@ L["Place %d of %d: the higher, the further in front."] = "Platz %d von %d: je we
 L["Order layers"] = "Ebenen ordnen"
 L["Opens the list of all alerts. Drag them into the order in which they lie on top of each other."] = "Öffnet die Liste aller Alarme. Zieh sie in die Reihenfolge, in der sie übereinander liegen sollen."
 L["Drag up or down. Higher lies in front."] = "Nach oben oder unten ziehen. Weiter oben liegt vorne."
+
+-- 2.62.0: Auswahllisten, Schriftgröße der Tasten
+L["Choose from a list"] = "Aus einer Liste wählen"
+L["Font size of the keys"] = "Schriftgröße der Tasten"
+L["How big the key stands on the graphics."] = "Wie groß die Taste auf den Grafiken steht."
+L["automatic"] = "automatisch"

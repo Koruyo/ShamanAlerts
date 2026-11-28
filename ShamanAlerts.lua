@@ -383,6 +383,7 @@ local ALERT_DEFS = {
 		talentSpell = 408498, -- das Talent heißt wie der Buff, daraus kommt der lokalisierte Name
 		defaultIcon = "Interface\\Icons\\Spell_Shaman_MaelstromWeapon",
 		defaults = {
+			reachDim = true, -- je weiter das Ziel weg ist, desto blasser
 			enabled = true,
 			threshold = 5,
 			size = 120, x = 0, y = 0, alpha = 1,
@@ -419,6 +420,7 @@ local ALERT_DEFS = {
 		talentDuration = { base = 12, spell = 16038, node = 104770, perRank = 3 },
 		defaultIcon = "Interface\\Icons\\Spell_Fire_FlameShock",
 		defaults = {
+			reachDim = true, -- je weiter das Ziel weg ist, desto blasser
 			enabled = true,
 			threshold = 1,
 			-- Lage und Größe teilt er mit den anderen Schocks ("placeLike").
@@ -538,6 +540,7 @@ local ALERT_DEFS = {
 		requireKnown = true, -- Sturmschlag ist ein Talent
 		defaultIcon = "Interface\\Icons\\Ability_Shaman_Stormstrike",
 		defaults = {
+			reachDim = true, -- je weiter das Ziel weg ist, desto blasser
 			enabled = true,
 			threshold = 1,
 			size = 120, x = 0, y = 0, alpha = 1,
@@ -577,6 +580,7 @@ local ALERT_DEFS = {
 		requireKnown = true,
 		defaultIcon = "Interface\\Icons\\Spell_Nature_EarthShock",
 		defaults = {
+			reachDim = true, -- je weiter das Ziel weg ist, desto blasser
 			enabled = true,
 			threshold = 1,
 			-- Gibt die Stelle für die Schocks vor: Flammenschock und Frostschock
@@ -663,6 +667,7 @@ local ALERT_DEFS = {
 		strictUsable = true, -- auch ohne Feuertotem nicht wirkbar, nicht nur ohne Mana
 		defaultIcon = "Interface\\Icons\\Spell_Fire_SealOfFire",
 		defaults = {
+			reachDim = true, -- je weiter das Ziel weg ist, desto blasser
 			enabled = true,
 			threshold = 1,
 			-- Groß über dem Charakter, über dem Schild
@@ -690,7 +695,7 @@ local ALERT_DEFS = {
 			lead = 1, leadRevision = 1, -- so viele Sekunden vor "bereit" schon anzeigen
 			minHealth = 0,
 			auraName = L["Fire Nova"],
-			spellIDs = { [1535] = true, [8498] = true, [8499] = true, [11314] = true, [11315] = true },
+			spellIDs = { [1535] = true, [8498] = true, [8499] = true, [11314] = true, [11315] = true, [408343] = true, [408344] = true, [408345] = true },
 		},
 	},
 	{
@@ -857,6 +862,7 @@ local ALERT_DEFS = {
 		requireKnown = true,
 		defaultIcon = "Interface\\Icons\\Spell_Frost_FrostShock",
 		defaults = {
+			reachDim = true, -- je weiter das Ziel weg ist, desto blasser
 			enabled = true,
 			threshold = 1,
 			size = 120, x = 0, y = 10, alpha = 1,
@@ -1062,7 +1068,7 @@ local ALERT_DEFS = {
 			threshold = 1,
 			-- Heilzauber mit kurzer Abklingzeit, links und rechts weit außen.
 			size = 120, x = 0, y = 0, alpha = 1,
-			layout = "bottom", count = 1, distance = 230, spread = 26, rotate = false, angle = 0, flip = false, perStack = false,
+			layout = "sides", count = 1, distance = 230, spread = 26, rotate = false, angle = 0, flip = false, perStack = false,
 			display = "texture", iconZoom = 8, iconBorder = 1, iconBorderColor = { 0, 0, 0 }, iconSpell = "",
 			texture = "wow_riptide_wave",
 			textureRevision = 1,
@@ -2056,7 +2062,7 @@ function ns.refreshHotkeys()
 			alert.hotkey = key
 			for _, visual in ipairs(ns.allVisuals(alert.current)) do
 				if visual.hotkey then
-					applyFont(visual.hotkey, db.font.timerSize)
+					applyFont(visual.hotkey, db.font.hotkeySize or db.font.timerSize)
 					if visual.hotkey.SetTextColor then visual.hotkey:SetTextColor(1, 1, 1) end
 					ns.placeHotkey(visual.hotkey, visual)
 					visual.hotkey:SetText(key)
@@ -4100,7 +4106,8 @@ local function initDB()
 	if type(db.font.face) ~= "string" or db.font.face == "" then db.font.face = "auto" end
 	if not OUTLINE_NAMES[db.font.outline] then db.font.outline = "outline" end
 	if type(db.font.timerSize) ~= "number" then db.font.timerSize = 14 end
-	if type(db.hotkeys) ~= "boolean" then db.hotkeys = true end -- Taste an den Grafiken zeigen
+	if type(db.font.hotkeySize) ~= "number" then db.font.hotkeySize = db.font.timerSize end -- Tasten an den Grafiken
+	if type(db.hotkeys) ~= "boolean" then db.hotkeys = false end -- Taste an den Grafiken zeigen
 	if not ns.HOTKEY_PLACE_NAMES[db.hotkeyPlace] then db.hotkeyPlace = "BOTTOMRIGHT" end
 	if type(db.fadeOut) ~= "number" or db.fadeOut < 0 or db.fadeOut > 15 then db.fadeOut = 5 end -- Sekunden, 0 = sofort ausblenden
 	-- Ein Zwischenstand von 2.52 hatte einen gemeinsamen Schalter für Grafiken und
@@ -5213,6 +5220,7 @@ function ns.applySnapshot(snapshot)
 		db.font.face = type(font.face) == "string" and font.face ~= "" and font.face or "auto"
 		db.font.outline = OUTLINE_NAMES[font.outline] and font.outline or "outline"
 		db.font.timerSize = type(font.timerSize) == "number" and math.min(40, math.max(6, font.timerSize)) or 14
+		db.font.hotkeySize = type(font.hotkeySize) == "number" and math.min(40, math.max(6, font.hotkeySize)) or db.font.timerSize
 	end
 	state.placement = nil -- die gemeinsame Lage richtet sich nach den neuen Werten
 	rebuildAlertList()

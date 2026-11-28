@@ -929,3 +929,9 @@ L["Place %d of %d: the higher, the further in front."] = "第 %d 位，共 %d �
 L["Order layers"] = "排列層級"
 L["Opens the list of all alerts. Drag them into the order in which they lie on top of each other."] = "開啟所有警報的列表。按疊放順序拖曳排列。"
 L["Drag up or down. Higher lies in front."] = "向上或向下拖曳。越靠上越靠前。"
+
+-- 2.62.0: Auswahllisten, Schriftgröße der Tasten
+L["Choose from a list"] = "從列表中選擇"
+L["Font size of the keys"] = "按鍵字體大小"
+L["How big the key stands on the graphics."] = "圖形上顯示的按鍵大小。"
+L["automatic"] = "自動"

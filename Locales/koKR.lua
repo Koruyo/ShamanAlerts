@@ -925,3 +925,9 @@ L["Place %d of %d: the higher, the further in front."] = "%d / %d번째: 위에 
 L["Order layers"] = "레이어 정렬"
 L["Opens the list of all alerts. Drag them into the order in which they lie on top of each other."] = "모든 경고 목록을 엽니다. 겹쳐질 순서대로 끌어 놓으세요."
 L["Drag up or down. Higher lies in front."] = "위나 아래로 끄세요. 위에 있을수록 앞에 놓입니다."
+
+-- 2.62.0: Auswahllisten, Schriftgröße der Tasten
+L["Choose from a list"] = "목록에서 선택"
+L["Font size of the keys"] = "단축키 글꼴 크기"
+L["How big the key stands on the graphics."] = "그래픽 위에 표시되는 단축키의 크기입니다."
+L["automatic"] = "자동"

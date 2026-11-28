@@ -918,3 +918,9 @@ L["Place %d of %d: the higher, the further in front."] = "Puesto %d de %d: cuant
 L["Order layers"] = "Ordenar capas"
 L["Opens the list of all alerts. Drag them into the order in which they lie on top of each other."] = "Abre la lista de todas las alertas. Arrástralas al orden en que se superponen."
 L["Drag up or down. Higher lies in front."] = "Arrastra hacia arriba o abajo. Más arriba queda delante."
+
+-- 2.62.0: Auswahllisten, Schriftgröße der Tasten
+L["Choose from a list"] = "Elegir de una lista"
+L["Font size of the keys"] = "Tamaño de fuente de las teclas"
+L["How big the key stands on the graphics."] = "Tamaño de la tecla mostrada sobre los gráficos."
+L["automatic"] = "automático"
