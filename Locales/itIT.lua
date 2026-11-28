@@ -880,7 +880,7 @@ L["Please enter a number from %d to %d."] = "Inserisci un numero da %d a %d."
 L["%s: only a weaker kind left (%d)"] = "%s: rimane solo un tipo più debole (%d)"
 L["weaker"] = "più deboli"
 L["only a weaker kind"] = "solo un tipo più debole"
-L["  /sha supplies <supply> combat|instances|hide on|off, repeat <0-20>, interval <5-120> - per supply: in combat, in instances, hide the text after the last sound, how often and how far apart the sound comes"] = "  /sha supplies <provvista> combat|instances|hide on|off, repeat <0-20>, interval <5-120> - per provvista: in combattimento, nelle istanze, nascondi il testo dopo l'ultimo suono, quante volte e a che intervallo suona"
+L["  /sha supplies <supply> combat|instances|inside|hide on|off, repeat <0-20>, interval <5-120> - per supply: in combat, in instances, only in instances, hide the text after the last sound, how often and how far apart the sound comes"] = "  /sha supplies <provvista> combat|instances|inside|hide on|off, repeat <0-20>, interval <5-120> - per provvista: in combattimento, nelle istanze, solo nelle istanze, nascondi il testo dopo l'ultimo suono, quante volte e a che intervallo suona"
 
 -- 2.59.0: eigene Vorräte
 L["+ New supply"] = "+ Nuova provvista"
@@ -920,3 +920,13 @@ L["Choose from a list"] = "Scegli da un elenco"
 L["Font size of the keys"] = "Dimensione carattere dei tasti"
 L["How big the key stands on the graphics."] = "Quanto è grande il tasto mostrato sulle grafiche."
 L["automatic"] = "automatico"
+
+-- 2.63.0: Wetzsteine
+L["Weapon stones"] = "Pietre per armi"
+L["Apply a weapon stone!"] = "Applica una pietra!"
+L["main hand"] = "mano primaria"
+L["off hand"] = "mano secondaria"
+L["Only in instances"] = "Solo nelle istanze"
+L["Only in dungeons, raids, battlegrounds and arenas"] = "Solo in spedizioni, incursioni, campi di battaglia e arene"
+L["Warns only in dungeons, raids, battlegrounds and arenas, for example about a missing weapon stone."] = "Avvisa solo in spedizioni, incursioni, campi di battaglia e arene, ad esempio di una pietra per armi mancante."
+L["Warns in dungeons, raids and battlegrounds while a weapon carries no sharpening stone, weightstone or oil. Your shaman enchant does not count."] = "Avvisa in spedizioni, incursioni e campi di battaglia finché un'arma non ha pietra per affilare, pietra di bilanciamento od olio. Il tuo incantamento da sciamano non conta."

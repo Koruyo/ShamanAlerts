@@ -890,7 +890,7 @@ L["Please enter a number from %d to %d."] = "请输入 %d 到 %d 之间的数字
 L["%s: only a weaker kind left (%d)"] = "%s：只剩较弱的品种（%d）"
 L["weaker"] = "较弱"
 L["only a weaker kind"] = "只有较弱品种"
-L["  /sha supplies <supply> combat|instances|hide on|off, repeat <0-20>, interval <5-120> - per supply: in combat, in instances, hide the text after the last sound, how often and how far apart the sound comes"] = "  /sha supplies <补给> combat|instances|hide on|off, repeat <0-20>, interval <5-120> - 按补给：战斗中、副本中、最后一次音效后隐藏文字、音效次数和间隔"
+L["  /sha supplies <supply> combat|instances|inside|hide on|off, repeat <0-20>, interval <5-120> - per supply: in combat, in instances, only in instances, hide the text after the last sound, how often and how far apart the sound comes"] = "  /sha supplies <补给> combat|instances|inside|hide on|off, repeat <0-20>, interval <5-120> - 按补给：战斗中、副本中、仅在副本中、最后一次音效后隐藏文字、音效次数和间隔"
 
 -- 2.59.0: eigene Vorräte
 L["+ New supply"] = "+ 新补给"
@@ -930,3 +930,13 @@ L["Choose from a list"] = "从列表中选择"
 L["Font size of the keys"] = "按键字体大小"
 L["How big the key stands on the graphics."] = "图形上显示的按键大小。"
 L["automatic"] = "自动"
+
+-- 2.63.0: Wetzsteine
+L["Weapon stones"] = "磨刀石"
+L["Apply a weapon stone!"] = "上磨刀石！"
+L["main hand"] = "主手"
+L["off hand"] = "副手"
+L["Only in instances"] = "仅在副本中"
+L["Only in dungeons, raids, battlegrounds and arenas"] = "仅在地下城、团队副本、战场和竞技场中"
+L["Warns only in dungeons, raids, battlegrounds and arenas, for example about a missing weapon stone."] = "仅在地下城、团队副本、战场和竞技场中提醒，例如缺少磨刀石时。"
+L["Warns in dungeons, raids and battlegrounds while a weapon carries no sharpening stone, weightstone or oil. Your shaman enchant does not count."] = "在地下城、团队副本和战场中，武器上没有磨刀石、平衡石或油时提醒。萨满的武器强化不算在内。"

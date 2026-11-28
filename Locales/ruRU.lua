@@ -890,7 +890,7 @@ L["Please enter a number from %d to %d."] = "Укажите число от %d �
 L["%s: only a weaker kind left (%d)"] = "%s: остался только более слабый вид (%d)"
 L["weaker"] = "слабее"
 L["only a weaker kind"] = "только более слабый вид"
-L["  /sha supplies <supply> combat|instances|hide on|off, repeat <0-20>, interval <5-120> - per supply: in combat, in instances, hide the text after the last sound, how often and how far apart the sound comes"] = "  /sha supplies <припас> combat|instances|hide on|off, repeat <0-20>, interval <5-120> - для припаса: в бою, в подземельях, скрывать текст после последнего звука, сколько раз и с каким интервалом звучит звук"
+L["  /sha supplies <supply> combat|instances|inside|hide on|off, repeat <0-20>, interval <5-120> - per supply: in combat, in instances, only in instances, hide the text after the last sound, how often and how far apart the sound comes"] = "  /sha supplies <припас> combat|instances|inside|hide on|off, repeat <0-20>, interval <5-120> - для припаса: в бою, в подземельях, только в подземельях, скрывать текст после последнего звука, сколько раз и с каким интервалом звучит звук"
 
 -- 2.59.0: eigene Vorräte
 L["+ New supply"] = "+ Новый припас"
@@ -930,3 +930,13 @@ L["Choose from a list"] = "Выбрать из списка"
 L["Font size of the keys"] = "Размер шрифта клавиш"
 L["How big the key stands on the graphics."] = "Насколько крупно клавиша показана на изображениях."
 L["automatic"] = "автоматически"
+
+-- 2.63.0: Wetzsteine
+L["Weapon stones"] = "Точильные камни"
+L["Apply a weapon stone!"] = "Наточите оружие!"
+L["main hand"] = "правая рука"
+L["off hand"] = "левая рука"
+L["Only in instances"] = "Только в подземельях"
+L["Only in dungeons, raids, battlegrounds and arenas"] = "Только в подземельях, рейдах, на полях боя и аренах"
+L["Warns only in dungeons, raids, battlegrounds and arenas, for example about a missing weapon stone."] = "Предупреждает только в подземельях, рейдах, на полях боя и аренах, например об отсутствующем точильном камне."
+L["Warns in dungeons, raids and battlegrounds while a weapon carries no sharpening stone, weightstone or oil. Your shaman enchant does not count."] = "Предупреждает в подземельях, рейдах и на полях боя, пока на оружии нет точильного камня, грузила или масла. Чары шамана не считаются."

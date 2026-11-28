@@ -884,7 +884,7 @@ L["Please enter a number from %d to %d."] = "Indica un número de %d a %d."
 L["%s: only a weaker kind left (%d)"] = "%s: solo queda un tipo más débil (%d)"
 L["weaker"] = "más débiles"
 L["only a weaker kind"] = "solo un tipo más débil"
-L["  /sha supplies <supply> combat|instances|hide on|off, repeat <0-20>, interval <5-120> - per supply: in combat, in instances, hide the text after the last sound, how often and how far apart the sound comes"] = "  /sha supplies <provisión> combat|instances|hide on|off, repeat <0-20>, interval <5-120> - por provisión: en combate, en instancias, ocultar el texto tras el último sonido, cuántas veces y cada cuánto suena"
+L["  /sha supplies <supply> combat|instances|inside|hide on|off, repeat <0-20>, interval <5-120> - per supply: in combat, in instances, only in instances, hide the text after the last sound, how often and how far apart the sound comes"] = "  /sha supplies <provisión> combat|instances|inside|hide on|off, repeat <0-20>, interval <5-120> - por provisión: en combate, en instancias, solo en instancias, ocultar el texto tras el último sonido, cuántas veces y cada cuánto suena"
 
 -- 2.59.0: eigene Vorräte
 L["+ New supply"] = "+ Nueva provisión"
@@ -924,3 +924,13 @@ L["Choose from a list"] = "Elegir de una lista"
 L["Font size of the keys"] = "Tamaño de fuente de las teclas"
 L["How big the key stands on the graphics."] = "Tamaño de la tecla mostrada sobre los gráficos."
 L["automatic"] = "automático"
+
+-- 2.63.0: Wetzsteine
+L["Weapon stones"] = "Piedras de afilar"
+L["Apply a weapon stone!"] = "¡Aplica una piedra!"
+L["main hand"] = "mano principal"
+L["off hand"] = "mano secundaria"
+L["Only in instances"] = "Solo en instancias"
+L["Only in dungeons, raids, battlegrounds and arenas"] = "Solo en mazmorras, bandas, campos de batalla y arenas"
+L["Warns only in dungeons, raids, battlegrounds and arenas, for example about a missing weapon stone."] = "Solo avisa en mazmorras, bandas, campos de batalla y arenas, por ejemplo de una piedra de afilar que falta."
+L["Warns in dungeons, raids and battlegrounds while a weapon carries no sharpening stone, weightstone or oil. Your shaman enchant does not count."] = "Avisa en mazmorras, bandas y campos de batalla mientras un arma no lleve piedra de afilar, piedra de peso ni aceite. Tu encantamiento de chamán no cuenta."

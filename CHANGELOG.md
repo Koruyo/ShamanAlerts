@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.63.0
+- New supply warning "Weapon stones": in dungeons, raids, battlegrounds and arenas it warns while
+  a weapon carries no sharpening stone, weightstone or oil. The shaman enchant (Windfury,
+  Flametongue ...) does not count, shields need nothing. Off by default, switch it on in the
+  "Supplies" page or with `/sha supplies stones on`; like the others it waits until combat ends
+- Every supply can now warn "Only in instances" (new checkbox, or
+  `/sha supplies <supply> inside on|off`); it excludes "Not in instances"
 ## 2.62.0
 - Buttons that switch through places now have a small arrow next to them that opens all choices
   as a list: the place of the key on the graphics, the direction of the totem bar and the side

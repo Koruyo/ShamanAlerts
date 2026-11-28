@@ -880,7 +880,7 @@ L["Please enter a number from %d to %d."] = "Bitte eine Zahl von %d bis %d angeb
 L["%s: only a weaker kind left (%d)"] = "%s: nur noch schwächere Sorte (%d)"
 L["weaker"] = "schwächere"
 L["only a weaker kind"] = "nur schwächere Sorte"
-L["  /sha supplies <supply> combat|instances|hide on|off, repeat <0-20>, interval <5-120> - per supply: in combat, in instances, hide the text after the last sound, how often and how far apart the sound comes"] = "  /sha supplies <Vorrat> combat|instances|hide on|off, repeat <0-20>, interval <5-120> - je Vorrat: im Kampf, in Instanzen, Text nach dem letzten Klang ausblenden, wie oft und in welchem Abstand der Klang kommt"
+L["  /sha supplies <supply> combat|instances|inside|hide on|off, repeat <0-20>, interval <5-120> - per supply: in combat, in instances, only in instances, hide the text after the last sound, how often and how far apart the sound comes"] = "  /sha supplies <Vorrat> combat|instances|inside|hide on|off, repeat <0-20>, interval <5-120> - je Vorrat: im Kampf, in Instanzen, nur in Instanzen, Text nach dem letzten Klang ausblenden, wie oft und in welchem Abstand der Klang kommt"
 
 -- 2.59.0: eigene Vorräte
 L["+ New supply"] = "+ Neuer Vorrat"
@@ -920,3 +920,13 @@ L["Choose from a list"] = "Aus einer Liste wählen"
 L["Font size of the keys"] = "Schriftgröße der Tasten"
 L["How big the key stands on the graphics."] = "Wie groß die Taste auf den Grafiken steht."
 L["automatic"] = "automatisch"
+
+-- 2.63.0: Wetzsteine
+L["Weapon stones"] = "Wetzsteine"
+L["Apply a weapon stone!"] = "Wetzstein auftragen!"
+L["main hand"] = "Waffenhand"
+L["off hand"] = "Nebenhand"
+L["Only in instances"] = "Nur in Instanzen"
+L["Only in dungeons, raids, battlegrounds and arenas"] = "Nur in Dungeons, Schlachtzügen, Schlachtfeldern und Arenen"
+L["Warns only in dungeons, raids, battlegrounds and arenas, for example about a missing weapon stone."] = "Warnt nur in Dungeons, Schlachtzügen, Schlachtfeldern und Arenen, etwa vor einem fehlenden Wetzstein."
+L["Warns in dungeons, raids and battlegrounds while a weapon carries no sharpening stone, weightstone or oil. Your shaman enchant does not count."] = "Warnt in Dungeons, Schlachtzügen und Schlachtfeldern, solange eine Waffe keinen Wetzstein, Gewichtsstein oder kein Öl trägt. Deine Schamanen-Verzauberung zählt nicht mit."

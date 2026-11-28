@@ -2363,6 +2363,43 @@ local function slotHasWeapon(invSlot)
 	return classID == 2 and subclassID ~= 20
 end
 
+-- Liegt ein Wetzstein, Gewichtsstein oder ein Öl auf der Waffe? Das zählt als jede
+-- zeitlich begrenzte Verzauberung, die keine Verzauberung des Schamanen ist; in
+-- WoW Forever liegen beide nebeneinander. true/false, nil wenn es sich nicht
+-- erkennen lässt, "none" ohne Waffe in diesem Platz.
+function ns.weaponStone(invSlot)
+	if not slotHasWeapon(invSlot) then return "none" end
+	local slots, kinds = Enum and Enum.WeaponSlot, Enum and Enum.ItemEnchantType
+	if C_Item and C_Item.GetWeaponEnchantInfo and slots and kinds then
+		local ok, enchants = pcall(C_Item.GetWeaponEnchantInfo, invSlot == 16 and slots.MainHand or slots.OffHand)
+		if not ok or isSecret(enchants) or type(enchants) ~= "table" then return nil end
+		local unknown = false
+		for _, enchant in pairs(enchants) do
+			if isSecret(enchant) or type(enchant) ~= "table" then
+				unknown = true
+			else
+				local active, kind, id = enchant.hasEnchant, enchant.enchantType, enchant.enchantID
+				if isSecret(active) or isSecret(kind) or active == nil then
+					unknown = true
+				elseif active == true and kind == kinds.Temporary then
+					if id == nil or isSecret(id) then unknown = true elseif not ns.IMBUE_IDS[id] then return true end
+				end
+			end
+		end
+		if unknown then return nil end
+		return false
+	end
+	if GetWeaponEnchantInfo then -- ältere Schnittstelle: nur eine Verzauberung je Hand
+		local ok, hasMain, _, _, mainID, hasOff, _, _, offID = pcall(GetWeaponEnchantInfo)
+		local has, id = invSlot == 16 and hasMain or hasOff, invSlot == 16 and mainID or offID
+		if not ok or isSecret(has) then return nil end
+		if not has then return false end
+		if id == nil or isSecret(id) then return nil end
+		return not ns.IMBUE_IDS[id]
+	end
+	return nil
+end
+
 -- Ein Waffen-Alarm, der irgendeine Verzauberung gelten lässt, schweigt, solange
 -- ein anderer gerade eine bestimmte vermisst: Der sagt genauer, was fehlt.
 function ns.weaponCovered(alert)
@@ -4851,7 +4888,7 @@ local function printHelp()
 	print(L["  /sha reach [on|off] - show all alerts fainter while no target is in attack range (per alert: reachdim)"])
 	print(L["  /sha fade <seconds> - let the graphics fade out after combat or without a target instead of vanishing (0 = off)"])
 	print(L["  /sha supplies [test|move|<supply> on|off|<number>] - warnings when water, ankh and other supplies run low"])
-	print(L["  /sha supplies <supply> combat|instances|hide on|off, repeat <0-20>, interval <5-120> - per supply: in combat, in instances, hide the text after the last sound, how often and how far apart the sound comes"])
+	print(L["  /sha supplies <supply> combat|instances|inside|hide on|off, repeat <0-20>, interval <5-120> - per supply: in combat, in instances, only in instances, hide the text after the last sound, how often and how far apart the sound comes"])
 	print(L["  /sha supplies new [text], <supply> items <names, IDs or links>, <supply> text <text>, delete <supply> - your own supplies"])
 	print(L["  /sha spec [auto|elemental|enhancement|restoration] - show your specialization or set it by hand"])
 	print(L["  /sha profile - page for profiles and sharing; /sha profile save|load|delete <name>, /sha profile list"])

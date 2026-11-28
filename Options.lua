@@ -1984,6 +1984,7 @@ local function createFrame()
 		hearth = L["Warns while your hearthstone is not in your bags."],
 		repair = L["Warns when an equipped item has at most this much durability left."],
 		bags = L["Warns when your bags have at most this many free slots left."],
+		stones = L["Warns in dungeons, raids and battlegrounds while a weapon carries no sharpening stone, weightstone or oil. Your shaman enchant does not count."],
 	}
 	local kinds = S and S.KINDS or {}
 	local chosenKind = kinds[1]
@@ -2016,7 +2017,7 @@ local function createFrame()
 	end), L["Creates your own supply: choose its text and the items it counts, for example arrows or reagents."])
 	addText(supply, L["Click a supply to set it up on the right."], "GameFontDisableSmall", 180, -66)
 	for index = 1, (S and S.BUILT_IN or 0) + (S and S.MAX_CUSTOM or 0) do
-		local y = -90 - (index - 1) * 22
+		local y = -90 - (index - 1) * 21
 		local function kindAt() return S.KINDS[index] end
 		local enable = tip(addCheck(supply, "", 0, y,
 			function() local kind = kindAt(); return kind ~= nil and S.kindSettings(kind).enabled end,
@@ -2185,18 +2186,23 @@ local function createFrame()
 		function() return chosen().interval end,
 		function(value) chosen().interval = value end),
 		L["Time between two sounds of this warning."])
-	local function chosenFlag(text, field, y, body, title, invert)
+	-- "excludes": ein Haken, der sich mit diesem nicht verträgt und beim Setzen weicht
+	local function chosenFlag(text, field, y, body, title, excludes)
 		return tip(addCheck(supply, text, RX, y,
 			function() return chosen()[field] == true end,
 			function(value)
 				chosen()[field] = value
+				if value and excludes then chosen()[excludes] = false end
 				S.Update()
+				ns.RefreshOptions()
 			end), body, title)
 	end
 	chosenFlag(L["Only out of combat"], "combatHide", -348, L["In combat the warning waits until the fight is over."])
 	chosenFlag(L["Not in instances"], "instanceHide", -372, L["There you can no longer buy anything anyway. Outside, in the open world and in cities, it warns."],
-		L["Not in dungeons, raids, battlegrounds and arenas"])
-	chosenFlag(L["Hide the text after the last sound"], "hideAfter", -396, L["When the set number of sounds is over, the text disappears too, once the interval has passed. It comes back as soon as the supply runs low again."])
+		L["Not in dungeons, raids, battlegrounds and arenas"], "instanceOnly")
+	chosenFlag(L["Only in instances"], "instanceOnly", -396, L["Warns only in dungeons, raids, battlegrounds and arenas, for example about a missing weapon stone."],
+		L["Only in dungeons, raids, battlegrounds and arenas"], "instanceHide")
+	chosenFlag(L["Hide the text after the last sound"], "hideAfter", -420, L["When the set number of sounds is over, the text disappears too, once the interval has passed. It comes back as soon as the supply runs low again."])
 
 	-- Unten: was für alle Warnungen gilt
 	addHeader(supply, L["All warnings"], 0, -462, CONTENT_W)

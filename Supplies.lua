@@ -286,6 +286,24 @@ Supplies.KINDS = {
 		enabled = false, at = 2, max = 20, step = 1,
 		measure = function() return freeSlots() end,
 	},
+	{
+		-- Wetzsteine, Gewichtssteine (und Öle): nur dort, wo es darauf ankommt
+		key = "stones", icon = 12404, label = L["Weapon stones"], text = L["Apply a weapon stone!"], sound = "war_horn.ogg", sharedSound = true, color = { 0.8, 0.85, 0.95 },
+		enabled = false, missing = true, instanceOnly = true, poll = true,
+		measure = function()
+			if not ns.weaponStone then return nil end
+			local absent, armed = {}, false
+			for _, slot in ipairs({ 16, 17 }) do
+				local state = ns.weaponStone(slot)
+				if state ~= "none" then
+					armed = true
+					if state == false then absent[#absent + 1] = slot == 16 and L["main hand"] or L["off hand"] end
+				end
+			end
+			if not armed then return nil end
+			return #absent, table.concat(absent, ", ")
+		end,
+	},
 }
 for _, kind in ipairs(Supplies.KINDS) do Supplies.KINDS[kind.key] = kind end
 
@@ -469,7 +487,10 @@ local function kindSettings(kind)
 	-- je Vorrat: nur außerhalb des Kampfes, nie in Dungeons, Schlachtzügen, Schlachtfeldern und Arenen
 	-- (aus 2.57.0 gilt der gemeinsame Schalter weiter, bis er je Vorrat geändert wird)
 	if type(stored.combatHide) ~= "boolean" then stored.combatHide = settings.combatHide ~= false end
-	if type(stored.instanceHide) ~= "boolean" then stored.instanceHide = settings.instanceHide ~= false end
+	if type(stored.instanceHide) ~= "boolean" then stored.instanceHide = not kind.instanceOnly and settings.instanceHide ~= false end
+	-- nur in Dungeons, Schlachtzügen, Schlachtfeldern und Arenen (schließt "nie dort" aus)
+	if type(stored.instanceOnly) ~= "boolean" then stored.instanceOnly = kind.instanceOnly == true end
+	if stored.instanceOnly then stored.instanceHide = false end
 	-- Wie oft der Klang kommt (0 = immer wieder, bis es behoben ist), in welchem
 	-- Abstand, und ob der Text nach dem letzten Klang verschwindet
 	if type(stored.repeats) ~= "number" or stored.repeats < 0 or stored.repeats > 20 then stored.repeats = 0 end
@@ -538,6 +559,7 @@ function Supplies.Allowed(kind)
 		local stored = kindSettings(kind)
 		if stored.combatHide and inCombat() then return false end
 		if stored.instanceHide and inGroupContent() then return false end
+		if stored.instanceOnly and not inGroupContent() then return false end
 	end
 	return true
 end
@@ -597,7 +619,10 @@ function Supplies.SoundChoices()
 			seen[file] = true
 		end
 	end
-	for _, kind in ipairs(Supplies.KINDS) do add(kind.label, MEDIA .. kind.sound) end
+	-- Ein Klang, den es auch für die Alarme gibt, trägt dessen Namen (er steht weiter unten).
+	for _, kind in ipairs(Supplies.KINDS) do
+		if not kind.sharedSound then add(kind.label, MEDIA .. kind.sound) end
+	end
 	for _, sound in ipairs(ns.SOUNDS or {}) do add(sound.name, sound.file) end
 	local media = sharedMedia()
 	if media then
@@ -618,7 +643,7 @@ local function registerSounds()
 	local media = sharedMedia()
 	if not (media and media.Register) then return end
 	for _, kind in ipairs(Supplies.KINDS) do
-		pcall(media.Register, media, "sound", "ShamanAlerts: " .. kind.text, MEDIA .. kind.sound)
+		if not kind.sharedSound then pcall(media.Register, media, "sound", "ShamanAlerts: " .. kind.text, MEDIA .. kind.sound) end
 	end
 	for _, sound in ipairs(ns.SOUNDS or {}) do
 		if type(sound.file) == "string" and sound.file:find(ADDON_NAME, 1, true) then
@@ -861,17 +886,25 @@ function Supplies.Init(db)
 			end)
 		end
 		-- Solange gewarnt wird, kommt der Klang im eingestellten Abstand wieder.
-		local elapsedSum = 0
+		-- Was still abläuft (ein Stein auf der Waffe), schaut sie alle paar Sekunden nach.
+		local elapsedSum, slowSum = 0, 0
 		frame:SetScript("OnUpdate", function(_, elapsed)
 			elapsedSum = elapsedSum + (elapsed or 0)
 			if elapsedSum < 1 then return end
+			slowSum = slowSum + elapsedSum
 			elapsedSum = 0
-			if active then Supplies.Update() end
+			if active then return Supplies.Update() end
+			if slowSum >= 5 then
+				slowSum = 0
+				for _, kind in ipairs(Supplies.KINDS) do
+					if kind.poll and kindSettings(kind).enabled then return Supplies.Update() end
+				end
+			end
 		end)
 		local events = CreateFrame("Frame")
 		for _, event in ipairs({ "PLAYER_ENTERING_WORLD", "BAG_UPDATE_DELAYED", "PLAYER_LEVEL_UP", "PLAYER_REGEN_DISABLED", "PLAYER_REGEN_ENABLED",
 			"UPDATE_INVENTORY_DURABILITY", "SPELLS_CHANGED", "ZONE_CHANGED_NEW_AREA", "PLAYER_DEAD", "PLAYER_ALIVE", "PLAYER_UNGHOST",
-			"PLAYER_LEAVING_WORLD", "LOADING_SCREEN_ENABLED", "LOADING_SCREEN_DISABLED" }) do
+			"PLAYER_LEAVING_WORLD", "LOADING_SCREEN_ENABLED", "LOADING_SCREEN_DISABLED", "PLAYER_EQUIPMENT_CHANGED", "WEAPON_ENCHANT_CHANGED" }) do
 			pcall(events.RegisterEvent, events, event)
 		end
 		events:SetScript("OnEvent", function(_, event)
@@ -957,6 +990,7 @@ local function printStatus()
 		local places = {}
 		if stored.combatHide then places[#places + 1] = L["Only out of combat"] end
 		if stored.instanceHide then places[#places + 1] = L["Not in instances"] end
+		if stored.instanceOnly then places[#places + 1] = L["Only in instances"] end
 		places[#places + 1] = Supplies.RepeatText(stored)
 		if stored.hideAfter then places[#places + 1] = L["text hides after the last sound"] end
 		state = state .. " (" .. table.concat(places, ", ") .. ")"
@@ -1022,12 +1056,16 @@ local function supplyCommand(rest)
 		return printStatus()
 	end
 	local option, optionValue = (value or ""):lower():match("^(%a+)%s+(%S+)$")
-	if option == "combat" or option == "instances" or option == "hide" then
+	if option == "combat" or option == "instances" or option == "hide" or option == "inside" then
 		local flag = onOff(optionValue)
 		if flag == nil then return msg(L["Please enter on or off."]) end
 		if option == "hide" then
 			stored.hideAfter = flag
+		elseif option == "inside" then
+			stored.instanceOnly = flag
+			if flag then stored.instanceHide = false end
 		else
+			if option == "instances" and not flag then stored.instanceOnly = false end
 			stored[option == "combat" and "combatHide" or "instanceHide"] = not flag
 		end
 		Supplies.Update()

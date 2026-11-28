@@ -891,7 +891,7 @@ L["Please enter a number from %d to %d."] = "%d부터 %d 사이의 숫자를 입
 L["%s: only a weaker kind left (%d)"] = "%s: 더 약한 종류만 남음 (%d)"
 L["weaker"] = "약한 것"
 L["only a weaker kind"] = "더 약한 종류만"
-L["  /sha supplies <supply> combat|instances|hide on|off, repeat <0-20>, interval <5-120> - per supply: in combat, in instances, hide the text after the last sound, how often and how far apart the sound comes"] = "  /sha supplies <보급품> combat|instances|hide on|off, repeat <0-20>, interval <5-120> - 보급품별: 전투 중, 인스턴스, 마지막 소리 뒤 글자 숨기기, 소리 횟수와 간격"
+L["  /sha supplies <supply> combat|instances|inside|hide on|off, repeat <0-20>, interval <5-120> - per supply: in combat, in instances, only in instances, hide the text after the last sound, how often and how far apart the sound comes"] = "  /sha supplies <보급품> combat|instances|inside|hide on|off, repeat <0-20>, interval <5-120> - 보급품별: 전투 중, 인스턴스, 인스턴스에서만, 마지막 소리 뒤 글자 숨기기, 소리 횟수와 간격"
 
 -- 2.59.0: eigene Vorräte
 L["+ New supply"] = "+ 새 보급품"
@@ -931,3 +931,13 @@ L["Choose from a list"] = "목록에서 선택"
 L["Font size of the keys"] = "단축키 글꼴 크기"
 L["How big the key stands on the graphics."] = "그래픽 위에 표시되는 단축키의 크기입니다."
 L["automatic"] = "자동"
+
+-- 2.63.0: Wetzsteine
+L["Weapon stones"] = "숫돌"
+L["Apply a weapon stone!"] = "숫돌을 바르세요!"
+L["main hand"] = "주장비"
+L["off hand"] = "보조장비"
+L["Only in instances"] = "인스턴스에서만"
+L["Only in dungeons, raids, battlegrounds and arenas"] = "던전, 공격대, 전장, 투기장에서만"
+L["Warns only in dungeons, raids, battlegrounds and arenas, for example about a missing weapon stone."] = "던전, 공격대, 전장, 투기장에서만 경고합니다. 예: 숫돌이 없을 때."
+L["Warns in dungeons, raids and battlegrounds while a weapon carries no sharpening stone, weightstone or oil. Your shaman enchant does not count."] = "던전, 공격대, 전장에서 무기에 숫돌, 무게추, 오일이 없으면 경고합니다. 주술사 무기 강화는 포함되지 않습니다."
