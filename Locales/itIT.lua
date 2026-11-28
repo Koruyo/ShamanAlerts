@@ -906,5 +906,11 @@ L["%s does not track the ID %s."] = "%s non segue l'ID %s."
 L["  /sha id <alert> <aura ID|-aura ID|reset> - add an aura ID, remove one (with a minus) or reset the IDs"] = "  /sha id <avviso> <ID aura|-ID aura|reset> - aggiungi un ID aura, rimuovine uno (con il meno) o reimposta"
 L["Click to remove this ID. It is not learned again by itself; enter it above to add it back."] = "Clicca per rimuovere questo ID. Non viene riappreso da solo; inseriscilo sopra per riaggiungerlo."
 L["Layer"] = "Livello"
-L["Alerts on a higher layer are drawn in front of alerts on a lower one. All start on 5."] = "Gli avvisi su un livello più alto stanno davanti a quelli su un livello più basso. Tutti partono da 5."
-L["Higher layers lie in front. If two alerts overlap, raise the one that should stay visible or lower the other."] = "I livelli alti stanno davanti. Se due avvisi si sovrappongono, alza quello da vedere o abbassa l'altro."
+
+-- 2.61.0: Ebenen als Liste
+L["Layers"] = "Livelli"
+L["Drag the alerts into the order you want, or use the arrows. The higher an alert stands, the further in front it lies: where two overlap, the upper one stays visible."] = "Trascina gli avvisi nell'ordine che vuoi o usa le frecce. Più un avviso è in alto, più sta davanti: dove due si sovrappongono, resta visibile quello sopra."
+L["Place %d of %d: the higher, the further in front."] = "Posto %d di %d: più in alto, più davanti."
+L["Order layers"] = "Ordina livelli"
+L["Opens the list of all alerts. Drag them into the order in which they lie on top of each other."] = "Apre l'elenco di tutti gli avvisi. Trascinali nell'ordine in cui si sovrappongono."
+L["Drag up or down. Higher lies in front."] = "Trascina su o giù. Più in alto sta davanti."

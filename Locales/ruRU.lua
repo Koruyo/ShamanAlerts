@@ -916,5 +916,11 @@ L["%s does not track the ID %s."] = "%s не отслеживает ID %s."
 L["  /sha id <alert> <aura ID|-aura ID|reset> - add an aura ID, remove one (with a minus) or reset the IDs"] = "  /sha id <оповещение> <ID ауры|-ID ауры|reset> - добавить ID ауры, удалить (со знаком минус) или сбросить"
 L["Click to remove this ID. It is not learned again by itself; enter it above to add it back."] = "Щёлкните, чтобы удалить этот ID. Сам он больше не запомнится; введите его выше, чтобы вернуть."
 L["Layer"] = "Слой"
-L["Alerts on a higher layer are drawn in front of alerts on a lower one. All start on 5."] = "Оповещения на более высоком слое рисуются поверх более низких. Все начинают с 5."
-L["Higher layers lie in front. If two alerts overlap, raise the one that should stay visible or lower the other."] = "Высокие слои лежат спереди. Если два оповещения перекрываются, поднимите нужное или опустите другое."
+
+-- 2.61.0: Ebenen als Liste
+L["Layers"] = "Слои"
+L["Drag the alerts into the order you want, or use the arrows. The higher an alert stands, the further in front it lies: where two overlap, the upper one stays visible."] = "Перетащите оповещения в нужном порядке или используйте стрелки. Чем выше оповещение, тем дальше оно впереди: где два перекрываются, видно верхнее."
+L["Place %d of %d: the higher, the further in front."] = "Место %d из %d: чем выше, тем дальше впереди."
+L["Order layers"] = "Упорядочить слои"
+L["Opens the list of all alerts. Drag them into the order in which they lie on top of each other."] = "Открывает список всех оповещений. Перетащите их в порядке наложения."
+L["Drag up or down. Higher lies in front."] = "Перетащите вверх или вниз. Выше — значит впереди."

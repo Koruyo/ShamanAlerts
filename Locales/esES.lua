@@ -910,5 +910,11 @@ L["%s does not track the ID %s."] = "%s no sigue el ID %s."
 L["  /sha id <alert> <aura ID|-aura ID|reset> - add an aura ID, remove one (with a minus) or reset the IDs"] = "  /sha id <alerta> <ID de aura|-ID de aura|reset> - añadir un ID de aura, quitar uno (con un menos) o restablecer"
 L["Click to remove this ID. It is not learned again by itself; enter it above to add it back."] = "Haz clic para quitar este ID. No se vuelve a aprender solo; escríbelo arriba para recuperarlo."
 L["Layer"] = "Capa"
-L["Alerts on a higher layer are drawn in front of alerts on a lower one. All start on 5."] = "Las alertas de una capa más alta se dibujan delante de las de una más baja. Todas empiezan en 5."
-L["Higher layers lie in front. If two alerts overlap, raise the one that should stay visible or lower the other."] = "Las capas altas quedan delante. Si dos alertas se solapan, sube la que debe verse o baja la otra."
+
+-- 2.61.0: Ebenen als Liste
+L["Layers"] = "Capas"
+L["Drag the alerts into the order you want, or use the arrows. The higher an alert stands, the further in front it lies: where two overlap, the upper one stays visible."] = "Arrastra las alertas al orden que quieras o usa las flechas. Cuanto más arriba esté una alerta, más delante queda: donde dos se solapan, la de arriba sigue visible."
+L["Place %d of %d: the higher, the further in front."] = "Puesto %d de %d: cuanto más arriba, más delante."
+L["Order layers"] = "Ordenar capas"
+L["Opens the list of all alerts. Drag them into the order in which they lie on top of each other."] = "Abre la lista de todas las alertas. Arrástralas al orden en que se superponen."
+L["Drag up or down. Higher lies in front."] = "Arrastra hacia arriba o abajo. Más arriba queda delante."

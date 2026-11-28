@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.61.0
+- Layers are now one list instead of a slider: "Order layers" on the "Arrangement" tab opens a
+  page with all alerts. Drag them with the mouse (or use the arrows); the higher an alert stands,
+  the further in front it lies. Existing layer values decide the starting order, otherwise the
+  order of the list on the left. Own alerts start at the back
+- `/sha set <alert> layer <place>` moves an alert to a place in that list (1 = in front)
+- Resetting one alert keeps its place; "Reset everything" restores the order of the list
 ## 2.60.0
 - Spell and aura IDs can be removed one by one: each ID on the "Spell & aura" tab is a button,
   a click removes just that ID. Removed IDs are not learned again by name; entering one again

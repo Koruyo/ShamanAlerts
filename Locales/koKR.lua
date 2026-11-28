@@ -917,5 +917,11 @@ L["%s does not track the ID %s."] = "%s은(는) ID %s을(를) 추적하지 않�
 L["  /sha id <alert> <aura ID|-aura ID|reset> - add an aura ID, remove one (with a minus) or reset the IDs"] = "  /sha id <경고> <오라 ID|-오라 ID|reset> - 오라 ID 추가, 빼기(마이너스) 또는 초기화"
 L["Click to remove this ID. It is not learned again by itself; enter it above to add it back."] = "클릭하면 이 ID를 뺍니다. 저절로 다시 배우지 않으니, 되돌리려면 위에 입력하세요."
 L["Layer"] = "레이어"
-L["Alerts on a higher layer are drawn in front of alerts on a lower one. All start on 5."] = "높은 레이어의 경고가 낮은 레이어의 경고보다 앞에 그려집니다. 모두 5에서 시작합니다."
-L["Higher layers lie in front. If two alerts overlap, raise the one that should stay visible or lower the other."] = "높은 레이어가 앞에 놓입니다. 두 경고가 겹치면 보일 쪽을 올리거나 다른 쪽을 내리세요."
+
+-- 2.61.0: Ebenen als Liste
+L["Layers"] = "레이어"
+L["Drag the alerts into the order you want, or use the arrows. The higher an alert stands, the further in front it lies: where two overlap, the upper one stays visible."] = "경고를 원하는 순서로 끌어 놓거나 화살표를 쓰세요. 위에 있을수록 앞에 놓이며, 두 경고가 겹치면 위의 것이 보입니다."
+L["Place %d of %d: the higher, the further in front."] = "%d / %d번째: 위에 있을수록 앞에 놓입니다."
+L["Order layers"] = "레이어 정렬"
+L["Opens the list of all alerts. Drag them into the order in which they lie on top of each other."] = "모든 경고 목록을 엽니다. 겹쳐질 순서대로 끌어 놓으세요."
+L["Drag up or down. Higher lies in front."] = "위나 아래로 끄세요. 위에 있을수록 앞에 놓입니다."

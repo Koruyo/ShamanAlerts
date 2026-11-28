@@ -916,5 +916,11 @@ L["%s does not track the ID %s."] = "%s 未追踪 ID %s。"
 L["  /sha id <alert> <aura ID|-aura ID|reset> - add an aura ID, remove one (with a minus) or reset the IDs"] = "  /sha id <警报> <光环 ID|-光环 ID|reset> - 添加光环 ID、删除（加减号）或重置"
 L["Click to remove this ID. It is not learned again by itself; enter it above to add it back."] = "点击删除此 ID。它不会再被自动学习；在上方输入即可加回。"
 L["Layer"] = "层级"
-L["Alerts on a higher layer are drawn in front of alerts on a lower one. All start on 5."] = "较高层级的警报会显示在较低层级的前面。默认都是 5。"
-L["Higher layers lie in front. If two alerts overlap, raise the one that should stay visible or lower the other."] = "层级越高越靠前。两个警报重叠时，提高要显示的那个或降低另一个。"
+
+-- 2.61.0: Ebenen als Liste
+L["Layers"] = "层级"
+L["Drag the alerts into the order you want, or use the arrows. The higher an alert stands, the further in front it lies: where two overlap, the upper one stays visible."] = "将警报拖成想要的顺序，或使用箭头。越靠上的警报越靠前：两个重叠时，上面的那个保持可见。"
+L["Place %d of %d: the higher, the further in front."] = "第 %d 位，共 %d 位：越靠上越靠前。"
+L["Order layers"] = "排列层级"
+L["Opens the list of all alerts. Drag them into the order in which they lie on top of each other."] = "打开所有警报的列表。按叠放顺序拖动排列。"
+L["Drag up or down. Higher lies in front."] = "向上或向下拖动。越靠上越靠前。"

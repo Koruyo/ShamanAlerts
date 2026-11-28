@@ -1165,7 +1165,7 @@ local CUSTOM_DEFAULTS = {
 	auraName = "",
 	spellIDs = {},
 	blockedIDs = {}, -- von Hand entfernte IDs: werden nicht wieder gelernt
-	layer = 5, -- Ebene: höher liegt vor niedrigeren Alarmen
+	layer = 0, -- Ebene: höher liegt vor niedrigeren Alarmen (0 = neu, ganz hinten)
 }
 
 local CUSTOM_KINDS = { "active", "missing", "stacks", "ready" }
@@ -3779,12 +3779,13 @@ local function rebuildDependents(alert)
 	state.rebuildingDependents = false
 end
 
--- Ebenen: Jede Stufe hebt alle Frames eines Alarms, die direkt an UIParent
--- hängen, um ein paar Frame-Level an. Ihre Kinder rücken mit.
+-- Ebenen: Die Alarme stehen in einer Reihenfolge, der erste liegt ganz vorne.
+-- s.layer ist der Rang von hinten (1 = ganz hinten). Jeder Rang hebt alle Frames
+-- eines Alarms, die direkt an UIParent hängen, um ein paar Frame-Level an.
 local LAYER_STEP = 6
 local function layerLevel(alert)
-	local layer = tonumber(alert.s.layer) or 5
-	return math.max(1, math.min(10, math.floor(layer + 0.5))) * LAYER_STEP
+	local layer = tonumber(alert.s.layer) or 1
+	return math.max(1, math.min(200, math.floor(layer + 0.5))) * LAYER_STEP
 end
 ns.layerLevel = layerLevel
 
@@ -3809,6 +3810,58 @@ local function applyLayer(alert)
 	end
 end
 ns.applyLayer = applyLayer
+
+-- Die Alarme von vorne nach hinten. Gleiche Ränge (neue Alarme, alte Werte)
+-- stehen in der Reihenfolge der Liste links.
+function ns.layerOrder()
+	local listed, position = {}, {}
+	for _, group in ipairs(ns.groupedAlerts and ns.groupedAlerts() or {}) do
+		for _, alert in ipairs(group.alerts) do listed[#listed + 1] = alert end
+	end
+	for _, alert in ipairs(alerts) do
+		if not position[alert] then
+			local found = false
+			for _, other in ipairs(listed) do if other == alert then found = true break end end
+			if not found then listed[#listed + 1] = alert end
+		end
+	end
+	for index, alert in ipairs(listed) do position[alert] = index end
+	table.sort(listed, function(a, b)
+		local la, lb = tonumber(a.s.layer) or 0, tonumber(b.s.layer) or 0
+		if la ~= lb then return la > lb end
+		return position[a] < position[b]
+	end)
+	return listed
+end
+
+-- Vergibt die Ränge lückenlos neu und hebt die Frames gleich an.
+local function setLayerOrder(order)
+	for index, alert in ipairs(order) do alert.s.layer = #order - index + 1 end
+	for _, alert in ipairs(order) do
+		if alert.current then
+			if inCombat() then alert.pendingBuild = true else applyLayer(alert) end
+		end
+	end
+end
+ns.setLayerOrder = setLayerOrder
+
+-- Schiebt einen Alarm an einen Platz der Reihenfolge (1 = ganz vorne).
+function ns.moveLayer(alert, position)
+	local order = ns.layerOrder()
+	for index, other in ipairs(order) do
+		if other == alert then table.remove(order, index) break end
+	end
+	position = math.max(1, math.min(#order + 1, math.floor(position)))
+	table.insert(order, position, alert)
+	setLayerOrder(order)
+end
+
+function ns.layerPosition(alert)
+	for index, other in ipairs(ns.layerOrder()) do
+		if other == alert then return index end
+	end
+	return nil
+end
 
 function Build(alert)
 	sharePlacement(alert)
@@ -4006,7 +4059,7 @@ local function initSettings(def, stored)
 	if settings.display ~= "icon" and settings.display ~= "texture" then settings.display = def.defaults.display end
 	if next(settings.spellIDs) == nil then settings.spellIDs = copyTable(def.defaults.spellIDs) end
 	if type(settings.blockedIDs) ~= "table" then settings.blockedIDs = {} end
-	if type(settings.layer) ~= "number" then settings.layer = 5 end
+	if type(settings.layer) ~= "number" then settings.layer = 0 end
 	if def.custom then settings.sound = settings.sound or "off" end
 	return settings
 end
@@ -4034,6 +4087,8 @@ local function rebuildAlertList()
 	for _, spec in ipairs(db.custom) do add(customDef(spec)) end
 	-- Wer seine Lage mit einem anderen teilt, steht von Anfang an dort.
 	for _, alert in ipairs(alerts) do joinPlacement(alert) end
+	-- Ebenen lückenlos durchzählen (neue Alarme kommen nach hinten)
+	if ns.layerOrder then setLayerOrder(ns.layerOrder()) end
 end
 
 local function initDB()
@@ -4261,7 +4316,14 @@ local FIELDS = {
 	x = numberField("x", -4000, 4000, true),
 	y = numberField("y", -4000, 4000, true),
 	alpha = numberField("alpha", 0.05, 1, false),
-	layer = numberField("layer", 1, 10, true),
+	layer = function(alert, text)
+		local position = toNumber(text)
+		if not position or position < 1 or position > #alerts then
+			return false, (L["Please enter a number from %s to %s."]):format(1, #alerts)
+		end
+		ns.moveLayer(alert, position)
+		return true
+	end,
 	pulse = booleanField("pulse"),
 	additive = booleanField("additive"),
 	icon = booleanField("icon"),
@@ -4565,8 +4627,10 @@ end
 local function resetAlert(alert)
 	local settings = alert.s
 	local shared = placeLeader(alert) ~= nil
+	local layer = settings.layer -- der Platz in der Reihenfolge der Ebenen bleibt
 	for key in pairs(settings) do settings[key] = nil end
 	initSettings(alert.def, settings)
+	settings.layer = layer or 0
 	-- Teilte der Alarm seine Lage schon, setzt er sie für die ganze Gruppe
 	-- zurück. Kommt er erst durch das Zurücksetzen wieder dazu, übernimmt er ihre.
 	if not shared then joinPlacement(alert) end
@@ -4887,6 +4951,11 @@ commands.reset = function(rest)
 			resetAlert(alert)
 			afterChange(alert)
 		end
+	end
+	if not only then
+		-- Alles zurück: auch die Ebenen wieder in der Reihenfolge der Liste
+		for _, alert in ipairs(alerts) do alert.s.layer = 0 end
+		setLayerOrder(ns.layerOrder())
 	end
 	if not only and ns.Totems then
 		ns.Totems.Reset()

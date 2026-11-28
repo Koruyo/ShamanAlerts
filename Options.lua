@@ -1143,12 +1143,13 @@ local function createFrame()
 		"GameFontDisableSmall", 0, -290, 620)
 
 	addHeader(place, L["Layer"], 0, -336, CONTENT_W)
-	tip(addSlider(place, "Layer", L["Layer"], 4, -370, 1, 10, 1,
-		function(value) return ("%d"):format(value) end,
-		function() return cur().layer or 5 end,
-		function(value) cur().layer = value end), L["Alerts on a higher layer are drawn in front of alerts on a lower one. All start on 5."])
-	addText(place, L["Higher layers lie in front. If two alerts overlap, raise the one that should stay visible or lower the other."],
-		"GameFontDisableSmall", 224, -368, 400)
+	local layerText = addText(place, "", nil, 0, -364, 420)
+	layerText.Refresh = function(self)
+		self:SetText(L["Place %d of %d: the higher, the further in front."]:format(ns.layerPosition(selected) or 0, #ns.alerts))
+	end
+	widgets[#widgets + 1] = layerText
+	tip(addButton(place, L["Order layers"], 190, 430, -359, function() showPage("layers") end),
+		L["Opens the list of all alerts. Drag them into the order in which they lie on top of each other."])
 
 	-- Reiter "Bedingungen" ------------------------------------------------------
 	-- Welche Bedingungen es gibt, hängt von der Art des Alarms ab. Beide Spalten
@@ -1675,6 +1676,141 @@ local function createFrame()
 		confirm(L["Really reset all ShamanAlerts settings?"], function() ns.commands.reset("") end)
 	end)
 
+	-- Seite "Ebenen": alle Alarme in der Reihenfolge, in der sie übereinander liegen ----
+	local layers = CreateFrame("Frame", nil, window)
+	layers:SetPoint("TOPLEFT", window, "TOPLEFT", CONTENT_X, -28)
+	layers:SetSize(CONTENT_W, PAGE_H)
+	layers:Hide()
+	pages.layers = layers
+	addText(layers, L["Layers"], "GameFontNormalLarge", 0, -8)
+	addText(layers, L["Drag the alerts into the order you want, or use the arrows. The higher an alert stands, the further in front it lies: where two overlap, the upper one stays visible."],
+		nil, 0, -32, CONTENT_W)
+	local LAYER_TOP, LAYER_ROW_H, LAYER_COL_W, LAYER_GAP = 72, 22, 340, 24
+	local perColumn = math.floor((PAGE_H - LAYER_TOP - 20) / LAYER_ROW_H)
+	local layerRows, drag = {}, {}
+	local dropLine = layers:CreateTexture(nil, "OVERLAY")
+	dropLine:SetColorTexture(1, 0.82, 0, 0.9)
+	dropLine:SetSize(LAYER_COL_W, 2)
+	dropLine:Hide()
+	local function slot(index)
+		local column, line = math.floor((index - 1) / perColumn), (index - 1) % perColumn
+		return column * (LAYER_COL_W + LAYER_GAP), -(LAYER_TOP + line * LAYER_ROW_H)
+	end
+	-- Vor welchem Platz würde der gezogene Alarm landen? nil, wenn das Spiel die Maus nicht verrät.
+	local function gapUnderCursor()
+		if not GetCursorPosition then return nil end
+		local ok, cx, cy = pcall(GetCursorPosition)
+		local left, top = layers:GetLeft(), layers:GetTop()
+		if not (ok and cx and cy and left and top) then return nil end
+		local scale = layers.GetEffectiveScale and layers:GetEffectiveScale() or 1
+		local x, y = cx / scale - left, top - cy / scale
+		local count = #ns.alerts
+		local column = math.max(0, math.min(math.floor((count - 1) / perColumn), math.floor(x / (LAYER_COL_W + LAYER_GAP))))
+		local line = math.max(0, math.min(perColumn, math.floor((y - LAYER_TOP) / LAYER_ROW_H + 0.5)))
+		return math.max(1, math.min(count + 1, column * perColumn + line + 1))
+	end
+	local function refreshLayers()
+		if not layers:IsShown() then return end
+		local order = ns.layerOrder()
+		for index, alert in ipairs(order) do
+			local row = layerRows[index]
+			if not row then
+				row = CreateFrame("Button", nil, layers)
+				row:SetSize(LAYER_COL_W - 44, LAYER_ROW_H - 2)
+				row.mark = row:CreateTexture(nil, "BACKGROUND")
+				row.mark:SetAllPoints(row)
+				row.mark:SetColorTexture(1, 0.82, 0, 0.2)
+				local hover = row:CreateTexture(nil, "HIGHLIGHT")
+				hover:SetAllPoints(row)
+				hover:SetColorTexture(1, 1, 1, 0.08)
+				row.dot = row:CreateTexture(nil, "ARTWORK")
+				row.dot:SetSize(8, 8)
+				row.dot:SetPoint("LEFT", row, "LEFT", 6, 0)
+				row.label = row:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
+				row.label:SetPoint("LEFT", row, "LEFT", 20, 0)
+				row.label:SetPoint("RIGHT", row, "RIGHT", -4, 0)
+				row.label:SetJustifyH("LEFT")
+				if row.label.SetWordWrap then row.label:SetWordWrap(false) end
+				if row.RegisterForDrag then row:RegisterForDrag("LeftButton") end
+				row:SetScript("OnDragStart", function(self)
+					drag.alert = self.alert
+					self.mark:Show()
+					layers:SetScript("OnUpdate", function()
+						local gap = gapUnderCursor()
+						if not gap then return dropLine:Hide() end
+						local x, y = slot(math.min(gap, #ns.alerts))
+						if gap > #ns.alerts then y = y - LAYER_ROW_H end
+						dropLine:ClearAllPoints()
+						dropLine:SetPoint("TOPLEFT", layers, "TOPLEFT", x, y + 1)
+						dropLine:Show()
+					end)
+				end)
+				row:SetScript("OnDragStop", function(self)
+					layers:SetScript("OnUpdate", nil)
+					dropLine:Hide()
+					local alert, gap = drag.alert, gapUnderCursor()
+					drag.alert = nil
+					if alert and gap then
+						local from = ns.layerPosition(alert)
+						ns.moveLayer(alert, (from and gap > from) and gap - 1 or gap)
+					end
+					ns.RefreshOptions()
+				end)
+				row:SetScript("OnEnter", function(self)
+					if not (GameTooltip and self.alert) then return end
+					GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+					GameTooltip:SetText(self.alert.def.title, 1, 0.82, 0)
+					GameTooltip:AddLine(L["Drag up or down. Higher lies in front."], 1, 1, 1, true)
+					GameTooltip:Show()
+				end)
+				row:SetScript("OnLeave", hideTooltip)
+				local function arrow(texture, offset, step)
+					local button = CreateFrame("Button", nil, layers)
+					button:SetSize(18, 18)
+					button:SetPoint("LEFT", row, "RIGHT", offset, 0)
+					button:SetNormalTexture("Interface\\Buttons\\Arrow-" .. texture .. "-Up")
+					button:SetPushedTexture("Interface\\Buttons\\Arrow-" .. texture .. "-Down")
+					button:SetDisabledTexture("Interface\\Buttons\\Arrow-" .. texture .. "-Disabled")
+					button:SetHighlightTexture("Interface\\Buttons\\UI-Common-MouseHilight", "ADD")
+					button.layerStep = step
+					button:SetScript("OnClick", function()
+						local from = ns.layerPosition(row.alert)
+						if from then ns.moveLayer(row.alert, from + step) end
+						ns.RefreshOptions()
+					end)
+					return button
+				end
+				row.up = arrow("Up", 4, -1)
+				row.down = arrow("Down", 22, 1)
+				row.layerRow = true
+				layerRows[index] = row
+			end
+			local x, y = slot(index)
+			row:ClearAllPoints()
+			row:SetPoint("TOPLEFT", layers, "TOPLEFT", x, y)
+			row.alert = alert
+			local state = alertState(alert)
+			local color = STATE_COLORS[state]
+			row.dot:SetColorTexture(color[1], color[2], color[3], 1)
+			row.label:SetText(("%d.  %s"):format(index, alert.def.title))
+			if state == "on" then row.label:SetTextColor(1, 1, 1) else row.label:SetTextColor(0.6, 0.6, 0.6) end
+			row.mark:SetShown(drag.alert == alert)
+			row.up:SetEnabled(index > 1)
+			row.down:SetEnabled(index < #order)
+			row:Show()
+			row.up:Show()
+			row.down:Show()
+		end
+		for index = #order + 1, #layerRows do
+			layerRows[index]:Hide()
+			layerRows[index].up:Hide()
+			layerRows[index].down:Hide()
+		end
+	end
+	view.refreshLayers = refreshLayers
+	view.layerRows = layerRows
+	view.layerGap = gapUnderCursor
+
 	-- Seite "Allgemein": was für alle Alarme und die Totem-Leiste zugleich gilt ----
 	local general = CreateFrame("Frame", nil, window)
 	general:SetPoint("TOPLEFT", window, "TOPLEFT", CONTENT_X, -28)
@@ -2180,6 +2316,7 @@ function ns.RefreshOptions(relocate)
 	-- Nach dem Laden eines Profils kann der gewählte eigene Alarm verschwunden sein.
 	if selected and ns.alerts[selected.key] ~= selected then selected = ns.alerts[1] end
 	if view.refreshProfiles then view.refreshProfiles() end
+	if view.refreshLayers then view.refreshLayers() end
 	if relocate then locateSelection() end
 	refreshSidebar()
 	local kind = selected.def.kind
